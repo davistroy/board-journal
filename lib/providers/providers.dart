@@ -7,4 +7,5 @@ library;
 
 export 'ai_providers.dart';
 export 'database_provider.dart';
+export 'quick_version_providers.dart';
 export 'repository_providers.dart';

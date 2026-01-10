@@ -4,3 +4,4 @@
 library;
 
 export 'ai/ai.dart';
+export 'governance/governance.dart';

@@ -2,9 +2,9 @@
 
 This document tracks the implementation progress of Boardroom Journal.
 
-## Current Status: Weekly Brief Generation Complete
+## Current Status: Quick Version State Machine Complete
 
-The data layer, state management, navigation, core entry flow, AI signal extraction, and weekly brief generation are complete. Users can create text entries, have signals automatically extracted, generate weekly briefs on-demand with regeneration options, view briefs with board micro-review, and export to Markdown/JSON.
+The data layer, state management, navigation, core entry flow, AI signal extraction, weekly brief generation, and Quick Version (15-min audit) are complete. Users can create text entries, have signals automatically extracted, generate weekly briefs, and run Quick Version audits with anti-vagueness enforcement, problem direction evaluation, and 90-day bet creation.
 
 ---
 
@@ -151,7 +151,7 @@ weeklyBriefGenerationServiceProvider // Brief generation service
 | EntryReviewScreen | **Complete** | View, edit, delete entries with signals |
 | WeeklyBriefViewerScreen | **Complete** | Full brief display, regeneration, export |
 | GovernanceHubScreen | Scaffold | Tab structure with 3 tabs |
-| QuickVersionScreen | Scaffold | 5-question list shown |
+| QuickVersionScreen | **Complete** | Full state machine, vagueness detection |
 | SetupScreen | Scaffold | 7-step list shown |
 | QuarterlyScreen | Scaffold | 8-section list shown |
 | SettingsScreen | Scaffold | Full UI structure, all sections |
@@ -287,6 +287,80 @@ watchBriefByIdProvider                // Stream for specific brief
 - User edits preserved (unless "Start over")
 - Zero-entry weeks handled gracefully
 
+### 11. Quick Version State Machine
+**PR #14** - Governance 15-minute audit implementation
+
+**State Machine Architecture (`lib/services/governance/`):**
+- `QuickVersionState` - Enum defining all states (sensitivityGate → Q1-Q5 → generateOutput → finalized)
+- `QuickVersionSessionData` - Complete session state with transcript, problems, answers
+- `QuickVersionService` - Orchestrates state machine, persistence, AI calls
+- `QuickVersionQA` - Individual question/answer entries in transcript
+- `IdentifiedProblem` - Problem with direction evaluation data
+
+**AI Services:**
+- `VaguenessDetectionService` - Detects vague answers using heuristics + AI
+- `QuickVersionAIService` - Problem parsing, direction evaluation, output generation
+- Uses Claude Opus 4.5 for governance per PRD Section 3A.1
+
+**State Machine Flow (per PRD Section 4.3):**
+```
+Initial → SensitivityGate → Q1 (Role Context)
+    → Q2 (Paid Problems) → Q3 (Direction Loop for each problem)
+    → Q4 (Avoided Decision) → Q5 (Comfort Work)
+    → GenerateOutput → Finalized
+```
+
+**Vagueness Detection (per PRD Section 6.3):**
+- Heuristic checks for dates, proper nouns, metrics, specific verbs
+- AI-assisted detection for ambiguous cases
+- Triggers "concrete example" follow-up for vague answers
+- Max 2 skips per session; third gate cannot be skipped
+- Skip records "[example refused]" for future reference
+
+**Problem Direction Evaluation (per PRD Section 4.3):**
+For each of 3 problems:
+- "Is AI getting cheaper at this?"
+- "What's the cost of errors?"
+- "Is trust/access required?"
+- AI evaluates direction: Appreciating / Depreciating / Stable
+- One-sentence rationale with user quotes
+
+**Generated Output:**
+- Problem direction table (markdown format)
+- 2-sentence honest assessment
+- Avoided decision + cost
+- 90-day bet with wrong-if condition
+- Bet automatically saved to database
+
+**UI Components (`lib/ui/`):**
+| Component | Features |
+|-----------|----------|
+| QuickVersionScreen | State routing, progress bar, abandon confirmation |
+| SensitivityGateView | Abstraction mode toggle, remember preference |
+| QuickVersionQuestionView | Question display, text input, skip button, progress |
+| QuickVersionOutputView | Results display, export to markdown, share |
+
+**New Providers (`lib/providers/quick_version_providers.dart`):**
+```dart
+quickVersionServiceProvider       // Main service
+quickVersionSessionProvider       // Session state notifier
+hasInProgressQuickVersionProvider // Check for resumable session
+quickVersionWeeklyCountProvider   // Rate limit visibility
+rememberedAbstractionModeProvider // User's saved preference
+vaguenessDetectionServiceProvider // Vagueness checker
+quickVersionAIServiceProvider     // AI service
+```
+
+**Features per PRD Section 4.3 & 5.6:**
+- Sensitivity gate with abstraction mode
+- One question at a time
+- Anti-vagueness enforcement
+- Two-step skip confirmation
+- Session persistence and resume
+- Direction table with user quotes
+- 90-day bet creation with wrong-if
+- Export to markdown/share
+
 ---
 
 ## Architecture Overview
@@ -340,7 +414,7 @@ watchBriefByIdProvider                // Stream for specific brief
 
 ## Test Coverage
 
-**10 Test Files:**
+**12 Test Files:**
 
 | Test File | Coverage |
 |-----------|----------|
@@ -354,6 +428,8 @@ watchBriefByIdProvider                // Stream for specific brief
 | extracted_signal_test.dart | Signal models, JSON serialization |
 | signal_extraction_service_test.dart | Claude client, extraction service |
 | weekly_brief_generation_service_test.dart | Brief generation, regeneration options |
+| quick_version_service_test.dart | State machine, Q&A flow, session data |
+| vagueness_detection_service_test.dart | Heuristics, AI detection, edge cases |
 
 ---
 
@@ -361,35 +437,38 @@ watchBriefByIdProvider                // Stream for specific brief
 
 | Category | Count | Lines of Code |
 |----------|-------|---------------|
-| Source Files | 55 | ~8,500 |
-| Test Files | 10 | ~2,600 |
-| Total Dart Files | 65 | ~11,100 |
+| Source Files | 65 | ~10,500 |
+| Test Files | 12 | ~3,200 |
+| Total Dart Files | 77 | ~13,700 |
 
 **By Layer:**
 - Data Layer: 31 files (~3,500 LOC)
-- Services Layer: 7 files (~800 LOC)
-- Providers: 4 files (~700 LOC)
+- Services Layer: 12 files (~1,800 LOC)
+- Providers: 5 files (~1,100 LOC)
 - Router: 2 files (~120 LOC)
-- UI/Screens: 12 files (~3,400 LOC)
+- UI/Screens: 15 files (~4,000 LOC)
 
 ---
 
 ## What's Next
 
-### Immediate Priority: Voice Recording
+### Immediate Priority: Setup State Machine
 
-Implement voice capture with Deepgram transcription:
-1. Add audio recording capability (record_audio package)
-2. Integrate Deepgram Nova-2 for speech-to-text
-3. Implement silence detection (8-second timeout)
-4. Add recording UI with waveform visualization
-5. Handle offline recording queue
+Implement Setup (Portfolio + Board) per PRD Section 4.4:
+1. Problem collection (3-5 problems with required fields)
+2. Time allocation validation (95-105%, 90-110% with warning)
+3. Portfolio health calculation
+4. Board role creation (5 core + 0-2 growth roles)
+5. Persona generation with reset capability
+6. Re-setup trigger definition
+7. Portfolio versioning
 
 ### Subsequent Steps:
-1. **Brief Scheduling** - Sunday 8pm automatic generation
-2. **Governance State Machines** - Quick/Setup/Quarterly runners
-3. **Settings Implementation** - All settings sections functional
-4. **History Screen Enhancement** - Combined entries + briefs
+1. **Quarterly Report** - Full report with board interrogation (depends on Setup)
+2. **Voice Recording** - record_audio package, Deepgram integration, waveform UI
+3. **Brief Scheduling** - Sunday 8pm automatic generation
+4. **Settings Implementation** - All settings sections functional
+5. **History Screen Enhancement** - Combined entries + briefs
 
 ---
 
@@ -406,6 +485,7 @@ Implement voice capture with Deepgram transcription:
 - intl: ^0.19.0
 - equatable: ^2.0.5
 - json_annotation: ^4.8.1
+- share_plus: ^7.2.1
 
 **Development:**
 - drift_dev: ^2.14.0
@@ -415,4 +495,4 @@ Implement voice capture with Deepgram transcription:
 
 ---
 
-*Last updated: January 2026*
+*Last updated: January 10, 2026*

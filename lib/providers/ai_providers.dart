@@ -245,3 +245,39 @@ class BriefGenerationState {
   bool get isFailed => status == BriefGenerationStatus.failed;
   bool get isNotConfigured => status == BriefGenerationStatus.notConfigured;
 }
+
+// ==================
+// Vagueness Detection Service Provider
+// ==================
+
+/// Provider for the vagueness detection service.
+///
+/// Uses Claude Opus for governance-quality detection per PRD.
+final vaguenessDetectionServiceProvider =
+    Provider<VaguenessDetectionService?>((ref) {
+  final client = ref.watch(claudeOpusClientProvider);
+
+  if (client == null) {
+    return null;
+  }
+
+  return VaguenessDetectionService(client);
+});
+
+// ==================
+// Quick Version AI Service Provider
+// ==================
+
+/// Provider for the Quick Version AI service.
+///
+/// Uses Claude Opus for governance features per PRD Section 3A.1.
+final quickVersionAIServiceProvider =
+    Provider<QuickVersionAIService?>((ref) {
+  final client = ref.watch(claudeOpusClientProvider);
+
+  if (client == null) {
+    return null;
+  }
+
+  return QuickVersionAIService(client);
+});
