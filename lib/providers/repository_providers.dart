@@ -212,3 +212,39 @@ final portfolioHealthTrendProvider = FutureProvider<String?>((ref) async {
   final repo = ref.watch(portfolioHealthRepositoryProvider);
   return repo.getTrend();
 });
+
+/// Future provider for getting an entry by ID.
+final entryByIdProvider = FutureProvider.family<DailyEntry?, String>((ref, id) async {
+  final repo = ref.watch(dailyEntryRepositoryProvider);
+  return repo.getById(id);
+});
+
+/// Future provider for getting a brief by ID.
+final briefByIdProvider = FutureProvider.family<WeeklyBrief?, String>((ref, id) async {
+  final repo = ref.watch(weeklyBriefRepositoryProvider);
+  return repo.getById(id);
+});
+
+/// Future provider for getting the most recent brief.
+final latestBriefProvider = FutureProvider<WeeklyBrief?>((ref) async {
+  final repo = ref.watch(weeklyBriefRepositoryProvider);
+  return repo.getMostRecent();
+});
+
+/// Future provider for getting entries for a specific week.
+final entriesForWeekProvider = FutureProvider.family<List<DailyEntry>, DateTime>((ref, date) async {
+  final repo = ref.watch(dailyEntryRepositoryProvider);
+  return repo.getEntriesForWeek(date);
+});
+
+/// Future provider for getting remaining regenerations for a brief.
+final remainingRegenerationsProvider = FutureProvider.family<int, String>((ref, briefId) async {
+  final repo = ref.watch(weeklyBriefRepositoryProvider);
+  return repo.getRemainingRegenerations(briefId);
+});
+
+/// Stream provider for watching a specific brief.
+final watchBriefByIdProvider = StreamProvider.family<WeeklyBrief?, String>((ref, id) {
+  final repo = ref.watch(weeklyBriefRepositoryProvider);
+  return repo.watchById(id);
+});

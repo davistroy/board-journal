@@ -210,7 +210,7 @@ flutter run
 
 ### AI Configuration
 
-Signal extraction requires a Claude API key. Set the environment variable before running:
+Signal extraction and weekly brief generation require a Claude API key. Set the environment variable before running:
 
 ```bash
 # Set API key (required for AI features)
@@ -220,9 +220,11 @@ export ANTHROPIC_API_KEY=your-api-key-here
 flutter run
 ```
 
-Without the API key, the app works normally but signals won't be extracted. You can:
-- Create entries and review them (signals will be empty)
+Without the API key, the app works normally but AI features are unavailable:
+- Entries can be created and reviewed (signals will be empty)
 - Re-extract signals later from Entry Review when API is configured
+- Weekly briefs can't be generated (button shows error message)
+- All other features work offline
 
 ### Project Structure
 
@@ -239,6 +241,7 @@ lib/
 │   └── ai/                   # AI service layer
 │       ├── claude_client.dart        # Claude API client
 │       ├── signal_extraction_service.dart  # Signal extraction
+│       ├── weekly_brief_generation_service.dart  # Brief generation
 │       └── models/           # AI data models
 ├── ui/
 │   ├── screens/              # App screens

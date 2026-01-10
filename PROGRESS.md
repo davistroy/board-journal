@@ -2,9 +2,9 @@
 
 This document tracks the implementation progress of Boardroom Journal.
 
-## Current Status: AI Signal Extraction Complete
+## Current Status: Weekly Brief Generation Complete
 
-The data layer, state management, navigation, core entry flow, and AI signal extraction are complete. Users can create text entries, have signals automatically extracted via Claude API, view signals grouped by type, and manually re-extract if needed. The app has a working Home screen with real data.
+The data layer, state management, navigation, core entry flow, AI signal extraction, and weekly brief generation are complete. Users can create text entries, have signals automatically extracted, generate weekly briefs on-demand with regeneration options, view briefs with board micro-review, and export to Markdown/JSON.
 
 ---
 
@@ -79,10 +79,10 @@ The data layer, state management, navigation, core entry flow, and AI signal ext
 ### 4. Riverpod State Management
 **PR #9** - Provider layer
 
-**35+ Providers:**
+**40+ Providers:**
 - 12 Repository Providers (singletons)
-- 15 Stream Providers (reactive data)
-- 8 Future Providers (one-time fetches)
+- 18 Stream Providers (reactive data)
+- 10 Future Providers (one-time fetches)
 
 **Key providers:**
 ```dart
@@ -92,6 +92,10 @@ activeBoardMembersStreamProvider // Watch active board
 hasPortfolioProvider            // Check portfolio exists
 shouldShowSetupPromptProvider   // Show prompt after 3-5 entries
 totalEntryCountProvider         // Entry count for stats
+briefByIdProvider               // Fetch brief by ID
+latestBriefProvider             // Get most recent brief
+entriesForWeekProvider          // Get entries for a week
+weeklyBriefGenerationServiceProvider // Brief generation service
 ```
 
 ### 5. Navigation Foundation
@@ -124,6 +128,7 @@ totalEntryCountProvider         // Entry count for stats
 **Fully implemented features:**
 - Record Entry button (prominent, one tap away per PRD)
 - Latest Weekly Brief preview with real data
+- "Generate Brief" button when no briefs exist
 - Setup prompt (appears after 3-5 entries if no portfolio)
 - Quick Actions (15-min Audit, Governance Hub)
 - Entry stats display (total entries, board status)
@@ -143,8 +148,8 @@ totalEntryCountProvider         // Entry count for stats
 |--------|--------|-------|
 | HomeScreen | **Complete** | Real data, all CTAs working |
 | RecordEntryScreen | **Complete** | Text entry with word count, voice placeholder |
-| EntryReviewScreen | **Complete** | View, edit, delete entries |
-| WeeklyBriefViewerScreen | Scaffold | Export menu stubbed |
+| EntryReviewScreen | **Complete** | View, edit, delete entries with signals |
+| WeeklyBriefViewerScreen | **Complete** | Full brief display, regeneration, export |
 | GovernanceHubScreen | Scaffold | Tab structure with 3 tabs |
 | QuickVersionScreen | Scaffold | 5-question list shown |
 | SetupScreen | Scaffold | 7-step list shown |
@@ -172,7 +177,7 @@ totalEntryCountProvider         // Entry count for stats
 - Read mode with:
   - Entry metadata (type, date, word count, duration)
   - Selectable transcript display
-  - Extracted signals placeholder (AI coming soon)
+  - Extracted signals display
 - Edit mode with:
   - Full transcript editing
   - Real-time word count
@@ -221,16 +226,6 @@ totalEntryCountProvider         // Entry count for stats
 - "Re-extract" button for manual re-extraction
 - Empty state with explanation when no signals
 
-**New Providers:**
-```dart
-aiConfigProvider              // AI configuration from environment
-claudeClientProvider          // Claude Sonnet client
-claudeOpusClientProvider      // Claude Opus client (for governance)
-signalExtractionServiceProvider // Signal extraction service
-extractionProvider            // Extraction state management
-reExtractionProvider          // Per-entry re-extraction state
-```
-
 **Features per PRD Section 3A.1:**
 - Claude Sonnet 4.5 for daily operations (signal extraction)
 - Claude Opus 4.5 configured for governance (future use)
@@ -242,6 +237,56 @@ reExtractionProvider          // Per-entry re-extraction state
 - Service degrades gracefully if not configured
 - Signals can be extracted later via re-extract button
 
+### 10. Weekly Brief Generation
+**PR #13** - AI-powered brief generation and viewer
+
+**WeeklyBriefGenerationService (`lib/services/ai/`):**
+- Generates executive briefs from week's journal entries
+- System prompt enforcing PRD Section 4.2 structure:
+  - Headline (max 2 sentences)
+  - Wins/Blockers/Risks (max 3 bullets each)
+  - Open Loops (max 5 bullets)
+  - Next Week Focus (exactly 3 items)
+  - Avoided Decision + Comfort Work (1 each or "none")
+- Target ~600 words, max 800 words
+- Zero-entry weeks generate reflection brief (~100 words)
+- Board micro-review (one sentence per active role)
+
+**Regeneration Options (combinable):**
+| Option | Effect |
+|--------|--------|
+| Shorter | ~40% reduction, 2 bullets max, omit Open Loops |
+| More Actionable | Every bullet has next step, "Suggested Actions" section |
+| More Strategic | Career trajectory framing, "Strategic Implications" section |
+
+**WeeklyBriefViewerScreen (full implementation):**
+- Display brief markdown content
+- Week range header with calendar icon
+- Collapsible board micro-review section (remembers preference)
+- Regeneration counter ("X of 5 remaining")
+- Regeneration dialog with checkbox options
+- Edit mode for manual edits (unsaved changes detection)
+- Export to Markdown (clipboard)
+- Export to JSON (clipboard)
+- Empty state with "Generate Brief" button
+
+**New Providers:**
+```dart
+weeklyBriefGenerationServiceProvider  // Brief generation service
+briefByIdProvider                     // Fetch brief by ID
+latestBriefProvider                   // Get most recent brief
+entriesForWeekProvider                // Get entries for a week
+remainingRegenerationsProvider        // Remaining regen count
+watchBriefByIdProvider                // Stream for specific brief
+```
+
+**Features per PRD Section 4.2:**
+- Manual brief generation on-demand
+- 5 regenerations per brief (tracked)
+- Board micro-review included by default
+- User edits preserved (unless "Start over")
+- Zero-entry weeks handled gracefully
+
 ---
 
 ## Architecture Overview
@@ -250,7 +295,7 @@ reExtractionProvider          // Per-entry re-extraction state
 ┌─────────────────────────────────────────────────────────┐
 │                        UI Layer                          │
 │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐        │
-│  │  Home   │ │ Record  │ │ History │ │Settings │ ...    │
+│  │  Home   │ │ Record  │ │  Brief  │ │Settings │ ...    │
 │  └────┬────┘ └────┬────┘ └────┬────┘ └────┬────┘        │
 └───────┼──────────┼──────────┼──────────┼────────────────┘
         │          │          │          │
@@ -268,7 +313,7 @@ reExtractionProvider          // Per-entry re-extraction state
 │                   Service Layer                          │
 │  ┌────────────────────────────────────────────────┐     │
 │  │ AI Services (Claude API)                        │     │
-│  │  SignalExtraction │ (WeeklyBrief) │ (Governance)│     │
+│  │  SignalExtraction │ WeeklyBrief │ (Governance) │     │
 │  └────────────────────────────────────────────────┘     │
 └─────────────────────────────────────────────────────────┘
           │
@@ -276,7 +321,7 @@ reExtractionProvider          // Per-entry re-extraction state
 ┌─────────────────────────────────────────────────────────┐
 │                   Repository Layer                       │
 │  ┌────────────┐ ┌────────────┐ ┌────────────┐           │
-│  │DailyEntry  │ │  Problem   │ │BoardMember │ ... (12)  │
+│  │DailyEntry  │ │WeeklyBrief │ │BoardMember │ ... (12)  │
 │  │ Repository │ │ Repository │ │ Repository │           │
 │  └─────┬──────┘ └─────┬──────┘ └─────┬──────┘           │
 └────────┼──────────────┼──────────────┼──────────────────┘
@@ -295,7 +340,7 @@ reExtractionProvider          // Per-entry re-extraction state
 
 ## Test Coverage
 
-**9 Test Files:**
+**10 Test Files:**
 
 | Test File | Coverage |
 |-----------|----------|
@@ -308,6 +353,7 @@ reExtractionProvider          // Per-entry re-extraction state
 | user_preferences_repository_test.dart | Settings, onboarding |
 | extracted_signal_test.dart | Signal models, JSON serialization |
 | signal_extraction_service_test.dart | Claude client, extraction service |
+| weekly_brief_generation_service_test.dart | Brief generation, regeneration options |
 
 ---
 
@@ -315,34 +361,35 @@ reExtractionProvider          // Per-entry re-extraction state
 
 | Category | Count | Lines of Code |
 |----------|-------|---------------|
-| Source Files | 53 | ~7,500 |
-| Test Files | 9 | ~2,300 |
-| Total Dart Files | 62 | ~9,800 |
+| Source Files | 55 | ~8,500 |
+| Test Files | 10 | ~2,600 |
+| Total Dart Files | 65 | ~11,100 |
 
 **By Layer:**
 - Data Layer: 31 files (~3,500 LOC)
-- Services Layer: 6 files (~500 LOC)
-- Providers: 4 files (~500 LOC)
+- Services Layer: 7 files (~800 LOC)
+- Providers: 4 files (~700 LOC)
 - Router: 2 files (~120 LOC)
-- UI/Screens: 12 files (~2,900 LOC)
+- UI/Screens: 12 files (~3,400 LOC)
 
 ---
 
 ## What's Next
 
-### Immediate Priority: Weekly Brief Generation
+### Immediate Priority: Voice Recording
 
-Implement weekly brief generation using the AI service infrastructure:
-1. Create brief generation service (uses same Claude Sonnet client)
-2. Implement brief scheduling (Sunday 8pm local time)
-3. Add regeneration with modifiers (shorter/actionable/strategic)
-4. Generate board micro-review (one sentence per active role)
+Implement voice capture with Deepgram transcription:
+1. Add audio recording capability (record_audio package)
+2. Integrate Deepgram Nova-2 for speech-to-text
+3. Implement silence detection (8-second timeout)
+4. Add recording UI with waveform visualization
+5. Handle offline recording queue
 
 ### Subsequent Steps:
-1. Voice Recording - Audio capture + Deepgram integration
-2. Governance State Machines - Quick/Setup/Quarterly runners
-3. Settings Implementation - All settings sections functional
-4. History Screen Enhancement - Combined entries + briefs
+1. **Brief Scheduling** - Sunday 8pm automatic generation
+2. **Governance State Machines** - Quick/Setup/Quarterly runners
+3. **Settings Implementation** - All settings sections functional
+4. **History Screen Enhancement** - Combined entries + briefs
 
 ---
 
