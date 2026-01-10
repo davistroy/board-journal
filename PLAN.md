@@ -10,22 +10,23 @@
 
 Boardroom Journal is a Flutter mobile app for voice-first career journaling with AI-powered governance. The core data layer, text entry flow, AI signal extraction, weekly brief generation, and Quick Version (15-min audit) are complete. The remaining work focuses on: Setup state machine (portfolio + board creation), Quarterly Report, voice recording, backend/sync, and production readiness features.
 
-This plan divides the remaining work into 8 phases, each independently testable and deployable, with clear acceptance criteria and dependencies.
+This plan divides the remaining work into 9 phases (with Phase 12 split into 12a/12b for context management), each independently testable and deployable, with clear acceptance criteria and dependencies.
 
 ---
 
 ## Phase Overview Table
 
-| Phase | Name | Key Deliverable | Dependencies | Complexity |
-|-------|------|-----------------|--------------|------------|
-| 5 | Setup State Machine | Portfolio + Board creation with personas | Phase 4 | High |
-| 6 | Quarterly Report | Full board interrogation and bet tracking | Phase 5 | High |
-| 7 | Voice Recording | Deepgram transcription with waveform UI | None | Medium |
-| 8 | History & Export | Combined history view, JSON/Markdown export | Phase 5 | Low |
-| 9 | Settings Implementation | All settings sections functional | Phase 5 | Medium |
-| 10 | Brief Scheduling | Sunday 8pm auto-generation | None | Low |
-| 11 | Onboarding & Auth | OAuth sign-in, onboarding flow | None | Medium |
-| 12 | Backend & Sync | API server, multi-device sync | Phase 11 | High |
+| Phase | Name | Key Deliverable | Dependencies | Complexity | Est. Tokens |
+|-------|------|-----------------|--------------|------------|-------------|
+| 5 | Setup State Machine | Portfolio + Board creation with personas | Phase 4 | High | 50-65K |
+| 6 | Quarterly Report | Full board interrogation and bet tracking | Phase 5 | High | 55-70K |
+| 7 | Voice Recording | Deepgram transcription with waveform UI | None | Medium | 30-40K |
+| 8 | History & Export | Combined history view, JSON/Markdown export | Phase 5 | Low | 20-30K |
+| 9 | Settings Implementation | All settings sections functional | Phase 5 | Medium | 30-40K |
+| 10 | Brief Scheduling | Sunday 8pm auto-generation | None | Low | 15-25K |
+| 11 | Onboarding & Auth | OAuth sign-in, onboarding flow | None | Medium | 35-45K |
+| 12a | Backend API Server | Docker, database, REST endpoints | Phase 11 | Medium | 35-45K |
+| 12b | Client Sync Integration | Sync service, conflict resolution, queue | Phase 12a | Medium | 35-45K |
 
 ---
 
@@ -77,8 +78,8 @@ This plan divides the remaining work into 8 phases, each independently testable 
 | 6 | Board roles: 5 core always active, 2 growth when appreciating | Not Started | 5 |
 | 7 | Export works: Markdown sharing, JSON backup/restore | Not Started | 8 |
 | 8 | Delete data works: single session + full account | Not Started | 9 |
-| 9 | Multi-device sync with conflict detection | Not Started | 12 |
-| 10 | Offline mode preserves recording/editing, queues for sync | Partial | 12 |
+| 9 | Multi-device sync with conflict detection | Not Started | 12b |
+| 10 | Offline mode preserves recording/editing, queues for sync | Partial | 12b |
 | 11 | Onboarding gets users to first entry in <60 seconds | Not Started | 11 |
 | 12 | Portfolio modification: description/allocation edits without re-setup | Not Started | 5 |
 | 13 | Dark mode follows system setting | Complete | 4 |
@@ -96,8 +97,9 @@ Phase 5: Setup State Machine
 Phase 7: Voice Recording (independent)
 Phase 10: Brief Scheduling (independent)
 
-Phase 11: Onboarding & Auth (independent, but needed for Phase 12)
-    └── Phase 12: Backend & Sync
+Phase 11: Onboarding & Auth (independent, but needed for Phase 12a)
+    └── Phase 12a: Backend API Server
+        └── Phase 12b: Client Sync Integration
 ```
 
 ---
@@ -558,57 +560,136 @@ Welcome → Privacy → OAuth → First Entry
 
 ---
 
-### Phase 12: Backend & Sync
+### Phase 12a: Backend API Server
 
-**Objective:** Implement custom sync API and multi-device sync.
+**Objective:** Implement the backend REST API server with authentication and sync endpoints.
 
-**Prerequisites:** Phase 11 complete (auth tokens for API calls)
+**Prerequisites:** Phase 11 complete (auth flow defined, tokens understood)
 
 **Deliverables:**
-- `backend/` - Server implementation (Dart or Node.js):
-  - REST API endpoints
-  - Database schema (PostgreSQL)
-  - Docker configuration
-- `lib/services/sync/sync_service.dart` - Sync orchestration
-- `lib/services/sync/conflict_resolver.dart` - Last-write-wins with notification
-- `lib/services/api/api_client.dart` - HTTP client with auth
-- Updated repositories with sync integration
+- `backend/` - Server implementation:
+  - `backend/Dockerfile` - Container configuration
+  - `backend/docker-compose.yml` - Local development setup
+  - `backend/src/server.dart` (or `index.js`) - Main entry point
+  - `backend/src/routes/auth.dart` - OAuth callback, token refresh
+  - `backend/src/routes/sync.dart` - Sync endpoints
+  - `backend/src/routes/account.dart` - Account management
+  - `backend/src/routes/ai.dart` - AI proxy endpoints
+  - `backend/src/middleware/auth.dart` - JWT validation
+  - `backend/src/db/schema.sql` - PostgreSQL schema
+  - `backend/src/db/migrations/` - Database migrations
+- `backend/tests/` - API tests
+- Deployment configuration (Railway/Render/Cloud Run)
 
 **API Endpoints (per PRD 3A.2):**
-| Category | Endpoints |
-|----------|-----------|
-| Auth | `/auth/oauth/{provider}`, `/auth/refresh`, `/auth/session` |
-| Sync | `/sync?since={timestamp}`, `/sync` (POST), `/sync/full` |
-| AI | `/ai/transcribe`, `/ai/extract`, `/ai/generate` |
-| Account | `/account`, `/account` (DELETE), `/account/export` |
+| Category | Endpoints | Purpose |
+|----------|-----------|---------|
+| Auth | `POST /auth/oauth/{provider}` | Exchange OAuth code for tokens |
+| Auth | `POST /auth/refresh` | Refresh access token |
+| Auth | `GET /auth/session` | Validate session |
+| Sync | `GET /sync?since={timestamp}` | Get changes since timestamp |
+| Sync | `POST /sync` | Push local changes |
+| Sync | `GET /sync/full` | Full data download |
+| AI | `POST /ai/transcribe` | Proxy to Deepgram |
+| AI | `POST /ai/extract` | Proxy to Claude for signals |
+| AI | `POST /ai/generate` | Proxy to Claude for briefs |
+| Account | `GET /account` | Get account info |
+| Account | `DELETE /account` | Delete account (7-day grace) |
+| Account | `GET /account/export` | Export all data |
 
-**Sync Strategy:**
-- Local-first SQLite
-- Sync triggers: App launch, pull-to-refresh, after local changes, every 5 minutes while foregrounded
-- Last-write-wins conflict resolution
-- Conflict notification: "This entry was also edited on your other device"
-- Soft delete with 30-day retention
+**Database Schema:**
+- Mirror of Drift tables with server-side columns
+- `users` table for account management
+- `sync_log` for change tracking
+- Indexes for efficient sync queries
 
-**Offline Behavior:**
-- Queue changes locally
-- Priority: Auth refresh → Transcription → Extraction → Local edits → Server changes
-- Never delete local data on sync failure
+**Security (per PRD 3D):**
+- JWT validation on all protected routes
+- Rate limiting (3 accounts/IP/hour, 5 failed auth = 15-min lockout)
+- Input validation (max 10MB requests)
+- HTTPS only, TLS 1.2+
 
 **Acceptance Criteria:**
-- [ ] Backend deploys successfully (Docker)
-- [ ] API authentication works
-- [ ] Sync on app launch works
-- [ ] Pull-to-refresh syncs
-- [ ] Changes sync after local edits
+- [ ] Docker container builds and runs
+- [ ] PostgreSQL schema creates successfully
+- [ ] OAuth endpoints exchange codes for tokens
+- [ ] Token refresh works correctly
+- [ ] Sync GET returns changes since timestamp
+- [ ] Sync POST accepts and stores changes
+- [ ] AI endpoints proxy to external services
+- [ ] Account deletion triggers 7-day grace period
+- [ ] Rate limiting enforced
+- [ ] All API tests pass
+- [ ] Deploys to cloud platform successfully
+
+**Estimated Complexity:** Medium (8-10 backend files, straightforward REST patterns)
+
+---
+
+### Phase 12b: Client Sync Integration
+
+**Objective:** Integrate the Flutter client with the backend sync API.
+
+**Prerequisites:** Phase 12a complete (backend API running)
+
+**Deliverables:**
+- `lib/services/api/api_client.dart` - HTTP client with auth headers
+- `lib/services/api/api_config.dart` - Base URL, timeout configuration
+- `lib/services/sync/sync_service.dart` - Sync orchestration
+- `lib/services/sync/sync_queue.dart` - Offline change queue
+- `lib/services/sync/conflict_resolver.dart` - Last-write-wins with notification
+- `lib/providers/sync_providers.dart` - Sync state management
+- Updated repositories with sync status tracking
+- `lib/ui/widgets/sync_indicator.dart` - Sync status UI
+- `test/services/sync/sync_service_test.dart` - Sync tests
+- `test/services/sync/conflict_resolver_test.dart` - Conflict tests
+
+**Sync Strategy (per PRD 3B.2):**
+- Local-first SQLite (existing)
+- Sync triggers:
+  - App launch
+  - Pull-to-refresh
+  - After local changes (debounced)
+  - Every 5 minutes while foregrounded
+- Last-write-wins conflict resolution
+- User notification on conflict
+
+**Sync Queue Priority:**
+1. Auth refresh (if needed)
+2. Transcription requests
+3. Signal extraction requests
+4. Local edits (entries, briefs)
+5. Server changes download
+
+**Offline Behavior (per PRD 3F):**
+- Queue all changes locally when offline
+- Process queue when connectivity returns
+- Never delete local data on sync failure
+- Visual indicator for pending sync items
+
+**Conflict Resolution:**
+- Compare `serverVersion` on push
+- If mismatch, fetch latest and compare timestamps
+- Last-write-wins with notification:
+  - "This entry was also edited on your other device. Showing most recent version."
+- Log overwritten version for potential recovery
+
+**Acceptance Criteria:**
+- [ ] API client handles auth headers correctly
+- [ ] Token refresh triggers automatically when <5 min remaining
+- [ ] Sync on app launch fetches latest changes
+- [ ] Pull-to-refresh triggers sync
+- [ ] Local changes queue when offline
+- [ ] Queue processes when connectivity returns
 - [ ] Periodic sync (5 min) works while foregrounded
-- [ ] Conflict detection works
-- [ ] User notified of conflicts
-- [ ] Offline changes queue properly
-- [ ] Queue processes when online
-- [ ] Multi-device scenario tested
+- [ ] Conflict detection works correctly
+- [ ] User notified of conflicts with clear message
+- [ ] Sync indicator shows pending/syncing/synced states
+- [ ] Entry-level sync status badges display correctly
+- [ ] Multi-device scenario tested end-to-end
 - [ ] All tests pass
 
-**Estimated Complexity:** High (15+ source files, backend infrastructure, sync logic)
+**Estimated Complexity:** Medium (8-10 source files, careful state management)
 
 ---
 
@@ -685,6 +766,7 @@ Each phase targets ~100K tokens of working context:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.1 | 2026-01-10 | Split Phase 12 into 12a (Backend) and 12b (Client Sync) to fit 100K token constraint |
 | 1.0 | 2026-01-10 | Initial plan created from PRD v5 analysis |
 
 ---
