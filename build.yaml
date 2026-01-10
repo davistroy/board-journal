@@ -1,0 +1,9 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          # Use named parameters for data classes
+          named_parameters: true
+          # Generate scoped dart components
+          scoped_dart_components: true
