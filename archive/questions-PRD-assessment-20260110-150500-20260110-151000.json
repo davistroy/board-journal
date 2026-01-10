@@ -1,0 +1,669 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "topic": "AI/LLM Provider Strategy",
+      "sections": ["C1. No AI/LLM Provider Strategy", "Missing Content - Technical Architecture Section"],
+      "question": "Which LLM provider(s) will be used for the AI board members, extraction, and summarization features?",
+      "context": "The PRD describes an AI-heavy application with transcription, extraction, summarization, and conversational governance flows. Options include OpenAI, Anthropic, Google, or others. This decision affects API integration patterns, cost modeling, capability constraints, and potential vendor lock-in. The choice should consider model quality for conversational interactions, cost per token, latency requirements, and availability guarantees."
+    },
+    {
+      "id": 2,
+      "topic": "AI/LLM Provider Strategy",
+      "sections": ["C1. No AI/LLM Provider Strategy", "Missing Content - Technical Architecture Section"],
+      "question": "Which speech-to-text service will be used for voice transcription?",
+      "context": "Voice capture is a core feature of the app. Options include Whisper (OpenAI), Deepgram, AssemblyAI, Google Speech-to-Text, or on-device solutions. The decision affects real-time vs. post-processing capabilities, accuracy for business/career terminology, cost per minute of audio, and offline functionality."
+    },
+    {
+      "id": 3,
+      "topic": "AI/LLM Provider Strategy",
+      "sections": ["C1. No AI/LLM Provider Strategy"],
+      "question": "Should the app use cloud APIs or on-device models for AI processing?",
+      "context": "Cloud APIs offer more powerful models but require connectivity and incur per-use costs. On-device models (like Apple's on-device transcription) offer privacy benefits and offline capability but may have quality limitations. This is particularly relevant for transcription which users expect to work quickly and reliably."
+    },
+    {
+      "id": 4,
+      "topic": "AI/LLM Provider Strategy",
+      "sections": ["C1. No AI/LLM Provider Strategy", "Missing Content - Technical Architecture Section"],
+      "question": "What is the estimated token/API cost per user per month?",
+      "context": "The app involves daily journal entries (transcription + extraction), weekly brief generation, and governance sessions (conversational AI). Cost estimation is needed for pricing strategy, determining if a freemium model is viable, and setting usage limits. Consider typical user patterns: 3 entries/week, 1 weekly brief, and occasional governance sessions."
+    },
+    {
+      "id": 5,
+      "topic": "AI/LLM Provider Strategy",
+      "sections": ["C1. No AI/LLM Provider Strategy"],
+      "question": "What are the latency requirements for real-time transcription?",
+      "context": "The state machine mentions 'Transcribing (streaming or post)' suggesting live transcription may be desired. Real-time streaming transcription has different provider requirements and costs vs. post-recording batch processing. Users expect to see their words appearing as they speak for a modern voice-first experience."
+    },
+    {
+      "id": 6,
+      "topic": "AI/LLM Provider Strategy",
+      "sections": ["C1. No AI/LLM Provider Strategy", "Missing Content - Offline Behavior Section"],
+      "question": "What fallback strategies should be used when AI services are unavailable?",
+      "context": "Cloud AI services can experience outages or connectivity issues. The app needs graceful degradation - can users still record and save raw audio/text? Can they access previously generated briefs? Should there be a queue system for processing when connectivity returns?"
+    },
+    {
+      "id": 7,
+      "topic": "AI/LLM Provider Strategy",
+      "sections": ["C1. No AI/LLM Provider Strategy"],
+      "question": "What rate limiting strategy should be implemented for AI API calls?",
+      "context": "To control costs and prevent abuse, the app may need rate limiting. This interacts with the 'hard cap 3/day' for entries but other AI features (regeneration, governance sessions) may need separate limits. Consider both per-user and system-wide limits."
+    },
+    {
+      "id": 8,
+      "topic": "Data Architecture",
+      "sections": ["C2. No Data Persistence or Sync Strategy", "Missing Content - Data Architecture Section"],
+      "question": "What database technology should be used for local storage?",
+      "context": "Mobile apps typically use SQLite, Core Data (iOS), or Room (Android). The choice affects cross-platform code sharing if using React Native or Flutter. Data includes text transcripts, generated artifacts (briefs, reports), portfolio/board configuration, and bet tracking. Consider query patterns for historical data access."
+    },
+    {
+      "id": 9,
+      "topic": "Data Architecture",
+      "sections": ["C2. No Data Persistence or Sync Strategy", "Missing Content - Data Architecture Section"],
+      "question": "Will the app support multiple devices, and if so, what sync strategy should be used?",
+      "context": "Users may want to access their journal from phone and tablet. If multi-device is supported, need to define: sync protocol (custom API, CloudKit, Firebase, etc.), conflict resolution for concurrent edits, what data syncs (all entries vs. just configuration), and sync frequency."
+    },
+    {
+      "id": 10,
+      "topic": "Data Architecture",
+      "sections": ["C2. No Data Persistence or Sync Strategy", "Missing Content - Data Architecture Section"],
+      "question": "What conflict resolution approach should be used for synced data?",
+      "context": "If multi-device sync is supported, conflicts can occur when the same data is modified on different devices. Options include last-write-wins, manual conflict resolution, or operational transformation. Different data types may warrant different approaches (e.g., entries are immutable after save, but portfolio edits need conflict handling)."
+    },
+    {
+      "id": 11,
+      "topic": "Data Architecture",
+      "sections": ["C2. No Data Persistence or Sync Strategy", "Missing Content - Data Architecture Section"],
+      "question": "What data migration strategy should be used for schema changes?",
+      "context": "As the app evolves, the data schema will change. Need a versioned migration approach that handles upgrades gracefully without data loss. Consider: migration testing strategy, rollback capability, and handling migrations for users who skip multiple versions."
+    },
+    {
+      "id": 12,
+      "topic": "Data Architecture",
+      "sections": ["C2. No Data Persistence or Sync Strategy"],
+      "question": "Should the app include backup/restore functionality?",
+      "context": "Users may want to manually backup their journal data or restore from a backup. This could be local backup to files, cloud backup, or export/import. Consider interaction with the existing 'markdown export' feature and 'delete everything' setting."
+    },
+    {
+      "id": 13,
+      "topic": "Data Architecture",
+      "sections": ["C2. No Data Persistence or Sync Strategy", "Missing Content - Data Architecture Section"],
+      "question": "What are the maximum storage limits per user?",
+      "context": "Text transcripts and generated artifacts accumulate over time. Need to define: maximum entries stored, maximum storage in MB, retention policy for old data, and user notification when approaching limits. Consider that a year of daily use could generate significant data."
+    },
+    {
+      "id": 14,
+      "topic": "Privacy and Compliance",
+      "sections": ["C3. Privacy Policy Content Not Provided"],
+      "question": "Will user data ever be used to train AI models?",
+      "context": "Users need explicit assurance about AI training data usage. This affects provider selection (some providers use API data for training by default), contract negotiations with AI providers, and privacy policy wording. Career/professional journal content is highly sensitive."
+    },
+    {
+      "id": 15,
+      "topic": "Privacy and Compliance",
+      "sections": ["C3. Privacy Policy Content Not Provided"],
+      "question": "What is the third-party data sharing policy?",
+      "context": "Need to document what data is shared with: AI providers (transcription, LLM), analytics services, crash reporting, authentication providers. Users need transparency about where their career reflections are being processed."
+    },
+    {
+      "id": 16,
+      "topic": "Privacy and Compliance",
+      "sections": ["C3. Privacy Policy Content Not Provided"],
+      "question": "What are the data retention periods for different data types?",
+      "context": "Different data types may have different retention needs: audio (deleted after transcription per PRD), transcripts (permanent?), generated briefs (permanent?), deleted entries (hard delete vs. soft delete). GDPR requires defined retention periods."
+    },
+    {
+      "id": 17,
+      "topic": "Privacy and Compliance",
+      "sections": ["C3. Privacy Policy Content Not Provided"],
+      "question": "What user data export rights will be provided?",
+      "context": "GDPR requires data portability. Currently the PRD mentions markdown export for briefs/governance outputs. Need to clarify: can users export all their data? What format? Does this include raw transcripts, extracted signals, portfolio history?"
+    },
+    {
+      "id": 18,
+      "topic": "Privacy and Compliance",
+      "sections": ["C3. Privacy Policy Content Not Provided"],
+      "question": "What jurisdiction and data residency requirements apply?",
+      "context": "Where is user data stored and processed? This affects GDPR compliance (EU data residency), choice of cloud providers and regions, and terms of service. Particularly relevant if targeting enterprise users with data sovereignty requirements."
+    },
+    {
+      "id": 19,
+      "topic": "Board Role System",
+      "sections": ["H1. Board Role Count Inconsistency"],
+      "question": "How should board role count be consistently described throughout documentation?",
+      "context": "The document sometimes says '7 board roles' and other times '5-7'. The math is correct (5 core + 0-2 growth = 5-7 total), but inconsistent language causes confusion. Recommendation is to standardize on: '5 core roles (always active) + 2 growth roles (conditional on appreciating problems)'. This is a documentation cleanup task."
+    },
+    {
+      "id": 20,
+      "topic": "Error Handling",
+      "sections": ["H2. No Error Handling Patterns"],
+      "question": "What errors should trigger the 'Error / Recovery' state in each workflow?",
+      "context": "Each state machine mentions an Error/Recovery state but doesn't define triggers. Common errors include: network failures during transcription, AI service errors, storage failures, authentication expiry. Need to categorize by: recoverable vs. fatal, user action required vs. automatic retry."
+    },
+    {
+      "id": 21,
+      "topic": "Error Handling",
+      "sections": ["H2. No Error Handling Patterns"],
+      "question": "What recovery procedures should be implemented for each error type?",
+      "context": "Different errors need different recovery paths. Network errors might retry automatically. AI service errors might queue for later processing. Storage errors might need user intervention. Define: retry counts, backoff strategy, user notification triggers, and data preservation guarantees."
+    },
+    {
+      "id": 22,
+      "topic": "Error Handling",
+      "sections": ["H2. No Error Handling Patterns"],
+      "question": "What user-facing error messages should be shown for each error type?",
+      "context": "Error messages should be helpful without being technical. Need to define: message copy for common errors, whether to show retry options, how to communicate degraded functionality, and when to suggest contacting support."
+    },
+    {
+      "id": 23,
+      "topic": "Error Handling",
+      "sections": ["H2. No Error Handling Patterns"],
+      "question": "How should data be preserved during errors to enable recovery?",
+      "context": "If transcription fails, is the audio preserved? If brief generation fails, are the source entries still accessible? Define: what data is saved at each state transition, how to resume from interrupted states, and cleanup of partial/orphaned data."
+    },
+    {
+      "id": 24,
+      "topic": "Backend Architecture",
+      "sections": ["H3. No API/Backend Specification", "Missing Content - Technical Architecture Section"],
+      "question": "What API endpoints and contracts are needed for the backend?",
+      "context": "The app requires: authentication endpoints, data sync endpoints (if multi-device), AI processing endpoints (or direct provider calls), and potentially analytics endpoints. Need to define: REST vs. GraphQL, request/response schemas, and error response formats."
+    },
+    {
+      "id": 25,
+      "topic": "Backend Architecture",
+      "sections": ["H3. No API/Backend Specification"],
+      "question": "How should authentication tokens be managed?",
+      "context": "OAuth providers return tokens that need secure storage and refresh handling. Define: token storage approach (keychain), refresh token flow, session timeout policy, and handling of expired sessions during active use."
+    },
+    {
+      "id": 26,
+      "topic": "Backend Architecture",
+      "sections": ["H3. No API/Backend Specification", "Missing Content - Technical Architecture Section"],
+      "question": "Should the backend use serverless or server-based architecture?",
+      "context": "Serverless (Lambda, Cloud Functions) offers cost efficiency at low scale but may have cold-start latency. Server-based offers more predictable performance. Consider: expected user volume, latency requirements for AI calls, and team expertise."
+    },
+    {
+      "id": 27,
+      "topic": "Backend Architecture",
+      "sections": ["H3. No API/Backend Specification"],
+      "question": "What API versioning strategy should be used?",
+      "context": "Mobile apps have version fragmentation - old app versions may call the API for months/years. Need: versioning scheme (URL path, header), deprecation policy, minimum supported version enforcement, and migration path for breaking changes."
+    },
+    {
+      "id": 28,
+      "topic": "Transcription",
+      "sections": ["H4. Transcription Failure Handling Incomplete"],
+      "question": "What happens to audio if transcription fails?",
+      "context": "The PRD states audio is deleted after successful transcription. But if transcription fails, should audio be: retained until retry succeeds, retained for manual re-attempt, or deleted anyway? This affects storage requirements and user ability to recover from failures."
+    },
+    {
+      "id": 29,
+      "topic": "Transcription",
+      "sections": ["H4. Transcription Failure Handling Incomplete"],
+      "question": "Should there be an optional audio retention mode for failed transcriptions?",
+      "context": "Some users might want to keep audio if transcription fails repeatedly, for manual transcription or future retry when services improve. This could be a setting or a per-failure user choice. Consider privacy implications of retaining audio."
+    },
+    {
+      "id": 30,
+      "topic": "Transcription",
+      "sections": ["H4. Transcription Failure Handling Incomplete"],
+      "question": "Can users manually type entries instead of using voice?",
+      "context": "Voice-first doesn't mean voice-only. Users in quiet environments, with speech difficulties, or facing repeated transcription failures might need a text input fallback. Define: is text entry a first-class option or emergency fallback? Does it skip the transcription state entirely?"
+    },
+    {
+      "id": 31,
+      "topic": "Transcription",
+      "sections": ["H4. Transcription Failure Handling Incomplete"],
+      "question": "How should the app differentiate between network failures and service failures for transcription?",
+      "context": "Network failures (offline, timeout) are temporary and should retry. Service failures (provider outage, quota exceeded) may need different handling. User messaging should differ: 'Check your connection' vs. 'Service temporarily unavailable'. This affects retry strategy and user expectations."
+    },
+    {
+      "id": 32,
+      "topic": "Transcription",
+      "sections": ["H4. Transcription Failure Handling Incomplete"],
+      "question": "How should partial transcription results be handled?",
+      "context": "Transcription might partially succeed (first half transcribed, then failure). Should partial results be: shown to user for manual completion, discarded and retried from start, or saved with indication of incompleteness?"
+    },
+    {
+      "id": 33,
+      "topic": "Authentication",
+      "sections": ["H5. OAuth Implementation Details Missing"],
+      "question": "What account linking strategy should be used if a user signs in with different OAuth providers?",
+      "context": "A user might sign up with Google then try to sign in with Apple. Options: treat as separate accounts, offer linking flow, use email matching for automatic linking. Each has UX and security tradeoffs. Apple specifically doesn't always share email."
+    },
+    {
+      "id": 34,
+      "topic": "Authentication",
+      "sections": ["H5. OAuth Implementation Details Missing"],
+      "question": "What session management approach should be used?",
+      "context": "Define: session duration before re-auth required, behavior when session expires mid-use, multi-device session handling (can user be logged in on multiple devices?), and forced logout capability for security incidents."
+    },
+    {
+      "id": 35,
+      "topic": "Authentication",
+      "sections": ["H5. OAuth Implementation Details Missing"],
+      "question": "How should token refresh be handled?",
+      "context": "OAuth tokens expire. Define: refresh token storage, proactive refresh (before expiry) vs. reactive (on 401), handling of refresh token expiry (full re-auth required), and user experience during refresh."
+    },
+    {
+      "id": 36,
+      "topic": "Authentication",
+      "sections": ["H5. OAuth Implementation Details Missing"],
+      "question": "What is the account deletion flow implementation?",
+      "context": "App Store requires account deletion capability. Define: in-app deletion request flow, data deletion timeline (immediate vs. grace period), confirmation requirements, what data is actually deleted vs. anonymized, and whether deletion is reversible."
+    },
+    {
+      "id": 37,
+      "topic": "Authentication",
+      "sections": ["H5. OAuth Implementation Details Missing"],
+      "question": "Can users migrate between authentication providers?",
+      "context": "A user using Google might want to switch to Apple for privacy reasons. Define: is migration supported, what's the flow (link new provider, then unlink old?), and are there any risks of account loss?"
+    },
+    {
+      "id": 38,
+      "topic": "Governance Workflows",
+      "sections": ["H6. Sensitivity Gate Undefined"],
+      "question": "What does the 'Sensitivity Gate' check for in governance workflows?",
+      "context": "State 0 in Quick Version, Setup, and Quarterly workflows is 'Sensitivity Gate' but it's never defined. Possibilities: checking for sensitive content in previous entries, prompting user to consider privacy before proceeding, or enabling abstraction mode. This gate runs before the main workflow begins."
+    },
+    {
+      "id": 39,
+      "topic": "Governance Workflows",
+      "sections": ["H6. Sensitivity Gate Undefined"],
+      "question": "What triggers a sensitivity flag in the Sensitivity Gate?",
+      "context": "Need to define what conditions activate this gate: user preference setting, detection of sensitive keywords in recent entries, time since last privacy review, or always shown as a reminder. This affects UX flow and whether the gate can be bypassed."
+    },
+    {
+      "id": 40,
+      "topic": "Governance Workflows",
+      "sections": ["H6. Sensitivity Gate Undefined"],
+      "question": "What is the user flow when sensitivity is detected?",
+      "context": "When the sensitivity gate triggers, what happens? Options: informational warning then proceed, offer to enable abstraction mode, require explicit acknowledgment, or block the workflow until settings are reviewed. Define the UI and required user actions."
+    },
+    {
+      "id": 41,
+      "topic": "Governance Workflows",
+      "sections": ["H6. Sensitivity Gate Undefined"],
+      "question": "How does the Sensitivity Gate relate to the 'abstracted' mode mentioned elsewhere?",
+      "context": "Section 6.4 mentions 'user can mark a session abstracted' with automatic name/email stripping. Is the Sensitivity Gate the entry point to enable this? Is abstraction all-or-nothing or can users select which entities to abstract? Define the relationship between these features."
+    },
+    {
+      "id": 42,
+      "topic": "Weekly Brief",
+      "sections": ["H7. Weekly Brief 'Micro-Review' Undefined"],
+      "question": "What content should be included in the 'Board Micro-Review' section of the weekly brief?",
+      "context": "The weekly brief optionally includes a 'Board Micro-Review' but its content is never defined. How does this differ from the full quarterly report? Is it a preview of what the board would ask? A summary of portfolio health? Quick feedback from each role? Define the purpose and format."
+    },
+    {
+      "id": 43,
+      "topic": "Weekly Brief",
+      "sections": ["H7. Weekly Brief 'Micro-Review' Undefined"],
+      "question": "When and why would users want the Board Micro-Review vs. skipping it?",
+      "context": "The micro-review is 'optional' but no guidance on when it's valuable. Is it for users preparing for a real board meeting? For those who want weekly accountability? For users who haven't done a quarterly recently? Define the use case to help users decide."
+    },
+    {
+      "id": 44,
+      "topic": "Weekly Brief",
+      "sections": ["H7. Weekly Brief 'Micro-Review' Undefined"],
+      "question": "What are the format and length constraints for the Board Micro-Review?",
+      "context": "The main brief has strict caps (3 bullets per section, etc.). Does the micro-review have similar constraints? Should it fit on the same page as the brief or be a separate view? Define length limits and structural requirements."
+    },
+    {
+      "id": 45,
+      "topic": "Weekly Brief",
+      "sections": ["H7. Weekly Brief 'Micro-Review' Undefined"],
+      "question": "Should the Board Micro-Review be removed from MVP scope?",
+      "context": "Given the undefined nature of this feature, it may be better to defer to post-MVP. The assessment recommends either defining it fully or removing it. This is a scope decision that affects development effort."
+    },
+    {
+      "id": 46,
+      "topic": "Transcription",
+      "sections": ["M1. 'Streaming or Post' Transcription Ambiguity"],
+      "question": "Should MVP use streaming transcription or post-recording batch processing?",
+      "context": "The state machine says 'Transcribing (streaming or post)' without specifying when each is used. Streaming shows words as user speaks (better UX) but is more complex and expensive. Batch processing is simpler but user waits after recording. Recommend picking one for MVP."
+    },
+    {
+      "id": 47,
+      "topic": "Transcription",
+      "sections": ["M1. 'Streaming or Post' Transcription Ambiguity"],
+      "question": "What are the user experience differences between streaming and batch transcription?",
+      "context": "If both approaches are kept, need to define: when streaming is used vs. batch (based on audio length? user setting?), UI differences (live text vs. spinner), and whether users can switch between modes."
+    },
+    {
+      "id": 48,
+      "topic": "Portfolio Setup",
+      "sections": ["M2. Time Allocation Validation Rules Unclear"],
+      "question": "What is the acceptable range for 'approximately 100%' time allocation?",
+      "context": "The PRD says time allocations should sum to 'approximately 100%' but doesn't define the tolerance. Is 95-105% acceptable? 90-110%? This affects validation logic and user feedback. Users may have difficulty getting exactly 100% with 3-5 problems."
+    },
+    {
+      "id": 49,
+      "topic": "Portfolio Setup",
+      "sections": ["M2. Time Allocation Validation Rules Unclear"],
+      "question": "What error handling should occur if time allocation sum is outside the acceptable range?",
+      "context": "If user's allocations sum to 85% or 120%, what happens? Options: block progression with error, show warning but allow continuation, auto-normalize the values, or highlight the discrepancy for user correction. Define the validation behavior."
+    },
+    {
+      "id": 50,
+      "topic": "Portfolio Setup",
+      "sections": ["M2. Time Allocation Validation Rules Unclear"],
+      "question": "How should time allocation percentages be displayed and rounded?",
+      "context": "Should percentages show decimals or only whole numbers? If user enters values that don't sum to 100%, how is the display rounded? Consider: entry UI (slider vs. text input), display precision, and sum display."
+    },
+    {
+      "id": 51,
+      "topic": "Signal Extraction",
+      "sections": ["M3. Extracted Signals Definition Incomplete"],
+      "question": "What is the authoritative list of extracted signals from daily entries?",
+      "context": "The PRD has two different lists: 'wins, blockers, risks, avoided decision, comfort work' (line 196) and 'wins/blockers/risks/avoided decision/comfort work/actions' (line 423). Does 'actions' belong in the list? Need a single canonical definition with descriptions of each signal type."
+    },
+    {
+      "id": 52,
+      "topic": "Signal Extraction",
+      "sections": ["M3. Extracted Signals Definition Incomplete"],
+      "question": "What is the definition of each extracted signal type?",
+      "context": "While some terms are self-explanatory, others need definition for consistent extraction. 'Comfort work' especially needs definition. 'Blockers' vs. 'risks' distinction should be clarified. 'Actions' (if included) - are these commitments or completed items? Define each for AI extraction prompts."
+    },
+    {
+      "id": 53,
+      "topic": "Board Personas",
+      "sections": ["M4. Board Persona Customization Scope Unclear"],
+      "question": "What fields of board personas can users edit in Settings?",
+      "context": "The PRD mentions users can edit 'persona names and profiles' but doesn't specify scope. Can they change: name only, background story, communication style, signature phrases, or the entire persona? Can they change the role's function or just its presentation?"
+    },
+    {
+      "id": 54,
+      "topic": "Board Personas",
+      "sections": ["M4. Board Persona Customization Scope Unclear"],
+      "question": "Can users completely replace a default persona with a custom one?",
+      "context": "The default personas have specific backgrounds and styles. Can a user replace 'Maya Chen' entirely with a persona based on a real mentor or public figure? Or are edits limited to tweaks of the generated persona? Consider: copyright issues with real people, appropriateness guidelines."
+    },
+    {
+      "id": 55,
+      "topic": "Board Personas",
+      "sections": ["M4. Board Persona Customization Scope Unclear"],
+      "question": "Can users reset personas to defaults after customization?",
+      "context": "If a user customizes a persona and later wants to revert, is there a 'reset to default' option? Should this reset just one persona or all? Does reset regenerate the AI default or restore the original generated values?"
+    },
+    {
+      "id": 56,
+      "topic": "Board Personas",
+      "sections": ["M4. Board Persona Customization Scope Unclear"],
+      "question": "What are the character/length limits for persona customization fields?",
+      "context": "If users can edit persona profiles, need limits to prevent: extremely long profiles that bloat prompts, inappropriate content, or empty values. Define max lengths for name, background, style description, and signature phrases."
+    },
+    {
+      "id": 57,
+      "topic": "Weekly Brief",
+      "sections": ["M5. Weekly Brief 'Regen Options' Implementation Unclear"],
+      "question": "Are the regeneration options ('shorter', 'more actionable', 'more strategic') mutually exclusive?",
+      "context": "Can a user request a brief that is both shorter AND more actionable? Or must they pick one? This affects UI design (radio buttons vs. checkboxes) and prompt construction. If combinable, are all combinations valid?"
+    },
+    {
+      "id": 58,
+      "topic": "Weekly Brief",
+      "sections": ["M5. Weekly Brief 'Regen Options' Implementation Unclear"],
+      "question": "How many times can a user regenerate the weekly brief?",
+      "context": "Regeneration uses AI tokens. Should there be a limit per brief? Per week? Unlimited? Consider: cost control, user experience (analysis paralysis), and whether edits persist across regenerations. The PRD says 'edits should persist' suggesting multiple regens are expected."
+    },
+    {
+      "id": 59,
+      "topic": "Weekly Brief",
+      "sections": ["M5. Weekly Brief 'Regen Options' Implementation Unclear"],
+      "question": "What does each regeneration option actually change in the AI prompt?",
+      "context": "For implementation, need to define how 'shorter', 'more actionable', and 'more strategic' modify the generation prompt. Does 'shorter' reduce bullet caps? Does 'actionable' emphasize next steps? Does 'strategic' focus on long-term patterns? Define the prompt modifications."
+    },
+    {
+      "id": 60,
+      "topic": "Glossary",
+      "sections": ["M6. 'Comfort Work' Definition Missing", "Missing Content - Glossary"],
+      "question": "What is the definition of 'comfort work' in the context of this app?",
+      "context": "The term 'comfort work' is used throughout the PRD as something to identify and track, but it's never defined. Users need to understand what qualifies as comfort work to accurately report it. Likely meaning: tasks that feel productive but don't advance important goals - but this should be explicit."
+    },
+    {
+      "id": 61,
+      "topic": "Glossary",
+      "sections": ["M6. 'Comfort Work' Definition Missing", "Missing Content - Glossary"],
+      "question": "What is the definition of 'receipts' in the context of this app?",
+      "context": "The term 'receipts' appears as 'receipts-based career governance' and 'receipts over rhetoric'. The EvidenceItem section partially explains this but a clear glossary definition would help users understand the app's philosophy around evidence and accountability."
+    },
+    {
+      "id": 62,
+      "topic": "Glossary",
+      "sections": ["M6. 'Comfort Work' Definition Missing", "Missing Content - Glossary"],
+      "question": "What is the definition of 'appreciating' vs 'depreciating' problems?",
+      "context": "Problems are classified by direction but the criteria should be defined for users. The direction questions (AI cheaper? Error cost? Trust required?) help determine this, but a plain-language definition of what appreciating/depreciating means for career value would help users understand the framework."
+    },
+    {
+      "id": 63,
+      "topic": "Glossary",
+      "sections": ["M6. 'Comfort Work' Definition Missing", "Missing Content - Glossary"],
+      "question": "What is the definition of 'anchored demand' for board roles?",
+      "context": "Each board role has an 'anchored demand' but this term isn't defined. From context it appears to be a specific question tied to a specific problem, but users configuring or understanding their board need a clear definition."
+    },
+    {
+      "id": 64,
+      "topic": "Timezone Handling",
+      "sections": ["M7. Device Timezone Handling Incomplete"],
+      "question": "What happens to weekly brief timing if a user travels across timezones?",
+      "context": "Weekly brief auto-generates Sunday 8pm local time. If user is in NYC (8pm) and travels to LA (now 5pm), does the brief generate at 5pm LA time (when it's 8pm in NYC) or wait until 8pm LA time? This affects when users see their brief while traveling."
+    },
+    {
+      "id": 65,
+      "topic": "Timezone Handling",
+      "sections": ["M7. Device Timezone Handling Incomplete"],
+      "question": "What happens if the device timezone changes mid-week?",
+      "context": "If device timezone changes on Wednesday, does it affect: the week boundary calculation (Mon-Sun), which entries belong to which week, or just the brief generation time? Define how timezone changes are handled for data integrity."
+    },
+    {
+      "id": 66,
+      "topic": "Timezone Handling",
+      "sections": ["M7. Device Timezone Handling Incomplete"],
+      "question": "When is the America/New_York default timezone used?",
+      "context": "The PRD says 'America/New_York default' but doesn't clarify when this applies. Is it: when device timezone can't be determined, when user hasn't granted location permission, for new users until they set preference, or never actually used? Clarify the fallback conditions."
+    },
+    {
+      "id": 67,
+      "topic": "Portfolio Versioning",
+      "sections": ["M8. Portfolio Version Management Unclear"],
+      "question": "Is portfolio version history preserved?",
+      "context": "The ProblemPortfolio object has 'version, updatedAt' fields suggesting versioning. Is the history of changes preserved? This would allow: viewing how portfolio evolved, understanding when problems were reclassified, and potentially restoring previous versions."
+    },
+    {
+      "id": 68,
+      "topic": "Portfolio Versioning",
+      "sections": ["M8. Portfolio Version Management Unclear"],
+      "question": "Can users view and restore previous portfolio versions?",
+      "context": "If version history is preserved, should users be able to: view previous versions read-only, compare versions, or restore a previous version? This adds complexity but could be valuable for users who accidentally make unwanted changes."
+    },
+    {
+      "id": 69,
+      "topic": "Portfolio Versioning",
+      "sections": ["M8. Portfolio Version Management Unclear"],
+      "question": "How do portfolio version changes affect board role anchoring?",
+      "context": "Board roles are anchored to specific problems. If a problem is removed or significantly changed, what happens to the anchored role? Does the role get re-anchored automatically, flagged for user attention, or become orphaned? Define the cascading effects of portfolio changes."
+    },
+    {
+      "id": 70,
+      "topic": "Bet Tracking",
+      "sections": ["M9. Bet Status Values Undefined"],
+      "question": "What are the valid status values for bets?",
+      "context": "The Bet object has a 'status' field but valid values aren't defined. Likely statuses: Open/Pending (awaiting evaluation), Verified Correct (prediction came true), Verified Wrong (prediction failed), Expired (due date passed without evaluation). Define the enum values explicitly."
+    },
+    {
+      "id": 71,
+      "topic": "Bet Tracking",
+      "sections": ["M9. Bet Status Values Undefined"],
+      "question": "What are the status transition rules for bets?",
+      "context": "Once statuses are defined, need transition rules: Can a verified bet be changed? What happens at due date if not evaluated? Can expired bets be retroactively evaluated? Who/what triggers transitions - user action, quarterly review, or automatic?"
+    },
+    {
+      "id": 72,
+      "topic": "Bet Tracking",
+      "sections": ["M9. Bet Status Values Undefined"],
+      "question": "What happens when a bet's 90-day due date passes without evaluation?",
+      "context": "Bets have a 90-day due date. If the quarterly review doesn't happen or user doesn't evaluate the bet, what status does it get? Is there a grace period? Does it auto-expire? Is user prompted to evaluate overdue bets?"
+    },
+    {
+      "id": 73,
+      "topic": "Configuration",
+      "sections": ["L2. Silence Timeout Left as [NEED INPUT]"],
+      "question": "What should the default silence timeout be for voice recording?",
+      "context": "The PRD assumes 8 seconds but marks this as needing confirmation. The timeout determines when recording auto-stops after the user stops speaking. Too short (3s) might cut off pauses; too long (15s) wastes time. Consider natural speech patterns and the journal entry use case."
+    },
+    {
+      "id": 74,
+      "topic": "UX Decisions",
+      "sections": ["L3. Skip Vagueness Gate Decision Pending"],
+      "question": "Should users be allowed to skip the vagueness gate with a two-step confirmation?",
+      "context": "The PRD suggests allowing skip but recording 'refused example'. This trades off: enforcing quality reflections vs. respecting user autonomy. If allowed, the two-step skip (confirm twice) reduces accidental skips. Define the exact flow and what's recorded when users skip."
+    },
+    {
+      "id": 75,
+      "topic": "Cross-Platform",
+      "sections": ["L4. Export 'Share Sheet' Platform Specificity"],
+      "question": "How should the export/sharing feature be described and implemented cross-platform?",
+      "context": "The PRD uses 'share sheet' (iOS terminology) but the app targets both iOS and Android. Android uses 'share intent'. Should documentation use platform-neutral language like 'system share dialog'? Should implementation differ between platforms?"
+    },
+    {
+      "id": 76,
+      "topic": "Content Length",
+      "sections": ["L5. 'One-Page' Brief Definition"],
+      "question": "What specific length constraint should replace 'one-page' for the weekly brief?",
+      "context": "'One-page' is ambiguous - page size varies by font, screen, and format. Recommend replacing with a word count (e.g., 'max 500 words') or character count. This makes the constraint measurable and enforceable by the validator. Consider what length feels appropriately 'executive summary' without being too terse."
+    },
+    {
+      "id": 77,
+      "topic": "Terminology",
+      "sections": ["L6. Quarterly Report vs. Board Report Terminology"],
+      "question": "Should the document use 'Quarterly Board Report' or 'Quarterly Report' consistently?",
+      "context": "The document uses both terms interchangeably. For clarity and searchability, pick one and use it throughout. 'Quarterly Board Report' is more descriptive and aligns with the board governance concept. This is a documentation cleanup task."
+    },
+    {
+      "id": 78,
+      "topic": "Security",
+      "sections": ["Missing Content - Security Section"],
+      "question": "What encryption approach should be used for data at rest?",
+      "context": "Career journal data is sensitive. Define: encryption standard for local storage, key management approach, and whether to use platform encryption (iOS Keychain, Android Keystore) or application-level encryption. This affects both mobile storage and any cloud storage."
+    },
+    {
+      "id": 79,
+      "topic": "Security",
+      "sections": ["Missing Content - Security Section"],
+      "question": "What encryption approach should be used for data in transit?",
+      "context": "All API communications should use TLS, but need to specify: minimum TLS version, certificate pinning requirements, and handling of man-in-the-middle scenarios. Particularly important for AI API calls containing user content."
+    },
+    {
+      "id": 80,
+      "topic": "Security",
+      "sections": ["Missing Content - Security Section"],
+      "question": "What API security measures should be implemented?",
+      "context": "Define: API authentication method (API keys, JWT), request signing, rate limiting for abuse prevention, and input validation requirements. Consider both the app's backend API and calls to third-party AI providers."
+    },
+    {
+      "id": 81,
+      "topic": "Security",
+      "sections": ["Missing Content - Security Section"],
+      "question": "What audit logging should be implemented?",
+      "context": "For security and compliance, what events should be logged: login attempts, data access, data deletion, API errors? Where are logs stored? What's the retention period? Are logs available to users or admin only?"
+    },
+    {
+      "id": 82,
+      "topic": "Offline Behavior",
+      "sections": ["Missing Content - Offline Behavior Section"],
+      "question": "Which features should work offline?",
+      "context": "The app is mobile-first and users may have intermittent connectivity. Define which features work offline: voice recording (yes, then sync), viewing past entries (cached), creating new entries (queued), generating briefs (no, requires AI). This affects architecture and user expectations."
+    },
+    {
+      "id": 83,
+      "topic": "Offline Behavior",
+      "sections": ["Missing Content - Offline Behavior Section"],
+      "question": "How should data sync when connectivity returns?",
+      "context": "If users create entries offline, how are they synced? Define: sync triggering (automatic vs. manual), conflict handling for concurrent changes, sync status UI, and error handling for sync failures."
+    },
+    {
+      "id": 84,
+      "topic": "Testing",
+      "sections": ["Missing Content - Testing Strategy Section"],
+      "question": "What unit test requirements should be defined?",
+      "context": "Define: minimum code coverage targets, which components require unit tests, mocking strategy for AI services, and test framework choices. This ensures quality and enables confident refactoring."
+    },
+    {
+      "id": 85,
+      "topic": "Testing",
+      "sections": ["Missing Content - Testing Strategy Section"],
+      "question": "How should AI outputs be validated in tests?",
+      "context": "AI outputs are non-deterministic, making testing challenging. Define: approaches for testing extraction accuracy (golden sets), testing prompt effectiveness, regression testing for prompt changes, and acceptable variation thresholds."
+    },
+    {
+      "id": 86,
+      "topic": "Analytics",
+      "sections": ["Missing Content - Analytics/Telemetry Section"],
+      "question": "What usage analytics should be collected?",
+      "context": "Analytics inform product decisions but must balance with privacy commitments. Define: what events to track (entry creation, feature usage, errors), what metadata is included, whether analytics are opt-in/opt-out, and analytics provider choice."
+    },
+    {
+      "id": 87,
+      "topic": "Analytics",
+      "sections": ["Missing Content - Analytics/Telemetry Section"],
+      "question": "What key metrics should be tracked for product health?",
+      "context": "Define: engagement metrics (DAU/WAU, entries per user), retention metrics (weekly brief generation rate), quality metrics (transcription accuracy, extraction precision), and business metrics (conversion, churn). These inform product iteration."
+    },
+    {
+      "id": 88,
+      "topic": "Accessibility",
+      "sections": ["Missing Content - Accessibility Requirements"],
+      "question": "What VoiceOver/TalkBack screen reader support is required?",
+      "context": "For an app about voice journaling, accessibility is important. Define: which screens need full accessibility support, how voice recording interacts with screen readers, and testing requirements for accessibility compliance."
+    },
+    {
+      "id": 89,
+      "topic": "Accessibility",
+      "sections": ["Missing Content - Accessibility Requirements"],
+      "question": "What color contrast requirements apply?",
+      "context": "WCAG guidelines specify contrast ratios for text. Define: minimum contrast ratio (AA or AAA), how this applies to the app's design system, and whether a high-contrast mode is needed."
+    },
+    {
+      "id": 90,
+      "topic": "Accessibility",
+      "sections": ["Missing Content - Accessibility Requirements"],
+      "question": "What alternative input methods should be supported beyond voice?",
+      "context": "Voice-first shouldn't exclude users who can't use voice. Define: keyboard/switch access support, alternative to voice recording (text entry), and whether external keyboard support is needed on mobile."
+    }
+  ],
+  "metadata": {
+    "source_document": "PRD-assessment-20260110-150500.md",
+    "original_source": "PRD.md v3 (January 9, 2026)",
+    "total_questions": 90,
+    "generated_date": "2026-01-10T15:10:00Z",
+    "topics_summary": [
+      "AI/LLM Provider Strategy",
+      "Data Architecture",
+      "Privacy and Compliance",
+      "Board Role System",
+      "Error Handling",
+      "Backend Architecture",
+      "Transcription",
+      "Authentication",
+      "Governance Workflows",
+      "Weekly Brief",
+      "Portfolio Setup",
+      "Signal Extraction",
+      "Board Personas",
+      "Glossary",
+      "Timezone Handling",
+      "Portfolio Versioning",
+      "Bet Tracking",
+      "Configuration",
+      "UX Decisions",
+      "Cross-Platform",
+      "Content Length",
+      "Terminology",
+      "Security",
+      "Offline Behavior",
+      "Testing",
+      "Analytics",
+      "Accessibility"
+    ]
+  }
+}
