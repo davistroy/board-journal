@@ -254,9 +254,9 @@ dart run build_runner watch
 
 ## Documentation
 
-- **PRD.md** — Full product requirements (v5)
-- **Prompt Templates** — LLM prompts (created during development)
-- **Brand Guide** — Visual identity (created during design)
+- **[PROGRESS.md](PROGRESS.md)** — Development progress and completed milestones
+- **[PRD.md](PRD.md)** — Full product requirements (v5)
+- **[CLAUDE.md](CLAUDE.md)** — Development guidelines for Claude Code
 
 ---
 
