@@ -2,9 +2,9 @@
 
 This document tracks the implementation progress of Boardroom Journal.
 
-## Current Status: Foundation Complete
+## Current Status: Core Entry Flow Complete
 
-The data layer, state management, and navigation foundation are complete. The app has a working Home screen with real data. Screen scaffolds are in place for all major features.
+The data layer, state management, navigation, and core entry flow are complete. Users can create text entries, view them, edit transcripts, and delete entries. The app has a working Home screen with real data.
 
 ---
 
@@ -142,8 +142,8 @@ totalEntryCountProvider         // Entry count for stats
 | Screen | Status | Notes |
 |--------|--------|-------|
 | HomeScreen | **Complete** | Real data, all CTAs working |
-| RecordEntryScreen | Scaffold | Buttons only, needs state machine |
-| EntryReviewScreen | Scaffold | Needs transcript editor |
+| RecordEntryScreen | **Complete** | Text entry with word count, voice placeholder |
+| EntryReviewScreen | **Complete** | View, edit, delete entries |
 | WeeklyBriefViewerScreen | Scaffold | Export menu stubbed |
 | GovernanceHubScreen | Scaffold | Tab structure with 3 tabs |
 | QuickVersionScreen | Scaffold | 5-question list shown |
@@ -151,6 +151,41 @@ totalEntryCountProvider         // Entry count for stats
 | QuarterlyScreen | Scaffold | 8-section list shown |
 | SettingsScreen | Scaffold | Full UI structure, all sections |
 | HistoryScreen | Partial | Entry list works, needs briefs + pagination |
+
+### 8. Text Entry Flow Implementation
+**PR #11** - Core daily entry functionality
+
+**Record Entry Screen:**
+- Mode selection (Voice placeholder / Text entry)
+- Full text entry UI with:
+  - Real-time word count display
+  - Warning at 6,500+ words (approaching limit)
+  - Error state at 7,500+ words (over limit)
+  - Discard confirmation dialog
+  - Save button with loading state
+- Riverpod state management (`TextEntryNotifier`)
+- Saves to database via `DailyEntryRepository`
+- Navigates to Entry Review after save
+
+**Entry Review Screen:**
+- Fetches entry by ID with `entryByIdProvider`
+- Read mode with:
+  - Entry metadata (type, date, word count, duration)
+  - Selectable transcript display
+  - Extracted signals placeholder (AI coming soon)
+- Edit mode with:
+  - Full transcript editing
+  - Real-time word count
+  - Unsaved changes detection
+  - Save/Discard/Cancel dialog
+- Delete with confirmation (soft delete, 30-day retention)
+- Back navigation with unsaved changes handling
+
+**Features per PRD:**
+- Text entry as first-class alternative to voice
+- Entries editable indefinitely (no time-based locking)
+- Soft delete with 30-day retention before hard delete
+- Word count limits (soft cap at 7,500 words)
 
 ---
 
@@ -214,35 +249,34 @@ totalEntryCountProvider         // Entry count for stats
 
 | Category | Count | Lines of Code |
 |----------|-------|---------------|
-| Source Files | 45 | ~5,500 |
+| Source Files | 45 | ~6,500 |
 | Test Files | 7 | ~1,800 |
-| Total Dart Files | 52 | ~7,300 |
+| Total Dart Files | 52 | ~8,300 |
 
 **By Layer:**
 - Data Layer: 31 files (~3,500 LOC)
 - Providers: 3 files (~300 LOC)
 - Router: 2 files (~120 LOC)
-- UI/Screens: 11 files (~1,600 LOC)
+- UI/Screens: 11 files (~2,600 LOC)
 
 ---
 
 ## What's Next
 
-### Immediate Priority: Record Entry Screen (Text-Only)
+### Immediate Priority: History Screen Enhancement
 
-Implement the daily entry flow with text input first:
-1. Entry state machine (Idle → Editing → Saving → Saved)
-2. Text input with word count
-3. Save to database via repository
-4. Navigation to Entry Review
+Complete the history view with combined entry/brief list:
+1. Combine entries and briefs in chronological view
+2. Add type indicators and preview text
+3. Implement pagination for performance
+4. Add pull-to-refresh
 
 ### Subsequent Steps:
-1. Entry Review Screen - Transcript editing
-2. History Screen - Combined entry/brief list with pagination
-3. Voice Recording - Audio capture + Deepgram integration
-4. Signal Extraction - Claude Sonnet integration
-5. Weekly Brief Generation - Scheduled + on-demand
-6. Governance State Machines - Quick/Setup/Quarterly
+1. Voice Recording - Audio capture + Deepgram integration
+2. Signal Extraction - Claude Sonnet integration for 7 signal types
+3. Weekly Brief Generation - Scheduled (Sunday 8pm) + on-demand
+4. Governance State Machines - Quick/Setup/Quarterly runners
+5. Settings Implementation - All settings sections functional
 
 ---
 
