@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'router/router.dart';
 
 void main() {
-  runApp(const BoardroomJournalApp());
+  runApp(
+    const ProviderScope(
+      child: BoardroomJournalApp(),
+    ),
+  );
 }
 
 class BoardroomJournalApp extends StatelessWidget {
@@ -9,7 +16,9 @@ class BoardroomJournalApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    final router = createRouter();
+
+    return MaterialApp.router(
       title: 'Boardroom Journal',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
@@ -23,11 +32,7 @@ class BoardroomJournalApp extends StatelessWidget {
         useMaterial3: true,
       ),
       themeMode: ThemeMode.system, // Follow system setting per PRD
-      home: const Scaffold(
-        body: Center(
-          child: Text('Boardroom Journal'),
-        ),
-      ),
+      routerConfig: router,
     );
   }
 }
