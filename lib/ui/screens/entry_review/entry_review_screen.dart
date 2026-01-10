@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../../data/data.dart';
 import '../../../providers/providers.dart';
 import '../../../router/router.dart';
+import '../../../services/ai/ai.dart';
+import '../../widgets/widgets.dart';
 
 /// Provider for fetching a single entry by ID.
 final entryByIdProvider =
@@ -271,14 +275,21 @@ class _EntryReviewScreenState extends ConsumerState<EntryReviewScreen> {
   }
 }
 
+/// Provider for re-extraction state for a specific entry.
+final reExtractionProvider =
+    StateProvider.family.autoDispose<bool, String>((ref, entryId) => false);
+
 /// Read-only view of the entry.
-class _ReadView extends StatelessWidget {
+class _ReadView extends ConsumerWidget {
   const _ReadView({required this.entry});
 
   final DailyEntry entry;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isExtracting = ref.watch(reExtractionProvider(entry.id));
+    final signals = _parseSignals(entry.extractedSignalsJson);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -372,56 +383,71 @@ class _ReadView extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // Extracted Signals (placeholder)
-          Text(
-            'Extracted Signals',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outlineVariant,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.auto_awesome,
-                      size: 20,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'AI signal extraction coming soon',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Signals will be automatically extracted: wins, blockers, '
-                  'risks, avoided decisions, comfort work, actions, and learnings.',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                ),
-              ],
-            ),
+          // Extracted Signals
+          SignalListWidget(
+            signals: signals,
+            isExtracting: isExtracting,
+            onReExtract: () => _handleReExtract(ref, context),
           ),
         ],
       ),
     );
+  }
+
+  ExtractedSignals _parseSignals(String signalsJson) {
+    try {
+      if (signalsJson.isEmpty || signalsJson == '{}') {
+        return const ExtractedSignals([]);
+      }
+      final json = jsonDecode(signalsJson) as Map<String, dynamic>;
+      return ExtractedSignals.fromJson(json);
+    } catch (_) {
+      return const ExtractedSignals([]);
+    }
+  }
+
+  Future<void> _handleReExtract(WidgetRef ref, BuildContext context) async {
+    final service = ref.read(signalExtractionServiceProvider);
+
+    if (service == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('AI service not configured. Please set ANTHROPIC_API_KEY.'),
+        ),
+      );
+      return;
+    }
+
+    ref.read(reExtractionProvider(entry.id).notifier).state = true;
+
+    try {
+      final signals = await service.extractSignals(entry.transcriptEdited);
+
+      if (signals.isNotEmpty) {
+        final repo = ref.read(dailyEntryRepositoryProvider);
+        final signalsJson = jsonEncode(signals.toJson());
+        await repo.updateExtractedSignals(entry.id, signalsJson);
+
+        // Refresh the entry
+        ref.invalidate(entryByIdProvider(entry.id));
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Extracted ${signals.totalCount} signals'),
+          ),
+        );
+      }
+    } on SignalExtractionError catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Extraction failed: ${e.message}')),
+        );
+      }
+    } finally {
+      ref.read(reExtractionProvider(entry.id).notifier).state = false;
+    }
   }
 
   String _formatDate(DateTime date) {

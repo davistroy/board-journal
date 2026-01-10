@@ -2,9 +2,9 @@
 
 This document tracks the implementation progress of Boardroom Journal.
 
-## Current Status: Core Entry Flow Complete
+## Current Status: AI Signal Extraction Complete
 
-The data layer, state management, navigation, and core entry flow are complete. Users can create text entries, view them, edit transcripts, and delete entries. The app has a working Home screen with real data.
+The data layer, state management, navigation, core entry flow, and AI signal extraction are complete. Users can create text entries, have signals automatically extracted via Claude API, view signals grouped by type, and manually re-extract if needed. The app has a working Home screen with real data.
 
 ---
 
@@ -187,6 +187,61 @@ totalEntryCountProvider         // Entry count for stats
 - Soft delete with 30-day retention before hard delete
 - Word count limits (soft cap at 7,500 words)
 
+### 9. AI Signal Extraction
+**PR #12** - Claude API integration for signal extraction
+
+**AI Service Layer (`lib/services/ai/`):**
+- `ClaudeClient` - API client wrapper with retry logic and error handling
+- `ClaudeConfig` - Configuration for Sonnet (daily ops) and Opus (governance)
+- `SignalExtractionService` - Extracts 7 signal types from entry text
+- `ExtractedSignal` / `ExtractedSignals` - Data models for signal storage
+
+**Signal Types (per PRD Section 9):**
+| Type | Description | Icon |
+|------|-------------|------|
+| Wins | Completed accomplishments | Trophy |
+| Blockers | Current obstacles | Block |
+| Risks | Potential future problems | Warning |
+| Avoided Decision | Decisions being put off | Hourglass |
+| Comfort Work | Tasks that feel productive but don't advance goals | Beach |
+| Actions | Forward commitments | Task |
+| Learnings | Realizations and reflections | Lightbulb |
+
+**Entry Flow Integration:**
+- Signals extracted automatically after entry save
+- Two-phase save: save entry → extract signals
+- UI shows "Saving..." then "Extracting signals..."
+- Extraction failure doesn't block entry save
+- Entry stored even if AI service unavailable
+
+**Entry Review Updates:**
+- `SignalListWidget` displays signals grouped by type
+- Color-coded sections with type-specific icons
+- Signal count badges per category
+- "Re-extract" button for manual re-extraction
+- Empty state with explanation when no signals
+
+**New Providers:**
+```dart
+aiConfigProvider              // AI configuration from environment
+claudeClientProvider          // Claude Sonnet client
+claudeOpusClientProvider      // Claude Opus client (for governance)
+signalExtractionServiceProvider // Signal extraction service
+extractionProvider            // Extraction state management
+reExtractionProvider          // Per-entry re-extraction state
+```
+
+**Features per PRD Section 3A.1:**
+- Claude Sonnet 4.5 for daily operations (signal extraction)
+- Claude Opus 4.5 configured for governance (future use)
+- Exponential backoff retry (1s, 2s, 4s)
+- Graceful error handling
+
+**Configuration:**
+- Set `ANTHROPIC_API_KEY` environment variable
+- Service degrades gracefully if not configured
+- Signals can be extracted later via re-extract button
+
 ---
 
 ## Architecture Overview
@@ -203,12 +258,21 @@ totalEntryCountProvider         // Entry count for stats
 ┌─────────────────────────────────────────────────────────┐
 │                   Riverpod Providers                     │
 │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐     │
-│  │   Stream     │ │   Future     │ │  Repository  │     │
+│  │   Stream     │ │   AI/Service │ │  Repository  │     │
 │  │  Providers   │ │  Providers   │ │  Providers   │     │
 │  └──────┬───────┘ └──────┬───────┘ └──────┬───────┘     │
 └─────────┼────────────────┼────────────────┼─────────────┘
           │                │                │
           ▼                ▼                ▼
+┌─────────────────────────────────────────────────────────┐
+│                   Service Layer                          │
+│  ┌────────────────────────────────────────────────┐     │
+│  │ AI Services (Claude API)                        │     │
+│  │  SignalExtraction │ (WeeklyBrief) │ (Governance)│     │
+│  └────────────────────────────────────────────────┘     │
+└─────────────────────────────────────────────────────────┘
+          │
+          ▼
 ┌─────────────────────────────────────────────────────────┐
 │                   Repository Layer                       │
 │  ┌────────────┐ ┌────────────┐ ┌────────────┐           │
@@ -231,7 +295,7 @@ totalEntryCountProvider         // Entry count for stats
 
 ## Test Coverage
 
-**7 Test Files (78 KB total):**
+**9 Test Files:**
 
 | Test File | Coverage |
 |-----------|----------|
@@ -242,6 +306,8 @@ totalEntryCountProvider         // Entry count for stats
 | governance_session_repository_test.dart | State machine, transcripts |
 | bet_repository_test.dart | Status transitions, expiration |
 | user_preferences_repository_test.dart | Settings, onboarding |
+| extracted_signal_test.dart | Signal models, JSON serialization |
+| signal_extraction_service_test.dart | Claude client, extraction service |
 
 ---
 
@@ -249,34 +315,34 @@ totalEntryCountProvider         // Entry count for stats
 
 | Category | Count | Lines of Code |
 |----------|-------|---------------|
-| Source Files | 45 | ~6,500 |
-| Test Files | 7 | ~1,800 |
-| Total Dart Files | 52 | ~8,300 |
+| Source Files | 53 | ~7,500 |
+| Test Files | 9 | ~2,300 |
+| Total Dart Files | 62 | ~9,800 |
 
 **By Layer:**
 - Data Layer: 31 files (~3,500 LOC)
-- Providers: 3 files (~300 LOC)
+- Services Layer: 6 files (~500 LOC)
+- Providers: 4 files (~500 LOC)
 - Router: 2 files (~120 LOC)
-- UI/Screens: 11 files (~2,600 LOC)
+- UI/Screens: 12 files (~2,900 LOC)
 
 ---
 
 ## What's Next
 
-### Immediate Priority: History Screen Enhancement
+### Immediate Priority: Weekly Brief Generation
 
-Complete the history view with combined entry/brief list:
-1. Combine entries and briefs in chronological view
-2. Add type indicators and preview text
-3. Implement pagination for performance
-4. Add pull-to-refresh
+Implement weekly brief generation using the AI service infrastructure:
+1. Create brief generation service (uses same Claude Sonnet client)
+2. Implement brief scheduling (Sunday 8pm local time)
+3. Add regeneration with modifiers (shorter/actionable/strategic)
+4. Generate board micro-review (one sentence per active role)
 
 ### Subsequent Steps:
 1. Voice Recording - Audio capture + Deepgram integration
-2. Signal Extraction - Claude Sonnet integration for 7 signal types
-3. Weekly Brief Generation - Scheduled (Sunday 8pm) + on-demand
-4. Governance State Machines - Quick/Setup/Quarterly runners
-5. Settings Implementation - All settings sections functional
+2. Governance State Machines - Quick/Setup/Quarterly runners
+3. Settings Implementation - All settings sections functional
+4. History Screen Enhancement - Combined entries + briefs
 
 ---
 
@@ -288,6 +354,7 @@ Complete the history view with combined entry/brief list:
 - go_router: ^14.2.0
 - sqlite3_flutter_libs: ^0.5.18
 - path_provider: ^2.1.1
+- http: ^1.1.0
 - uuid: ^4.2.1
 - intl: ^0.19.0
 - equatable: ^2.0.5
