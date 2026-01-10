@@ -208,6 +208,22 @@ flutter test
 flutter run
 ```
 
+### AI Configuration
+
+Signal extraction requires a Claude API key. Set the environment variable before running:
+
+```bash
+# Set API key (required for AI features)
+export ANTHROPIC_API_KEY=your-api-key-here
+
+# Then run the app
+flutter run
+```
+
+Without the API key, the app works normally but signals won't be extracted. You can:
+- Create entries and review them (signals will be empty)
+- Re-extract signals later from Entry Review when API is configured
+
 ### Project Structure
 
 ```
@@ -217,16 +233,24 @@ lib/
 │   └── router.dart           # go_router configuration
 ├── providers/
 │   ├── database_provider.dart    # Database singleton
-│   └── repository_providers.dart # Repository + stream providers
+│   ├── repository_providers.dart # Repository + stream providers
+│   └── ai_providers.dart         # AI service providers
+├── services/
+│   └── ai/                   # AI service layer
+│       ├── claude_client.dart        # Claude API client
+│       ├── signal_extraction_service.dart  # Signal extraction
+│       └── models/           # AI data models
 ├── ui/
-│   └── screens/              # App screens
-│       ├── home/             # Home screen (main hub)
-│       ├── record_entry/     # Voice/text entry capture
-│       ├── entry_review/     # Entry editing
-│       ├── weekly_brief/     # Brief viewer
-│       ├── governance/       # Governance hub + runners
-│       ├── settings/         # App settings
-│       └── history/          # Entry/report history
+│   ├── screens/              # App screens
+│   │   ├── home/             # Home screen (main hub)
+│   │   ├── record_entry/     # Voice/text entry capture
+│   │   ├── entry_review/     # Entry editing with signal display
+│   │   ├── weekly_brief/     # Brief viewer
+│   │   ├── governance/       # Governance hub + runners
+│   │   ├── settings/         # App settings
+│   │   └── history/          # Entry/report history
+│   └── widgets/              # Reusable widgets
+│       └── signal_list_widget.dart  # Signal display widget
 └── data/
     ├── data.dart             # Barrel export for data layer
     ├── database/

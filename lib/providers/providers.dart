@@ -5,5 +5,6 @@
 /// repositories and reactive data streams.
 library;
 
+export 'ai_providers.dart';
 export 'database_provider.dart';
 export 'repository_providers.dart';
