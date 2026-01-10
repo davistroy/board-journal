@@ -185,6 +185,76 @@ OAuth sign-in: Apple / Google / Microsoft (email-based account linking)
 
 Limits show usage count but do not block. Rely on user self-regulation.
 
+## Development Setup
+
+### Prerequisites
+
+- Flutter SDK 3.2.0+ ([install guide](https://docs.flutter.dev/get-started/install))
+- Dart SDK (included with Flutter)
+
+### Getting Started
+
+```bash
+# Install dependencies
+flutter pub get
+
+# Generate Drift database code
+dart run build_runner build --delete-conflicting-outputs
+
+# Run tests
+flutter test
+
+# Run the app
+flutter run
+```
+
+### Project Structure
+
+```
+lib/
+├── main.dart                 # App entry point
+└── data/
+    ├── data.dart             # Barrel export for data layer
+    ├── database/
+    │   ├── database.dart     # Drift database configuration
+    │   ├── database.g.dart   # Generated code (run build_runner)
+    │   ├── converters/       # Type converters for enums
+    │   └── tables/           # Drift table definitions
+    │       ├── daily_entries.dart
+    │       ├── weekly_briefs.dart
+    │       ├── problems.dart
+    │       ├── portfolio_health.dart
+    │       ├── portfolio_versions.dart
+    │       ├── board_members.dart
+    │       ├── governance_sessions.dart
+    │       ├── bets.dart
+    │       ├── evidence_items.dart
+    │       ├── resetup_triggers.dart
+    │       └── user_preferences.dart
+    └── enums/                # Domain enums
+        ├── signal_type.dart
+        ├── bet_status.dart
+        ├── evidence_type.dart
+        ├── board_role_type.dart
+        ├── governance_session_type.dart
+        ├── entry_type.dart
+        └── problem_direction.dart
+```
+
+### Code Generation
+
+After modifying Drift tables, regenerate the database code:
+
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+For continuous generation during development:
+
+```bash
+dart run build_runner watch
+```
+
 ## Documentation
 
 - **PRD.md** — Full product requirements (v5)
