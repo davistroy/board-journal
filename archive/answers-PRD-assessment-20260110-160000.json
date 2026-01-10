@@ -1,0 +1,827 @@
+{
+  "answers": [
+    {
+      "id": 1,
+      "topic": "AI/LLM Provider Strategy",
+      "sections": ["C1. No AI/LLM Provider Strategy", "Missing Content - Technical Architecture Section"],
+      "question": "Which LLM provider(s) will be used for the AI board members, extraction, and summarization features?",
+      "selected_answer": "Claude (Anthropic) for all LLM features. Excels at maintaining consistent personas, nuanced conversation, and following complex system prompts. Strong at 'warm-direct blunt' tone. Enterprise-grade privacy with no training on API data.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:15:00Z"
+    },
+    {
+      "id": 2,
+      "topic": "AI/LLM Provider Strategy",
+      "sections": ["C1. No AI/LLM Provider Strategy", "Missing Content - Technical Architecture Section"],
+      "question": "Which speech-to-text service will be used for voice transcription?",
+      "selected_answer": "Deepgram Nova-2. Excellent accuracy, fast real-time streaming capability, competitive pricing (~$0.0043/min), strong privacy practices, and good business vocabulary recognition.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:16:00Z"
+    },
+    {
+      "id": 3,
+      "topic": "AI/LLM Provider Strategy",
+      "sections": ["C1. No AI/LLM Provider Strategy"],
+      "question": "Should the app use cloud APIs or on-device models for AI processing?",
+      "selected_answer": "Cloud APIs primary, with offline recording queue. Users can capture voice entries offline, which queue for transcription when connectivity returns. Preserves 'capture anytime' use case without compromising AI quality.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:17:00Z"
+    },
+    {
+      "id": 4,
+      "topic": "AI/LLM Provider Strategy",
+      "sections": ["C1. No AI/LLM Provider Strategy", "Missing Content - Technical Architecture Section"],
+      "question": "What is the estimated token/API cost per user per month?",
+      "selected_answer": "Target $0.50-1.00 per active user per month (quality-first approach). Allows longer voice entries, more governance sessions, unlimited regenerations. Requires higher price point ($14.99+) or accepting lower margins. Better experience but narrower market.",
+      "answer_type": "alternative",
+      "answered_at": "2026-01-10T15:18:00Z"
+    },
+    {
+      "id": 5,
+      "topic": "AI/LLM Provider Strategy",
+      "sections": ["C1. No AI/LLM Provider Strategy"],
+      "question": "What are the latency requirements for real-time transcription?",
+      "selected_answer": "<2s batch processing after recording stops (no streaming for MVP). Simpler implementation - record audio, then transcribe. Users see a brief spinner, then full transcript appears. More reliable and easier to implement.",
+      "answer_type": "alternative",
+      "answered_at": "2026-01-10T15:19:00Z"
+    },
+    {
+      "id": 6,
+      "topic": "AI/LLM Provider Strategy",
+      "sections": ["C1. No AI/LLM Provider Strategy", "Missing Content - Offline Behavior Section"],
+      "question": "What fallback strategies should be used when AI services are unavailable?",
+      "selected_answer": "Queue-based resilience with local-first saves + OpenAI Whisper fallback if Deepgram fails repeatedly. Always save audio locally first, queue for transcription. Transcription fails: Retain audio, auto-retry Deepgram with backoff. If Deepgram fails 3+ times: Fallback to OpenAI Whisper API. LLM fails: Save raw transcript, queue AI processing. All previously generated content cached and available offline.",
+      "answer_type": "custom",
+      "answered_at": "2026-01-10T15:20:00Z"
+    },
+    {
+      "id": 7,
+      "topic": "AI/LLM Provider Strategy",
+      "sections": ["C1. No AI/LLM Provider Strategy"],
+      "question": "What rate limiting strategy should be implemented for AI API calls?",
+      "selected_answer": "Generous soft limits with usage visibility (modified limits): Entries: 10/day (updates PRD's 'hard cap 3/day'), Brief regeneration: 5 per brief, Governance sessions: 7 Quick Versions/week, 13 Setup/quarter, 13 Quarterly/quarter. System-wide circuit breaker if costs spike 3x normal. Show users their usage rather than blocking unexpectedly.",
+      "answer_type": "custom",
+      "answered_at": "2026-01-10T15:21:00Z"
+    },
+    {
+      "id": 8,
+      "topic": "Data Architecture",
+      "sections": ["C2. No Data Persistence or Sync Strategy", "Missing Content - Data Architecture Section"],
+      "question": "What database technology should be used for local storage?",
+      "selected_answer": "SQLite via cross-platform ORM (e.g., Drift/Moor for Flutter, WatermelonDB for React Native). Battle-tested, performant, works identically on iOS and Android. Cross-platform ORMs provide type safety and migration support. Works perfectly with offline-first architecture.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:22:00Z"
+    },
+    {
+      "id": 9,
+      "topic": "Data Architecture",
+      "sections": ["C2. No Data Persistence or Sync Strategy", "Missing Content - Data Architecture Section"],
+      "question": "Will the app support multiple devices, and if so, what sync strategy should be used?",
+      "selected_answer": "Yes, multi-device with custom sync API. Sync all data (entries, briefs, portfolio, bets). Use timestamp-based sync with 'last write wins' for simplicity. Sync on app launch + pull-to-refresh + after local changes.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:23:00Z"
+    },
+    {
+      "id": 10,
+      "topic": "Data Architecture",
+      "sections": ["C2. No Data Persistence or Sync Strategy", "Missing Content - Data Architecture Section"],
+      "question": "What conflict resolution approach should be used for synced data?",
+      "selected_answer": "Last-write-wins with conflict detection and notification. Detect when a conflict occurred and notify user: 'This entry was also edited on your other device. Showing most recent version.' Log the overwritten version for recovery if needed.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:24:00Z"
+    },
+    {
+      "id": 11,
+      "topic": "Data Architecture",
+      "sections": ["C2. No Data Persistence or Sync Strategy", "Missing Content - Data Architecture Section"],
+      "question": "What data migration strategy should be used for schema changes?",
+      "selected_answer": "Sequential versioned migrations with ORM support. Use ORM's built-in migration system. Each schema change gets a version number and migration script. Migrations run sequentially - v1→v2→v3→v4 even if user jumps from v1 to v4. Test migrations against production-like data before release. Never delete migrations.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:25:00Z"
+    },
+    {
+      "id": 12,
+      "topic": "Data Architecture",
+      "sections": ["C2. No Data Persistence or Sync Strategy"],
+      "question": "Should the app include backup/restore functionality?",
+      "selected_answer": "Full JSON export/import for MVP. Add 'Export All Data' (JSON file with all entries, briefs, portfolio, bets) and 'Import Data' (restore from JSON). Works across platforms, user owns their data, satisfies GDPR portability. Complements existing markdown export which is for sharing, not backup.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:26:00Z"
+    },
+    {
+      "id": 13,
+      "topic": "Data Architecture",
+      "sections": ["C2. No Data Persistence or Sync Strategy", "Missing Content - Data Architecture Section"],
+      "question": "What are the maximum storage limits per user?",
+      "selected_answer": "Generous limits, practically unlimited for text. Text data: No practical limit (cap at 100MB - supports ~80 years of use). Pending audio: Max 500MB retained for failed transcriptions, auto-delete oldest when exceeded. Entries: No count limit. No user notification unless approaching audio limit.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:27:00Z"
+    },
+    {
+      "id": 14,
+      "topic": "Privacy and Compliance",
+      "sections": ["C3. Privacy Policy Content Not Provided"],
+      "question": "Will user data ever be used to train AI models?",
+      "selected_answer": "Explicit 'never used for AI training' commitment. Commit clearly: 'Your journal entries, transcripts, and data are never used to train AI models - not by us, not by our service providers.' Include this prominently in onboarding.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:28:00Z"
+    },
+    {
+      "id": 15,
+      "topic": "Privacy and Compliance",
+      "sections": ["C3. Privacy Policy Content Not Provided"],
+      "question": "What is the third-party data sharing policy?",
+      "selected_answer": "Explicit third-party disclosure with data minimization. List each provider by name (Deepgram, Anthropic, auth providers). Specify exactly what data each receives. Commit to data minimization: only send what's necessary. No selling or sharing data for advertising - ever. Display in privacy policy AND summarize during onboarding.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:29:00Z"
+    },
+    {
+      "id": 16,
+      "topic": "Privacy and Compliance",
+      "sections": ["C3. Privacy Policy Content Not Provided"],
+      "question": "What are the data retention periods for different data types?",
+      "selected_answer": "User-controlled retention with clear deletion. Audio: Deleted immediately after successful transcription. User content (entries, briefs, portfolio): Retained indefinitely until user deletes. Deleted content: Hard delete within 30 days (soft delete for 30-day 'undo' window). Account deletion: All data purged within 30 days, confirmation email sent. Backend logs: 90 days for debugging, no PII in logs.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:30:00Z"
+    },
+    {
+      "id": 17,
+      "topic": "Privacy and Compliance",
+      "sections": ["C3. Privacy Policy Content Not Provided"],
+      "question": "What user data export rights will be provided?",
+      "selected_answer": "Complete data export in machine-readable format. Full JSON export: All entries, transcripts, extracted signals, briefs, governance sessions, portfolio, board config, bets. Markdown export (per PRD): Human-readable versions. Request via in-app Settings: One-tap 'Export All My Data'. Delivery: Immediate download. Meets GDPR Article 20 requirements.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:31:00Z"
+    },
+    {
+      "id": 18,
+      "topic": "Privacy and Compliance",
+      "sections": ["C3. Privacy Policy Content Not Provided"],
+      "question": "What jurisdiction and data residency requirements apply?",
+      "selected_answer": "US-primary with GDPR compliance via legal mechanisms. Host backend in US (simpler, cheaper). Comply with GDPR via Standard Contractual Clauses with all providers. Disclose in privacy policy: 'Data is processed in the United States under GDPR-compliant data processing agreements.'",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:32:00Z"
+    },
+    {
+      "id": 19,
+      "topic": "Board Role System",
+      "sections": ["H1. Board Role Count Inconsistency"],
+      "question": "How should board role count be consistently described throughout documentation?",
+      "selected_answer": "Use '5 core roles + 2 conditional growth roles (5-7 total)' consistently throughout. Captures the full picture in one phrase: 'The board consists of 5 core roles (always active) plus 2 growth roles (activated when appreciating problems exist), for 5-7 total members.'",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:33:00Z"
+    },
+    {
+      "id": 20,
+      "topic": "Error Handling",
+      "sections": ["H2. No Error Handling Patterns"],
+      "question": "What errors should trigger the 'Error / Recovery' state in each workflow?",
+      "selected_answer": "Three-tier error classification. Tier 1 - Auto-Retry (invisible): Network timeouts, rate limits, transient 5xx errors. Tier 2 - Queue & Notify (pending status): Prolonged outage, provider outage (with fallback), LLM unavailable. Tier 3 - User Action Required: Auth expired, storage full, corrupted audio, unrecoverable error.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:34:00Z"
+    },
+    {
+      "id": 21,
+      "topic": "Error Handling",
+      "sections": ["H2. No Error Handling Patterns"],
+      "question": "What recovery procedures should be implemented for each error type?",
+      "selected_answer": "Detailed recovery procedures per tier. Tier 1: Retry 3x with exponential backoff (1s, 2s, 4s), escalate to Tier 2 on exhaustion. Tier 2: Deepgram→Whisper fallback, queue operations, check queue on app launch/connectivity/5min. Tier 3: Modal for auth, storage warnings, options for corrupted data. Always preserve user data until explicitly discarded.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:35:00Z"
+    },
+    {
+      "id": 22,
+      "topic": "Error Handling",
+      "sections": ["H2. No Error Handling Patterns"],
+      "question": "What user-facing error messages should be shown for each error type?",
+      "selected_answer": "Calm, actionable messages with clear next steps. Tier 2 pending: 'Transcribing in background...', 'Your entry is saved. AI processing will complete when online.' Tier 3 errors: 'Your session has ended. Please sign in to continue.', 'We couldn't process this recording. [Retry] [Type Instead] [Discard]'. Never blame the user. Always confirm data is safe when true.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:36:00Z"
+    },
+    {
+      "id": 23,
+      "topic": "Error Handling",
+      "sections": ["H2. No Error Handling Patterns"],
+      "question": "How should data be preserved during errors to enable recovery?",
+      "selected_answer": "Checkpoint-based preservation at every state transition. Recording: Save audio locally immediately. Transcription fails: Audio retained until success or user discards. Transcript received: Save before extraction. User edits: Auto-save every 5 seconds. Generated outputs: Save only after complete success. Orphan cleanup: Audio files without linked entries deleted after 7 days.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:37:00Z"
+    },
+    {
+      "id": 24,
+      "topic": "Backend Architecture",
+      "sections": ["H3. No API/Backend Specification", "Missing Content - Technical Architecture Section"],
+      "question": "What API endpoints and contracts are needed for the backend?",
+      "selected_answer": "REST API with clear resource-based endpoints. Auth: /auth/oauth/{provider}, /auth/refresh, /auth/session. Sync: /sync?since={timestamp}, /sync (POST), /sync/full. AI Processing: /ai/transcribe, /ai/extract, /ai/generate. Account: /account, /account (DELETE), /account/export. REST is simple, well-understood, easy to cache and debug.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:38:00Z"
+    },
+    {
+      "id": 25,
+      "topic": "Backend Architecture",
+      "sections": ["H3. No API/Backend Specification"],
+      "question": "How should authentication tokens be managed?",
+      "selected_answer": "Short-lived access tokens + long-lived refresh tokens. Access token: JWT, 15-minute expiry. Refresh token: Opaque, 30-day expiry, stored in Keychain/Keystore. Proactive refresh when <5 minutes remaining. Reactive refresh on 401. Mid-session expiry: Local operations continue, queue server operations until refreshed.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:39:00Z"
+    },
+    {
+      "id": 26,
+      "topic": "Backend Architecture",
+      "sections": ["H3. No API/Backend Specification", "Missing Content - Technical Architecture Section"],
+      "question": "Should the backend use serverless or server-based architecture?",
+      "selected_answer": "Container-based (Docker) - Start on Unraid home server for MVP, migrate to cloud platform later (Railway, Render, Cloud Run, etc.). Same Docker containers work in both environments, zero code changes needed for migration. Docker runs great on Unraid, and same images deploy to any cloud.",
+      "answer_type": "alternative",
+      "answered_at": "2026-01-10T15:40:00Z"
+    },
+    {
+      "id": 27,
+      "topic": "Backend Architecture",
+      "sections": ["H3. No API/Backend Specification"],
+      "question": "What API versioning strategy should be used?",
+      "selected_answer": "URL path versioning with 6-month deprecation policy. URL prefix: /api/v1/sync, /api/v2/sync. Support current + previous version. 6-month notice before removing old version. Force-upgrade prompt in app when using deprecated API. Return 426 Upgrade Required if app version too old.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:41:00Z"
+    },
+    {
+      "id": 28,
+      "topic": "Transcription",
+      "sections": ["H4. Transcription Failure Handling Incomplete"],
+      "question": "What happens to audio if transcription fails?",
+      "selected_answer": "Retain audio until transcription succeeds or user discards (align with previous decisions). Audio saved locally immediately. Retained through all retry attempts (Deepgram → Whisper → queue). Deleted only after successful transcription confirmed saved. If all retries exhausted: Keep audio, notify user, offer [Retry] [Type Instead] [Discard]. Orphaned audio (no user action for 7 days): Auto-delete with notification.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:42:00Z"
+    },
+    {
+      "id": 29,
+      "topic": "Transcription",
+      "sections": ["H4. Transcription Failure Handling Incomplete"],
+      "question": "Should there be an optional audio retention mode for failed transcriptions?",
+      "selected_answer": "No optional retention for MVP - stick with default behavior. Default (delete after successful transcription, 7-day orphan cleanup) is sensible. Adding audio retention setting complicates privacy story. Most users don't want audio - they want the transcript. Can add as post-MVP feature if requested.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:43:00Z"
+    },
+    {
+      "id": 30,
+      "topic": "Transcription",
+      "sections": ["H4. Transcription Failure Handling Incomplete"],
+      "question": "Can users manually type entries instead of using voice?",
+      "selected_answer": "Text entry as first-class alternative to voice. 'Record Entry' screen offers both: [Record Voice] and [Type Instead]. Text entries skip transcription entirely, go straight to Edit/Gap Check. Same extraction and signal detection applies. Voice-first UX (record button prominent) but text always available. Inclusive design without compromising voice-first positioning.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:44:00Z"
+    },
+    {
+      "id": 31,
+      "topic": "Transcription",
+      "sections": ["H4. Transcription Failure Handling Incomplete"],
+      "question": "How should the app differentiate between network failures and service failures for transcription?",
+      "selected_answer": "Detect and differentiate with tailored messaging. Network failure: No internet, timeout, DNS failure → 'No internet connection. Your recording is saved and will be transcribed when you're back online.' Service failure: HTTP 5xx, 429 → 'Transcription service temporarily unavailable. We'll automatically retry shortly.' Network waits for connectivity change, service uses exponential backoff.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:45:00Z"
+    },
+    {
+      "id": 32,
+      "topic": "Transcription",
+      "sections": ["H4. Transcription Failure Handling Incomplete"],
+      "question": "How should partial transcription results be handled?",
+      "selected_answer": "Show partial results with clear indication and completion options. If partial transcript received: Save and display it. Clear visual indicator: 'Partial transcript - some audio couldn't be processed'. User options: [Retry Full Audio] [Complete Manually] [Keep As-Is]. Audio retained until user chooses. Partial is better than nothing.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:46:00Z"
+    },
+    {
+      "id": 33,
+      "topic": "Authentication",
+      "sections": ["H5. OAuth Implementation Details Missing"],
+      "question": "What account linking strategy should be used if a user signs in with different OAuth providers?",
+      "selected_answer": "Email-based linking with explicit confirmation. If email matches existing account: 'An account with this email exists. Sign in with [original provider] to link accounts.' User must authenticate with original provider first, then can link new provider. Apple 'Hide My Email': Treat as new account, user can manually link later in Settings.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:47:00Z"
+    },
+    {
+      "id": 34,
+      "topic": "Authentication",
+      "sections": ["H5. OAuth Implementation Details Missing"],
+      "question": "What session management approach should be used?",
+      "selected_answer": "Long-lived sessions, multi-device allowed, remote logout available. Session duration: 30 days (refresh token lifetime). Unlimited concurrent sessions. Settings: 'Active sessions' shows all logged-in devices. 'Log out everywhere' invalidates all refresh tokens. Forced logout capability for security incidents. Optional email notification for suspicious activity.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:48:00Z"
+    },
+    {
+      "id": 35,
+      "topic": "Authentication",
+      "sections": ["H5. OAuth Implementation Details Missing"],
+      "question": "How should token refresh be handled?",
+      "selected_answer": "Confirm Q25 decisions with additional edge case handling. Proactive refresh when <5 minutes remaining. Reactive refresh on 401. Concurrent requests during refresh: Queue requests, use single refresh call, replay with new token. Refresh fails: Clear tokens, prompt re-authentication. App backgrounded for >30 days: Prompt re-auth. Never interrupt active recording or editing for auth issues.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:49:00Z"
+    },
+    {
+      "id": 36,
+      "topic": "Authentication",
+      "sections": ["H5. OAuth Implementation Details Missing"],
+      "question": "What is the account deletion flow implementation?",
+      "selected_answer": "Two-step confirmation with 7-day grace period. Flow: Settings → 'Delete Account' → Warning → Re-authenticate → 'Account will be deleted in 7 days. You can cancel anytime.' Grace period: Account accessible, cancel via app or email, daily reminders (Day 1, 5, 7). After grace period: All data permanently deleted, tokens invalidated, hashed email retained 30 days to prevent re-registration abuse.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:50:00Z"
+    },
+    {
+      "id": 37,
+      "topic": "Authentication",
+      "sections": ["H5. OAuth Implementation Details Missing"],
+      "question": "Can users migrate between authentication providers?",
+      "selected_answer": "Yes, migrate via link-then-unlink with safeguards. Settings → 'Sign-in methods' shows linked providers. 'Add sign-in method' links new provider. Once 2+ providers linked, can 'Remove' any provider. Cannot remove last remaining provider (prevents lockout). Removing requires re-authentication with that provider.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:51:00Z"
+    },
+    {
+      "id": 38,
+      "topic": "Governance Workflows",
+      "sections": ["H6. Sensitivity Gate Undefined"],
+      "question": "What does the 'Sensitivity Gate' check for in governance workflows?",
+      "selected_answer": "Privacy reminder with abstraction mode option. Before starting governance session, show brief screen: 'Governance sessions discuss your career in detail. Would you like to enable Abstraction Mode?' Toggle for Abstraction Mode (default off): ON replaces names/companies with placeholders, OFF keeps full detail. 'Remember my choice' checkbox. Non-blocking, quick checkpoint.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:52:00Z"
+    },
+    {
+      "id": 39,
+      "topic": "Governance Workflows",
+      "sections": ["H6. Sensitivity Gate Undefined"],
+      "question": "What triggers a sensitivity flag in the Sensitivity Gate?",
+      "selected_answer": "Show once per session type until 'Remember my choice' selected. First Quick Version/Setup/Quarterly: Show gate. Subsequent sessions of same type: Skip gate. 'Remember my choice' checked: Never show gate again for that session type. Preference stored, changeable in Settings → Privacy → 'Abstraction Mode defaults'. Educates new users without pestering returning users.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:53:00Z"
+    },
+    {
+      "id": 40,
+      "topic": "Governance Workflows",
+      "sections": ["H6. Sensitivity Gate Undefined"],
+      "question": "What is the user flow when sensitivity is detected?",
+      "selected_answer": "Single-screen checkpoint with quick proceed. Radio buttons: 'Full Detail (default)' and 'Abstraction Mode'. 'Remember my choice' checkbox. 'Continue' button always enabled (no blocking). Takes <5 seconds for returning users. Non-blocking, quick, ensures informed choice.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:54:00Z"
+    },
+    {
+      "id": 41,
+      "topic": "Governance Workflows",
+      "sections": ["H6. Sensitivity Gate Undefined"],
+      "question": "How does the Sensitivity Gate relate to the 'abstracted' mode mentioned elsewhere?",
+      "selected_answer": "Sensitivity Gate is the entry point; abstraction is automatic and all-or-nothing for MVP. When enabled: AI automatically identifies and replaces names, companies, emails, project names with placeholders. Applied to user's answers AND generated outputs. Stored: Abstracted version only. All-or-nothing for MVP, no selective abstraction. Can add fine-grained control post-MVP.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:55:00Z"
+    },
+    {
+      "id": 42,
+      "topic": "Weekly Brief",
+      "sections": ["H7. Weekly Brief 'Micro-Review' Undefined"],
+      "question": "What content should be included in the 'Board Micro-Review' section of the weekly brief?",
+      "selected_answer": "Quick 'board voice' commentary on the week - one line per active role. One sentence from each active board role (5-7 sentences). Each role comments on something from this week's entries relevant to their focus. Purpose: Lightweight weekly accountability without running full governance session. ~100 words total.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:56:00Z"
+    },
+    {
+      "id": 43,
+      "topic": "Weekly Brief",
+      "sections": ["H7. Weekly Brief 'Micro-Review' Undefined"],
+      "question": "When and why would users want the Board Micro-Review vs. skipping it?",
+      "selected_answer": "Show by default, let users hide. Everyone sees micro-review unless they collapse it. Ensures accountability features are noticed. Remember user's collapse preference. Valuable for: quick accountability check, preview what board would notice, preparing for quarterly.",
+      "answer_type": "alternative",
+      "answered_at": "2026-01-10T15:57:00Z"
+    },
+    {
+      "id": 44,
+      "topic": "Weekly Brief",
+      "sections": ["H7. Weekly Brief 'Micro-Review' Undefined"],
+      "question": "What are the format and length constraints for the Board Micro-Review?",
+      "selected_answer": "Variable length based on week's content - more entries = more to say, fewer entries = shorter. Adaptive to actual week rather than fixed constraints.",
+      "answer_type": "alternative",
+      "answered_at": "2026-01-10T15:58:00Z"
+    },
+    {
+      "id": 45,
+      "topic": "Weekly Brief",
+      "sections": ["H7. Weekly Brief 'Micro-Review' Undefined"],
+      "question": "Should the Board Micro-Review be removed from MVP scope?",
+      "selected_answer": "Include in MVP - it's now well-defined and adds unique value. Feature is fully specified. Differentiates product: weekly accountability without full sessions. Low effort: additional LLM output during brief generation. Reinforces 'board' metaphor every week. Users experience board roles regularly, increasing engagement.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T15:59:00Z"
+    },
+    {
+      "id": 46,
+      "topic": "Transcription",
+      "sections": ["M1. 'Streaming or Post' Transcription Ambiguity"],
+      "question": "Should MVP use streaming transcription or post-recording batch processing?",
+      "selected_answer": "Confirm batch processing for MVP (per Q5 decision). Simpler implementation - record complete audio, send to Deepgram, receive full transcript. More reliable than streaming. Lower complexity for fallback chain. PRD update: Change 'Transcribing (streaming or post)' to 'Transcribing (batch processing)'. Can add streaming post-MVP.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:00:00Z"
+    },
+    {
+      "id": 47,
+      "topic": "Transcription",
+      "sections": ["M1. 'Streaming or Post' Transcription Ambiguity"],
+      "question": "What are the user experience differences between streaming and batch transcription?",
+      "selected_answer": "Define batch transcription UX for MVP. During recording: Audio waveform visualization, timer showing duration, no text displayed. After stop: Waveform freezes, 'Transcribing...' with spinner, target <2 seconds. Transcript appears: Full transcript displays at once, smooth fade-in, cursor at end for editing. Clean, predictable UX.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:01:00Z"
+    },
+    {
+      "id": 48,
+      "topic": "Portfolio Setup",
+      "sections": ["M2. Time Allocation Validation Rules Unclear"],
+      "question": "What is the acceptable range for 'approximately 100%' time allocation?",
+      "selected_answer": "95-105% acceptable range with helpful feedback. 95-105%: Valid, proceed. 90-94% or 106-110%: Gentle warning, allow proceed. <90% or >110%: Block with error. Live sum displayed with color coding (green/yellow/red). 5% tolerance handles rounding; 10% for edge cases.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:02:00Z"
+    },
+    {
+      "id": 49,
+      "topic": "Portfolio Setup",
+      "sections": ["M2. Time Allocation Validation Rules Unclear"],
+      "question": "What error handling should occur if time allocation sum is outside the acceptable range?",
+      "selected_answer": "Confirm Q48 behavior with specific UX details. Warning zone (90-94% or 106-110%): Yellow banner, 'Continue Anyway' enabled. Error zone (<90% or >110%): Red banner, 'Continue' disabled, suggest adjustments. Real-time validation on every change. No auto-normalization - user stays in control.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:03:00Z"
+    },
+    {
+      "id": 50,
+      "topic": "Portfolio Setup",
+      "sections": ["M2. Time Allocation Validation Rules Unclear"],
+      "question": "How should time allocation percentages be displayed and rounded?",
+      "selected_answer": "Whole numbers only with 5% increment sliders. Slider with 5% increments, tap +/- buttons for 1% adjustments. Alternative: Direct text entry (whole numbers only). Always whole numbers, no decimals. Easy to hit exactly 100%.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:04:00Z"
+    },
+    {
+      "id": 51,
+      "topic": "Signal Extraction",
+      "sections": ["M3. Extracted Signals Definition Incomplete"],
+      "question": "What is the authoritative list of extracted signals from daily entries?",
+      "selected_answer": "Seven signals including actions + learnings/insights. Canonical list: 1) Wins, 2) Blockers, 3) Risks, 4) Avoided Decision, 5) Comfort Work, 6) Actions, 7) Learnings/Insights (reflection-focused). Update PRD to consolidate to this canonical seven.",
+      "answer_type": "alternative",
+      "answered_at": "2026-01-10T16:05:00Z"
+    },
+    {
+      "id": 52,
+      "topic": "Signal Extraction",
+      "sections": ["M3. Extracted Signals Definition Incomplete"],
+      "question": "What is the definition of each extracted signal type?",
+      "selected_answer": "Precise definitions with examples for AI extraction. Wins: Completed accomplishments. Blockers: Current obstacles (now). Risks: Potential future problems. Avoided Decision: Decisions being put off. Comfort Work: Tasks that feel productive but don't advance goals. Actions: Forward commitments (to do). Learnings: Insights and realizations. Key distinctions: Blockers=now vs Risks=future, Wins=done vs Actions=to do.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:06:00Z"
+    },
+    {
+      "id": 53,
+      "topic": "Board Personas",
+      "sections": ["M4. Board Persona Customization Scope Unclear"],
+      "question": "What fields of board personas can users edit in Settings?",
+      "selected_answer": "Edit persona presentation, not role function. Editable: Name (1-50 chars), Background (10-300 chars), Communication style (10-200 chars), Signature phrase (0-100 chars, optional). Not editable: Role type, anchored problem, anchored demand. Users personalize the voice without breaking the governance system.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:07:00Z"
+    },
+    {
+      "id": 54,
+      "topic": "Board Personas",
+      "sections": ["M4. Board Persona Customization Scope Unclear"],
+      "question": "Can users completely replace a default persona with a custom one?",
+      "selected_answer": "Allow custom personas with light content guidelines. Allowed: Completely custom personas, names inspired by real people, personas based on mentors/public figures. Light guidelines: No impersonation claims, no hateful content. No pre-submission filtering. Report mechanism for abuse. ToS covers inappropriate content. Personal journal app - low risk of misuse.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:08:00Z"
+    },
+    {
+      "id": 55,
+      "topic": "Board Personas",
+      "sections": ["M4. Board Persona Customization Scope Unclear"],
+      "question": "Can users reset personas to defaults after customization?",
+      "selected_answer": "Reset to original generated persona (stored at Setup). Per-role: 'Reset [Name] to default' restores original. All roles: 'Reset all personas to defaults'. Original AI-generated personas stored permanently at Setup time. Reset restores exact values (not new generation). Confirmation required.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:09:00Z"
+    },
+    {
+      "id": 56,
+      "topic": "Board Personas",
+      "sections": ["M4. Board Persona Customization Scope Unclear"],
+      "question": "What are the character/length limits for persona customization fields?",
+      "selected_answer": "Confirm Q53 limits with validation behavior. Name: 1-50 (required), Background: 10-300 (required), Style: 10-200 (required), Phrase: 0-100 (optional). Real-time character counter. Prevent typing beyond max. Error if below minimum on save. Whitespace-only rejected. Emoji allowed. Total ~650 chars per role, ~4500 for 7 roles - acceptable for LLM context.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:10:00Z"
+    },
+    {
+      "id": 57,
+      "topic": "Weekly Brief",
+      "sections": ["M5. Weekly Brief 'Regen Options' Implementation Unclear"],
+      "question": "Are the regeneration options ('shorter', 'more actionable', 'more strategic') mutually exclusive?",
+      "selected_answer": "Combinable options (multi-select checkboxes). Three checkboxes, any combination valid: Shorter, More actionable, More strategic. All combinations work including all three. Prompt construction combines selected modifiers. Users often want multiple refinements.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:11:00Z"
+    },
+    {
+      "id": 58,
+      "topic": "Weekly Brief",
+      "sections": ["M5. Weekly Brief 'Regen Options' Implementation Unclear"],
+      "question": "How many times can a user regenerate the weekly brief?",
+      "selected_answer": "Confirm 5 regenerations per brief with clear feedback. Counter shown: 'Regenerations: 2 of 5 remaining'. Resets each week. At limit: Button disabled, message 'You've used all 5. You can still edit directly.' Manual editing always available. 'Start over' = discard edits, counts as 1 regen. 'Regenerate with options' = apply modifiers, counts as 1 regen.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:12:00Z"
+    },
+    {
+      "id": 59,
+      "topic": "Weekly Brief",
+      "sections": ["M5. Weekly Brief 'Regen Options' Implementation Unclear"],
+      "question": "What does each regeneration option actually change in the AI prompt?",
+      "selected_answer": "Specific prompt modifications per option. 'Shorter': 2 bullets max per section, 1-sentence headline, omit open loops (~40% reduction). 'More Actionable': Every bullet includes verb/next step, add 'Suggested Actions' section, reframe blockers as 'To unblock: [action]'. 'More Strategic': Connect to portfolio health, add 'Strategic Implications' section, career trajectory framing. Combined: Merge instructions.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:13:00Z"
+    },
+    {
+      "id": 60,
+      "topic": "Glossary",
+      "sections": ["M6. 'Comfort Work' Definition Missing", "Missing Content - Glossary"],
+      "question": "What is the definition of 'comfort work' in the context of this app?",
+      "selected_answer": "Clear definition with relatable examples. 'Comfort Work': Tasks that feel productive but don't meaningfully advance high-priority goals. Examples: Reorganizing files, attending optional meetings, polishing work that's done, researching instead of deciding, responding to low-priority emails. Include in onboarding tooltips and help section.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:14:00Z"
+    },
+    {
+      "id": 61,
+      "topic": "Glossary",
+      "sections": ["M6. 'Comfort Work' Definition Missing", "Missing Content - Glossary"],
+      "question": "What is the definition of 'receipts' in the context of this app?",
+      "selected_answer": "Philosophy-forward definition connecting to accountability. 'Receipts': Concrete evidence that backs up your claims. 'Receipts over rhetoric' means proving progress with artifacts and actions, not just words. Types: Decisions made (Strong), Artifacts created (Strong), Calendar evidence (Medium), Proxy evidence (Medium), No receipt (recorded as such). Builds honest self-assessment habits.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:15:00Z"
+    },
+    {
+      "id": 62,
+      "topic": "Glossary",
+      "sections": ["M6. 'Comfort Work' Definition Missing", "Missing Content - Glossary"],
+      "question": "What is the definition of 'appreciating' vs 'depreciating' problems?",
+      "selected_answer": "Career-value framing with clear criteria. Appreciating: Skill becoming more valuable - AI can't easily do it, errors are costly, trust required. Examples: strategic decision-making, relationships. Depreciating: Skill becoming less valuable - AI getting better at it, errors low-impact, no special access needed. Examples: routine analysis, standardized reporting. Stable: Direction unclear, revisit next quarter.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:16:00Z"
+    },
+    {
+      "id": 63,
+      "topic": "Glossary",
+      "sections": ["M6. 'Comfort Work' Definition Missing", "Missing Content - Glossary"],
+      "question": "What is the definition of 'anchored demand' for board roles?",
+      "selected_answer": "Clear definition showing role-problem-demand connection. 'Anchored Demand': The specific question or challenge a board role focuses on, tied directly to one of your portfolio problems. AI-generated during Setup based on portfolio content. Makes each board member relevant to your specific situation. Example: Accountability role anchored to 'Analysis quality' with demand 'Show me the calendar.'",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:17:00Z"
+    },
+    {
+      "id": 64,
+      "topic": "Timezone Handling",
+      "sections": ["M7. Device Timezone Handling Incomplete"],
+      "question": "What happens to weekly brief timing if a user travels across timezones?",
+      "selected_answer": "Use current device timezone (brief follows the user). Brief generates at Sunday 8pm in device's current timezone. If user travels NYC→LA, brief generates at 8pm LA time. Users expect 8pm to mean 8pm on their phone's clock. Edge cases: Brief generates when device timezone updates, at next valid 8pm Sunday.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:18:00Z"
+    },
+    {
+      "id": 65,
+      "topic": "Timezone Handling",
+      "sections": ["M7. Device Timezone Handling Incomplete"],
+      "question": "What happens if the device timezone changes mid-week?",
+      "selected_answer": "Entries use creation timezone, week boundaries are stable. Each entry stores UTC timestamp + device timezone at creation. Entry 'belongs' to week based on original local time. Timezone changes don't re-bucket historical entries. Brief collects entries where original-local-time falls within Mon 00:00 - Sun 23:59. Entries reflect when they felt like they happened.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:19:00Z"
+    },
+    {
+      "id": 66,
+      "topic": "Timezone Handling",
+      "sections": ["M7. Device Timezone Handling Incomplete"],
+      "question": "When is the America/New_York default timezone used?",
+      "selected_answer": "Default only for rare edge cases, document when it applies. Used when: Device timezone cannot be determined (extremely rare), device returns invalid/malformed data. NOT used when: Location permission denied, user traveling, new users. Practical impact: Will almost never trigger in production. Exists purely as defensive coding fallback.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:20:00Z"
+    },
+    {
+      "id": 67,
+      "topic": "Portfolio Versioning",
+      "sections": ["M8. Portfolio Version Management Unclear"],
+      "question": "Is portfolio version history preserved?",
+      "selected_answer": "Preserve version history for reference (read-only). Each Setup/re-setup completion snapshots the portfolio. Store: problems, directions, allocations, health, board anchoring. Version number increments, timestamp recorded. Access via Settings → Portfolio → 'Version History'. View any past version (read-only). Track career evolution over time. Minimal storage impact.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:21:00Z"
+    },
+    {
+      "id": 68,
+      "topic": "Portfolio Versioning",
+      "sections": ["M8. Portfolio Version Management Unclear"],
+      "question": "Can users view and restore previous portfolio versions?",
+      "selected_answer": "View and compare only - no restore for MVP. Supported: View historical versions (read-only), compare two versions side-by-side, see what changed. Not supported: Restore previous version, partial restore. Restore adds complexity (orphaned bets, re-anchoring). Re-running Setup achieves same goal. Can add restore post-MVP if requested.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:22:00Z"
+    },
+    {
+      "id": 69,
+      "topic": "Portfolio Versioning",
+      "sections": ["M8. Portfolio Version Management Unclear"],
+      "question": "How do portfolio version changes affect board role anchoring?",
+      "selected_answer": "Re-setup regenerates all board anchoring from scratch. When user completes re-setup, ALL board roles are re-anchored. AI analyzes new portfolio and assigns fresh anchoring. Previous anchoring discarded (preserved in version history). User customized persona names/styles preserved, only anchored demands change. Show new anchoring for review after re-setup.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:23:00Z"
+    },
+    {
+      "id": 70,
+      "topic": "Bet Tracking",
+      "sections": ["M9. Bet Status Values Undefined"],
+      "question": "What are the valid status values for bets?",
+      "selected_answer": "Four statuses covering full lifecycle. OPEN: Active bet, due date not reached. CORRECT: User verified prediction came true. WRONG: User verified prediction was wrong. EXPIRED: Due date passed without evaluation. Display: Open=neutral, Correct=green, Wrong=red (not judgmental), Expired=gray. No 'partially correct' - forces clear accountability.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:24:00Z"
+    },
+    {
+      "id": 71,
+      "topic": "Bet Tracking",
+      "sections": ["M9. Bet Status Values Undefined"],
+      "question": "What are the status transition rules for bets?",
+      "selected_answer": "Clear transition rules with limited mutability. Allowed: OPEN→CORRECT, OPEN→WRONG, OPEN→EXPIRED (auto), EXPIRED→CORRECT, EXPIRED→WRONG (retroactive evaluation). Not allowed: CORRECT↔WRONG, any→OPEN. Triggers: User action for evaluation, automatic system check for expiration. Retroactive evaluation encouraged during quarterly review. Once evaluated, that's your record.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:25:00Z"
+    },
+    {
+      "id": 72,
+      "topic": "Bet Tracking",
+      "sections": ["M9. Bet Status Values Undefined"],
+      "question": "What happens when a bet's 90-day due date passes without evaluation?",
+      "selected_answer": "Auto-expire at due date with prompts to evaluate. Auto-transition to EXPIRED at midnight on due date. No grace period. Prompts: 7 days before (indicator), on due date (push notification), after expiration ('Evaluate Now?'). Expired bets in 'Needs Evaluation' section. Quarterly report tracks evaluation rates. No punishment - just transparency.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:26:00Z"
+    },
+    {
+      "id": 73,
+      "topic": "Configuration",
+      "sections": ["L2. Silence Timeout Left as [NEED INPUT]"],
+      "question": "What should the default silence timeout be for voice recording?",
+      "selected_answer": "Confirm 8 seconds as default. Long enough for natural thinking pauses (<5s). Short enough users don't wait long. Accommodates 'let me think' moments. Visual countdown in last 3 seconds. User can tap to cancel auto-stop. Consider Settings option (5s/8s/12s) post-MVP if requested.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:27:00Z"
+    },
+    {
+      "id": 74,
+      "topic": "UX Decisions",
+      "sections": ["L3. Skip Vagueness Gate Decision Pending"],
+      "question": "Should users be allowed to skip the vagueness gate with a two-step confirmation?",
+      "selected_answer": "Allow skip with two-step confirmation, record as 'example refused'. Flow: AI asks for example → Skip → Confirmation 'Skipping reduces value. Are you sure?' → Record '[example refused]' and continue. Board can reference refusal pattern. Max 2 skips per session - third gate cannot be skipped. Respects autonomy while maintaining accountability.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:28:00Z"
+    },
+    {
+      "id": 75,
+      "topic": "Cross-Platform",
+      "sections": ["L4. Export 'Share Sheet' Platform Specificity"],
+      "question": "How should the export/sharing feature be described and implemented cross-platform?",
+      "selected_answer": "Platform-neutral documentation, native implementation. Use 'Share' or 'Export' in user-facing text (not 'share sheet'). PRD: 'Markdown export via system share'. iOS: UIActivityViewController. Android: Intent.ACTION_SEND. Same button, platform-native behavior. 'Share' button with standard platform share icon.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:29:00Z"
+    },
+    {
+      "id": 76,
+      "topic": "Content Length",
+      "sections": ["L5. 'One-Page' Brief Definition"],
+      "question": "What specific length constraint should replace 'one-page' for the weekly brief?",
+      "selected_answer": "Custom length constraints: Target ~600 words. Maximum 800 words (hard cap for validator). Minimum 200 words (ensure meaningful content). Update PRD: Replace 'one-page executive brief' with 'executive brief (600-800 words)'.",
+      "answer_type": "custom",
+      "answered_at": "2026-01-10T16:30:00Z"
+    },
+    {
+      "id": 77,
+      "topic": "Terminology",
+      "sections": ["L6. Quarterly Report vs. Board Report Terminology"],
+      "question": "Should the document use 'Quarterly Board Report' or 'Quarterly Report' consistently?",
+      "selected_answer": "Use 'Quarterly Report' consistently throughout PRD. Shorter and simpler. Find/replace all instances for consistency.",
+      "answer_type": "alternative",
+      "answered_at": "2026-01-10T16:31:00Z"
+    },
+    {
+      "id": 78,
+      "topic": "Security",
+      "sections": ["Missing Content - Security Section"],
+      "question": "What encryption approach should be used for data at rest?",
+      "selected_answer": "Platform encryption + encrypted cloud storage. iOS: Data Protection API (NSFileProtectionComplete), keys in Secure Enclave. Android: EncryptedSharedPreferences + SQLCipher, keys in Android Keystore. Cloud: AES-256 encryption at rest, KMS-managed keys. Auth tokens in keychain/keystore only.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:32:00Z"
+    },
+    {
+      "id": 79,
+      "topic": "Security",
+      "sections": ["Missing Content - Security Section"],
+      "question": "What encryption approach should be used for data in transit?",
+      "selected_answer": "TLS 1.3 minimum with certificate pinning for your API. Minimum TLS 1.2, preferred TLS 1.3, reject TLS 1.1 and below. Pin certificates for your backend API. No pinning for third-party APIs (they rotate certs). Pin backup certs for rotation. Pinning failure: Refuse connection, show error.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:33:00Z"
+    },
+    {
+      "id": 80,
+      "topic": "Security",
+      "sections": ["Missing Content - Security Section"],
+      "question": "What API security measures should be implemented?",
+      "selected_answer": "Defense-in-depth API security. Input validation: Server-side, sanitize before AI, max 10MB requests, enforce character limits. Request integrity: HTTPS only, reject missing headers, CORS for known origins. Abuse prevention: Account creation rate limiting (3/IP/hour), failed auth lockout (5 failures = 15-min), anomaly detection. Third-party: API keys in env vars, proxy through backend.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:34:00Z"
+    },
+    {
+      "id": 81,
+      "topic": "Security",
+      "sections": ["Missing Content - Security Section"],
+      "question": "What audit logging should be implemented?",
+      "selected_answer": "Environment-configurable logging levels. Development mode: Verbose with content (request/response bodies, entry content, AI prompts, stack traces), auto-delete 7 days. Production mode: Security-focused, no content (login events, session changes, deletions, API errors without user data), 90-day retention. Production is DEFAULT. CI/CD checks enforce production config. Warning banner in dev logs.",
+      "answer_type": "custom",
+      "answered_at": "2026-01-10T16:35:00Z"
+    },
+    {
+      "id": 82,
+      "topic": "Offline Behavior",
+      "sections": ["Missing Content - Offline Behavior Section"],
+      "question": "Which features should work offline?",
+      "selected_answer": "Comprehensive offline support for core journaling. Works offline (full): Voice recording (queue for transcription), text entry (queue for extraction), view past entries/briefs (cached), edit entries (sync when online), view portfolio/board. Requires online: Transcription, extraction, brief generation, governance sessions, account actions. Clear offline indicator and messaging.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:36:00Z"
+    },
+    {
+      "id": 83,
+      "topic": "Offline Behavior",
+      "sections": ["Missing Content - Offline Behavior Section"],
+      "question": "How should data sync when connectivity returns?",
+      "selected_answer": "Automatic background sync with status visibility. Triggers: Connectivity restored, app launched, pull-to-refresh, every 5 minutes foregrounded. Priority queue: Auth refresh → Transcription → Extraction → Local edits → Server changes. Status UI: Subtle sync indicator, entry-level status, badge for pending items. Error handling: Retry with backoff, never delete local data.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:37:00Z"
+    },
+    {
+      "id": 84,
+      "topic": "Testing",
+      "sections": ["Missing Content - Testing Strategy Section"],
+      "question": "What unit test requirements should be defined?",
+      "selected_answer": "Pragmatic coverage targets focused on critical paths. Business logic: 80%, Data layer: 70%, UI: 50%, AI integrations: 60%, Overall: 70%. Must-test (100%): State machines, validation rules, encryption, token refresh, conflict resolution. Mock AI providers, in-memory SQLite for tests. Jest or Vitest for business logic.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:38:00Z"
+    },
+    {
+      "id": 85,
+      "topic": "Testing",
+      "sections": ["Missing Content - Testing Strategy Section"],
+      "question": "How should AI outputs be validated in tests?",
+      "selected_answer": "Multi-layer AI testing strategy. Layer 1: Unit tests with mocked AI (deterministic, CI). Layer 2: Golden set validation (20-30 test entries, >80% accuracy threshold, monthly/after prompt changes). Layer 3: Output structure validation every response (schema, required fields). Layer 4: Prompt regression testing before deploying changes. Acceptable variation: Wording OK, missing signal flag if >20%, wrong signal flag any.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:39:00Z"
+    },
+    {
+      "id": 86,
+      "topic": "Analytics",
+      "sections": ["Missing Content - Analytics/Telemetry Section"],
+      "question": "What usage analytics should be collected?",
+      "selected_answer": "Privacy-first analytics with opt-out option. Track: Entry created (type, word count), brief generated (regen count), governance started (type), feature used (name, duration), error (type, screen), app opened (duration). NOT tracked: Content, PII, location. Anonymized user ID. Aggregated reporting. ON by default with clear opt-out in Settings. Privacy-focused provider (Mixpanel, Amplitude, PostHog).",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:40:00Z"
+    },
+    {
+      "id": 87,
+      "topic": "Analytics",
+      "sections": ["Missing Content - Analytics/Telemetry Section"],
+      "question": "What key metrics should be tracked for product health?",
+      "selected_answer": "Balanced scorecard of engagement, retention, quality, and business metrics. Engagement: DAU/MAU >25%, entries/week >2, session 3-5min, feature adoption >50%. Retention: Week 1 >40%, Week 4 >25%, brief rate >70%, governance completion >80%. Quality: Transcription >98%, extraction >80%, error rate <2%. Business: Conversion >10%, churn <5%, NPS >40.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:41:00Z"
+    },
+    {
+      "id": 88,
+      "topic": "Accessibility",
+      "sections": ["Missing Content - Accessibility Requirements"],
+      "question": "What VoiceOver/TalkBack screen reader support is required?",
+      "selected_answer": "Full VoiceOver/TalkBack support for all screens. All buttons: Accessible labels. All text: Readable in logical order. All images: Alt text. All inputs: Associated labels. Voice recording: Screen reader pauses during recording, audio feedback on start/stop, clear state indication. Logical focus order, no trapped focus. Test all flows with VoiceOver + TalkBack before release. Accessibility audit pre-launch.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:42:00Z"
+    },
+    {
+      "id": 89,
+      "topic": "Accessibility",
+      "sections": ["Missing Content - Accessibility Requirements"],
+      "question": "What color contrast requirements apply?",
+      "selected_answer": "WCAG 2.1 AA compliance as baseline. Normal text: 4.5:1 minimum. Large text: 3:1 minimum. UI components: 3:1 against background. Focus indicators: 3:1 contrast. Don't rely on color alone. Test with contrast checker tools during design. High-contrast mode post-MVP if requested.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:43:00Z"
+    },
+    {
+      "id": 90,
+      "topic": "Accessibility",
+      "sections": ["Missing Content - Accessibility Requirements"],
+      "question": "What alternative input methods should be supported beyond voice?",
+      "selected_answer": "Full alternative input support. Text entry: First-class alternative (confirmed Q30). Keyboard: Full navigation, tab order, Enter activates, Escape closes, external Bluetooth supported. Switch control: All elements focusable, no gesture-only interactions, no time-limited actions. Voice Control: Speakable button names, compatible with iOS Voice Control and Android Voice Access. Haptic feedback (optional, can disable). No CAPTCHA.",
+      "answer_type": "recommended",
+      "answered_at": "2026-01-10T16:44:00Z"
+    }
+  ],
+  "metadata": {
+    "source_questions_file": "questions-PRD-assessment-20260110-150500-20260110-151000.json",
+    "source_document": "PRD.md v3 (January 9, 2026)",
+    "total_questions": 90,
+    "started_at": "2026-01-10T15:15:00Z",
+    "completed_at": "2026-01-10T16:44:00Z",
+    "answer_summary": {
+      "recommended": 79,
+      "alternative": 6,
+      "custom": 5,
+      "skipped": 0
+    }
+  }
+}

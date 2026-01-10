@@ -1,0 +1,224 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "topic": "Mobile Framework",
+      "sections": ["H1. Mobile Framework Not Specified", "Section 3A.2 (Backend Architecture)", "Section 3B.1 (Local Storage)"],
+      "question": "Which mobile framework should be used for the Boardroom Journal app?",
+      "context": "The PRD references both Flutter and React Native as examples for ORM choices (Drift/Moor for Flutter, WatermelonDB for React Native) but does not commit to a specific framework. This decision is blocking because it affects: which ORM to use, UI component libraries, native module approach, and testing framework selection. The development team cannot begin until this is chosen. Flutter appears to be leaning based on ORM mentions but needs explicit confirmation."
+    },
+    {
+      "id": 2,
+      "topic": "Onboarding",
+      "sections": ["H2. Onboarding Flow Not Defined", "Missing Content"],
+      "question": "What screens and flow should a new user experience during first-launch onboarding?",
+      "context": "The PRD references displaying privacy statements and third-party disclosures 'during onboarding' but the onboarding flow itself is not defined. This is critical for retention. Key sub-questions: What screens does a new user see? Is Setup required immediately or can it be deferred? How is the value proposition communicated? What's the minimum viable first session? Should there be an optional quick tour?"
+    },
+    {
+      "id": 3,
+      "topic": "Onboarding",
+      "sections": ["H2. Onboarding Flow Not Defined"],
+      "question": "Should the Setup (Problem Portfolio + Board Roles) be required immediately on first launch, or can users defer it?",
+      "context": "New users need to create a portfolio before using governance features, but requiring a lengthy Setup immediately could hurt retention. Options include: require Setup before any use, allow basic journaling without Setup, provide a simplified 'quick start' option, or let users explore the app first and prompt Setup later."
+    },
+    {
+      "id": 4,
+      "topic": "Notifications",
+      "sections": ["M1. Push Notifications Listed as Out-of-Scope but Referenced in Bet Tracking", "Section 2.2 (out-of-scope)", "Section 4.6 (Bet Tracking)"],
+      "question": "Should push notifications for bet expiration be included in MVP scope, or should bet reminders use in-app prompts only?",
+      "context": "There is an inconsistency in the PRD: Section 2.2 states 'Reminders/notifications' are out of scope for MVP, but Section 4.6 specifies 'On due date: Push notification' for bet expiration. This needs resolution. Options: (1) Remove push notification from bet expiration and rely on in-app prompts only, or (2) Clarify that bet expiration notifications ARE in MVP scope as an exception to the general rule."
+    },
+    {
+      "id": 5,
+      "topic": "AI/LLM Configuration",
+      "sections": ["M2. Claude Model Version Not Specified", "Section 3A.1 (AI/LLM Provider Strategy)"],
+      "question": "Which Claude model version/tier should be used for LLM features?",
+      "context": "The PRD specifies 'Claude (Anthropic)' but not which model (Claude 3 Haiku, Sonnet, Opus, or future versions). This affects cost estimates, context window limits, response quality expectations, and latency targets. Model pricing and capabilities vary significantly. Cost target is $0.50-1.00 per active user per month which may constrain options."
+    },
+    {
+      "id": 6,
+      "topic": "Weekly Brief",
+      "sections": ["M3. Weekly Brief Generation Trigger When No Entries Exist", "Section 4.2 (Weekly Brief Generation)"],
+      "question": "What should happen when the Sunday 8pm brief generation trigger fires but the user has zero entries for the week?",
+      "context": "The PRD does not address this edge case. Options include: (1) Generate a brief saying 'No entries this week' with encouragement, (2) Skip generation entirely and show nothing, (3) Generate a reminder/prompt to make entries for next week. This affects user experience for inactive weeks."
+    },
+    {
+      "id": 7,
+      "topic": "Portfolio Management",
+      "sections": ["M4. Problem Deletion/Modification After Setup", "Section 4.4 (Setup State Machine)"],
+      "question": "Can users edit individual problems in their portfolio without running a full re-setup?",
+      "context": "The PRD describes Setup and re-setup but doesn't address incremental modifications. Users may want to tweak problem descriptions, adjust time allocations, or update direction classifications without going through the entire Setup flow again. This affects the flexibility of the portfolio management experience."
+    },
+    {
+      "id": 8,
+      "topic": "Portfolio Management",
+      "sections": ["M4. Problem Deletion/Modification After Setup", "Section 4.4 (Setup State Machine)"],
+      "question": "Can users delete a problem from their portfolio (e.g., going from 5 problems to 4)?",
+      "context": "The PRD requires 3-5 problems but doesn't specify if problems can be removed after initial Setup. If a user's role changes and a problem is no longer relevant, can they delete it? What's the minimum (3) enforced? Does deletion require re-setup or can it be done incrementally?"
+    },
+    {
+      "id": 9,
+      "topic": "Portfolio Management",
+      "sections": ["M4. Problem Deletion/Modification After Setup", "Section 4.4 (Setup State Machine)"],
+      "question": "What happens to board role anchoring if a user deletes or significantly modifies an anchored problem?",
+      "context": "Board roles are anchored to specific problems with specific demands. If a problem is deleted or changed substantially, the anchored demand may no longer make sense. Options: automatically re-anchor affected roles, require full re-setup, prompt user to re-anchor manually, or block problem deletion if roles are anchored to it."
+    },
+    {
+      "id": 10,
+      "topic": "Entry Editing",
+      "sections": ["M5. Entry Editing After Extraction", "Section 4.1 (Daily Journal Entry)", "Section 5.3 (Entry Review)"],
+      "question": "When a user edits a transcript after signal extraction has completed, should signals be automatically re-extracted?",
+      "context": "The PRD states 'If user edits transcript, extraction can be re-run on demand' but doesn't clarify if this is automatic or manual. Auto-re-extraction could be disruptive if the user made minor typo fixes. Manual re-extraction requires user action but preserves intentional edits."
+    },
+    {
+      "id": 11,
+      "topic": "Entry Editing",
+      "sections": ["M5. Entry Editing After Extraction", "Section 4.1 (Daily Journal Entry)", "Section 5.3 (Entry Review)"],
+      "question": "If a user manually edits extracted signals and then re-runs extraction, should manual edits be preserved or overwritten?",
+      "context": "Users can 'edit extracted bullets' directly. If they then edit the transcript and trigger re-extraction, it's unclear whether their manual signal edits should be preserved (user intent) or overwritten (consistency with transcript). This affects the editing workflow design."
+    },
+    {
+      "id": 12,
+      "topic": "Entry Editing",
+      "sections": ["M5. Entry Editing After Extraction", "Section 4.1 (Daily Journal Entry)"],
+      "question": "Should entries be locked from editing after a certain time period?",
+      "context": "The PRD doesn't specify if entries can be edited indefinitely or if there's a window (e.g., 7 days) after which they become read-only. Locking could prevent historical revisionism but limits legitimate corrections. Consider: no locking, soft locking with 'edit anyway' option, or hard locking after N days."
+    },
+    {
+      "id": 13,
+      "topic": "Quarterly Report",
+      "sections": ["M6. Quarterly Report Frequency Enforcement", "Section 4.5 (Quarterly Report)"],
+      "question": "What are the eligibility rules for running a Quarterly Report?",
+      "context": "The PRD names it 'Quarterly Report' suggesting ~4x/year frequency but doesn't enforce this. Questions: Is there a minimum time between quarterly reports? Can users run them weekly if desired? How does the system define when a 'quarter' ends? Options: enforce 90-day minimum, allow on-demand with warning if recent, or tie to calendar quarters."
+    },
+    {
+      "id": 14,
+      "topic": "Settings",
+      "sections": ["L1. Settings Screen Missing 'About' Section", "Section 5.9 (Settings)"],
+      "question": "What content should be included in the Settings 'About' section?",
+      "context": "Standard mobile apps include an About section with app version, terms of service link, privacy policy link, support/feedback link, and open source licenses. The PRD's Settings section doesn't include this. Need to confirm what items to include and how they link to external resources."
+    },
+    {
+      "id": 15,
+      "topic": "History Screen",
+      "sections": ["L2. History Screen Not Detailed", "Section 5.1 (Home)"],
+      "question": "How should the History screen organize and display past entries and reports?",
+      "context": "The Home screen references 'History (Entries / Reports)' but the History screen is not defined. Questions: How are entries listed (chronological, grouped by week, by month)? Are there search/filter capabilities? How are governance reports (Quick Version, Setup, Quarterly) organized separately from daily entries?"
+    },
+    {
+      "id": 16,
+      "topic": "Device Support",
+      "sections": ["L3. Tablet/Large Screen Layout Not Addressed", "Section 5 (Screen-by-Screen UX)"],
+      "question": "Should tablet/iPad layouts be considered for MVP, or explicitly deferred to post-MVP?",
+      "context": "The PRD is written for mobile phone form factor. iPads and Android tablets could benefit from master-detail layouts, side-by-side editing, and larger text defaults. Need to clarify if MVP targets phone-only or includes basic tablet support."
+    },
+    {
+      "id": 17,
+      "topic": "Visual Design",
+      "sections": ["L4. Dark Mode Not Mentioned"],
+      "question": "Should dark mode be included in MVP, or explicitly deferred to post-MVP?",
+      "context": "The PRD makes no mention of dark mode support. Dark mode is expected by many users, required for OLED battery optimization, and is an accessibility consideration for light-sensitive users. Need explicit decision: include in MVP, defer to post-MVP, or follow system setting automatically."
+    },
+    {
+      "id": 18,
+      "topic": "Haptics",
+      "sections": ["L5. Haptic Feedback Patterns Undefined", "Section 12.3 (Alternative Input Methods)"],
+      "question": "What haptic feedback patterns should be used for key interactions?",
+      "context": "Section 12.3 mentions haptic feedback as 'optional, can disable' but doesn't define specific patterns. Potential uses: recording start/stop, save confirmation, error states, successful sync. Could defer to implementation or define basic patterns now for consistency."
+    },
+    {
+      "id": 19,
+      "topic": "Entry Limits",
+      "sections": ["L6. Entry Character/Word Limits Not Specified", "Section 4.1 (Daily Journal Entry)"],
+      "question": "What are the maximum limits for voice recording duration and transcript/entry length?",
+      "context": "The PRD specifies a soft cap of 10 entries/day but no limits on individual entry size. Long recordings affect storage, transcription costs, and AI processing costs. Need to define: max voice recording duration (e.g., 10 minutes), max transcript words (e.g., 1500), max total entry words including follow-ups (e.g., 5000)."
+    },
+    {
+      "id": 20,
+      "topic": "Rate Limits",
+      "sections": ["L7. Soft Limit Enforcement Details", "Section 3A.1 (Rate Limits)"],
+      "question": "What happens when a user exceeds a soft rate limit?",
+      "context": "Rate limits are described as 'soft' with 'usage visibility' but the exceeded state behavior is unclear. Questions: Can users still create entries after hitting the limit? Is there a warning before reaching the limit? What message is shown when exceeded? Does the limit reset at midnight local time or rolling 24 hours?"
+    },
+    {
+      "id": 21,
+      "topic": "Export Formats",
+      "sections": ["L8. Brief Export Format Details", "Section 5.4 (Weekly Brief Viewer)"],
+      "question": "What is the structure and content of exported Markdown and JSON files?",
+      "context": "The PRD mentions Markdown and JSON export for weekly briefs but doesn't specify the format details. Questions: What's the Markdown template structure? What's the JSON schema? Should exports include metadata (generation date, entry count, version)? Should entries referenced in the brief be included or linked?"
+    },
+    {
+      "id": 22,
+      "topic": "Missing Content",
+      "sections": ["Missing Content"],
+      "question": "Should an error message catalog be created listing all user-facing messages?",
+      "context": "The PRD defines error tiers and example messages but doesn't provide a comprehensive catalog. A complete list would ensure consistency across the app and aid localization. Could be a separate document or appendix to the PRD."
+    },
+    {
+      "id": 23,
+      "topic": "Missing Content",
+      "sections": ["Missing Content"],
+      "question": "Should actual LLM prompt templates be documented for key workflows?",
+      "context": "The PRD describes prompt assembly strategy and layers but doesn't include the actual prompt text. Documenting prompts would enable review, testing, and iteration. Could be a separate document to avoid PRD bloat, or deferred to implementation."
+    },
+    {
+      "id": 24,
+      "topic": "Missing Content",
+      "sections": ["Missing Content"],
+      "question": "Should animation and transition specifications be defined?",
+      "context": "The PRD mentions specific UX states (spinner during transcription, smooth fade-in for transcript) but doesn't comprehensively define loading states, screen transitions, or micro-interactions. Could defer to design phase or define key animations now."
+    },
+    {
+      "id": 25,
+      "topic": "Missing Content",
+      "sections": ["Missing Content"],
+      "question": "Should sound design be specified for key interactions?",
+      "context": "Audio feedback could enhance the voice recording experience (start/stop sounds) and provide confirmation for key actions. The PRD doesn't address sound design. Need to decide: no sounds, sounds with mute option, or defer to implementation."
+    },
+    {
+      "id": 26,
+      "topic": "Missing Content",
+      "sections": ["Missing Content"],
+      "question": "What are the app icon and visual branding requirements?",
+      "context": "The PRD doesn't include visual identity requirements. For MVP launch, need: app icon, color palette, typography choices, and any brand guidelines. Could be separate design document or brief section in PRD."
+    },
+    {
+      "id": 27,
+      "topic": "Missing Content",
+      "sections": ["Missing Content"],
+      "question": "What should the App Store listing content include?",
+      "context": "For launch, need App Store/Play Store listing: app name, subtitle, description, keywords, screenshot requirements, and promotional text. Could be separate marketing document or appendix to PRD."
+    }
+  ],
+  "metadata": {
+    "source_document": "PRD-assessment-20260110-170000.md",
+    "source_prd": "PRD v4 — Boardroom Journal (MVP)",
+    "total_questions": 27,
+    "generated_date": "2026-01-10T17:15:00Z",
+    "topics_summary": [
+      "Mobile Framework",
+      "Onboarding",
+      "Notifications",
+      "AI/LLM Configuration",
+      "Weekly Brief",
+      "Portfolio Management",
+      "Entry Editing",
+      "Quarterly Report",
+      "Settings",
+      "History Screen",
+      "Device Support",
+      "Visual Design",
+      "Haptics",
+      "Entry Limits",
+      "Rate Limits",
+      "Export Formats",
+      "Missing Content"
+    ],
+    "severity_breakdown": {
+      "high_priority": 3,
+      "medium_priority": 9,
+      "low_priority": 8,
+      "missing_content": 7
+    }
+  }
+}

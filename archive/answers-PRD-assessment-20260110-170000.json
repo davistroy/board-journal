@@ -1,0 +1,260 @@
+{
+  "answers": [
+    {
+      "id": 1,
+      "topic": "Mobile Framework",
+      "question": "Which mobile framework should be used for the Boardroom Journal app?",
+      "answer": "Flutter with Drift ORM",
+      "details": "Use Flutter as the mobile framework with Drift (formerly Moor) as the ORM for SQLite database operations. Flutter provides cross-platform development with native performance, and Drift is the recommended ORM for Flutter SQLite integration.",
+      "selection": "A"
+    },
+    {
+      "id": 2,
+      "topic": "Onboarding",
+      "question": "What screens and flow should a new user experience during first-launch onboarding?",
+      "answer": "Minimal 3-screen onboarding",
+      "details": "Implement a minimal onboarding flow: Welcome screen with value proposition, Privacy/terms acceptance screen, then direct to OAuth sign-in followed by first entry experience. Keep onboarding brief to reduce friction.",
+      "selection": "A"
+    },
+    {
+      "id": 3,
+      "topic": "Onboarding",
+      "question": "Should the Setup (Problem Portfolio + Board Roles) be required immediately on first launch, or can users defer it?",
+      "answer": "Defer Setup—allow journaling without it",
+      "details": "Allow users to start journaling immediately without completing Setup. Prompt for Setup after 3-5 entries when users have enough context to define meaningful problems. This reduces onboarding friction while ensuring Setup happens when it's most valuable.",
+      "selection": "A"
+    },
+    {
+      "id": 4,
+      "topic": "Notifications",
+      "question": "Should push notifications for bet expiration be included in MVP scope, or should bet reminders use in-app prompts only?",
+      "answer": "In-app prompts only for MVP",
+      "details": "Remove push notification from bet tracking for MVP. Rely on in-app prompts and the Home screen bet status display. This resolves the inconsistency with Section 2.2 which lists reminders/notifications as out of scope.",
+      "selection": "A"
+    },
+    {
+      "id": 5,
+      "topic": "AI/LLM Configuration",
+      "question": "Which Claude model version/tier should be used for LLM features?",
+      "answer": "Opus 4.5 for governance features, Sonnet 4.5 for everything else",
+      "details": "Use Claude Opus 4.5 (latest version) for high-stakes governance features like Quarterly Reports, Setup analysis, and complex reasoning. Use Claude Sonnet 4.5 (latest version) for daily operations like signal extraction, weekly briefs, and follow-up questions. This balances quality and cost.",
+      "selection": "D (custom)"
+    },
+    {
+      "id": 6,
+      "topic": "Weekly Brief",
+      "question": "What should happen when the Sunday 8pm brief generation trigger fires but the user has zero entries for the week?",
+      "answer": "Generate minimal reflection brief",
+      "details": "Generate a brief that acknowledges no entries were made and provides a gentle reflection prompt or encouragement for the coming week. This maintains engagement even during inactive periods rather than showing nothing.",
+      "selection": "B"
+    },
+    {
+      "id": 7,
+      "topic": "Portfolio Management",
+      "question": "Can users edit individual problems in their portfolio without running a full re-setup?",
+      "answer": "Allow limited edits without re-setup",
+      "details": "Allow users to edit problem descriptions and time allocations without triggering full re-setup. Direction changes (appreciating/depreciating/sustaining) require re-setup since they affect governance logic significantly.",
+      "selection": "A"
+    },
+    {
+      "id": 8,
+      "topic": "Portfolio Management",
+      "question": "Can users delete a problem from their portfolio (e.g., going from 5 problems to 4)?",
+      "answer": "Allow deletion down to minimum 3 problems",
+      "details": "Allow users to delete problems but enforce the minimum of 3 problems. When a problem is deleted, trigger partial re-anchoring for any board roles that were anchored to the deleted problem's demands.",
+      "selection": "A"
+    },
+    {
+      "id": 9,
+      "topic": "Portfolio Management",
+      "question": "What happens to board role anchoring if a user deletes or significantly modifies an anchored problem?",
+      "answer": "Auto-regenerate anchored demands using AI",
+      "details": "When an anchored problem is deleted or significantly modified, automatically use AI to regenerate appropriate demands for affected board roles based on the remaining portfolio. Present the new anchoring to the user for confirmation.",
+      "selection": "A"
+    },
+    {
+      "id": 10,
+      "topic": "Entry Editing",
+      "question": "When a user edits a transcript after signal extraction has completed, should signals be automatically re-extracted?",
+      "answer": "Manual re-extraction with smart prompt",
+      "details": "Do not auto-re-extract when transcript is edited. Show a prompt like 'Transcript updated. Re-extract signals?' to give users control over when extraction runs. This avoids disrupting intentional signal edits from minor transcript corrections.",
+      "selection": "A"
+    },
+    {
+      "id": 11,
+      "topic": "Entry Editing",
+      "question": "If a user manually edits extracted signals and then re-runs extraction, should manual edits be preserved or overwritten?",
+      "answer": "Overwrite with warning and diff",
+      "details": "Overwrite manual edits when re-extraction runs, but show a warning first with a diff view so users can see what will change. This maintains consistency between transcript and signals while giving users visibility into the impact.",
+      "selection": "A"
+    },
+    {
+      "id": 12,
+      "topic": "Entry Editing",
+      "question": "Should entries be locked from editing after a certain time period?",
+      "answer": "No locking—entries editable indefinitely",
+      "details": "Do not lock entries. Users can edit entries indefinitely. This supports legitimate corrections and allows users to refine their records over time. The version history in the database preserves the audit trail.",
+      "selection": "A"
+    },
+    {
+      "id": 13,
+      "topic": "Quarterly Report",
+      "question": "What are the eligibility rules for running a Quarterly Report?",
+      "answer": "On-demand with warning",
+      "details": "Allow Quarterly Reports to be generated at any time. Show a warning if less than 30 days have passed since the last report, suggesting the user wait for more data to accumulate. Do not block generation.",
+      "selection": "A"
+    },
+    {
+      "id": 14,
+      "topic": "Settings",
+      "question": "What content should be included in the Settings 'About' section?",
+      "answer": "Standard About section",
+      "details": "Include standard About section with: App version number, Terms of Service link, Privacy Policy link, Support/feedback link (email or form), and Open source licenses. These are expected by users and required for app store compliance.",
+      "selection": "A"
+    },
+    {
+      "id": 15,
+      "topic": "History Screen",
+      "question": "How should the History screen organize and display past entries and reports?",
+      "answer": "Single chronological list",
+      "details": "Display all entries and reports in a single reverse-chronological list with type indicators (icon or label distinguishing daily entries from governance reports). Simple, scannable, and easy to navigate.",
+      "selection": "B"
+    },
+    {
+      "id": 16,
+      "topic": "Device Support",
+      "question": "Should tablet/iPad layouts be considered for MVP, or explicitly deferred to post-MVP?",
+      "answer": "Phone-only MVP",
+      "details": "Explicitly target phone form factor for MVP. The app will work on tablets but layouts will not be optimized for larger screens. Tablet optimization is deferred to post-MVP.",
+      "selection": "A"
+    },
+    {
+      "id": 17,
+      "topic": "Visual Design",
+      "question": "Should dark mode be included in MVP, or explicitly deferred to post-MVP?",
+      "answer": "Follow system setting",
+      "details": "Implement automatic light/dark mode based on device system setting. Flutter's theming makes this relatively straightforward. No manual toggle needed for MVP.",
+      "selection": "A"
+    },
+    {
+      "id": 18,
+      "topic": "Haptics",
+      "question": "What haptic feedback patterns should be used for key interactions?",
+      "answer": "Defer to implementation",
+      "details": "Let development team define haptic patterns during implementation based on platform conventions and user testing. Document as 'optional, can disable' in Settings. Do not specify patterns in PRD.",
+      "selection": "A"
+    },
+    {
+      "id": 19,
+      "topic": "Entry Limits",
+      "question": "What are the maximum limits for voice recording duration and transcript/entry length?",
+      "answer": "15 min / 2500 words / 7500 total",
+      "details": "Set limits for power users: Maximum 15 minutes per voice recording (approximately 2500 words), maximum 7500 words per entry including all follow-ups. These are soft limits with warning rather than hard blocks.",
+      "selection": "C"
+    },
+    {
+      "id": 20,
+      "topic": "Rate Limits",
+      "question": "What happens when a user exceeds a soft rate limit?",
+      "answer": "Warning only",
+      "details": "Show usage count in the UI but do not block or add friction when limits are exceeded. Rely on user self-regulation. Limits are informational guideposts rather than enforcement mechanisms.",
+      "selection": "C"
+    },
+    {
+      "id": 21,
+      "topic": "Export Formats",
+      "question": "What is the structure and content of exported Markdown and JSON files?",
+      "answer": "Define in implementation",
+      "details": "Specify requirements in PRD (must include metadata, date range, signal counts) but defer exact format specification to development. Allows flexibility during implementation.",
+      "selection": "A"
+    },
+    {
+      "id": 22,
+      "topic": "Missing Content",
+      "question": "Should an error message catalog be created listing all user-facing messages?",
+      "answer": "Defer to implementation",
+      "details": "Create error message catalog during development. PRD provides error tier examples and tone guidelines only. Development team builds comprehensive catalog as features are implemented.",
+      "selection": "A"
+    },
+    {
+      "id": 23,
+      "topic": "Missing Content",
+      "question": "Should actual LLM prompt templates be documented for key workflows?",
+      "answer": "Separate prompt document",
+      "details": "Create a dedicated prompts document containing actual prompt templates for all key workflows. Link from PRD. Version control the prompts document alongside the PRD for iteration and testing.",
+      "selection": "A"
+    },
+    {
+      "id": 24,
+      "topic": "Missing Content",
+      "question": "Should animation and transition specifications be defined?",
+      "answer": "Defer to design/implementation",
+      "details": "Let design team define animations during implementation. PRD specifies functional states (loading, success, error) but not animation timing or style. Design team applies platform conventions.",
+      "selection": "A"
+    },
+    {
+      "id": 25,
+      "topic": "Missing Content",
+      "question": "Should sound design be specified for key interactions?",
+      "answer": "Recording sounds only",
+      "details": "Include audio feedback for voice recording start and stop only. No other sounds for MVP. This provides essential feedback for the core voice recording interaction without broader sound design work.",
+      "selection": "B"
+    },
+    {
+      "id": 26,
+      "topic": "Missing Content",
+      "question": "What are the app icon and visual branding requirements?",
+      "answer": "Separate brand guide",
+      "details": "Create a standalone brand guide document covering app icon, color palette, and typography. Link from PRD. Maintain as separate document for design team reference.",
+      "selection": "A"
+    },
+    {
+      "id": 27,
+      "topic": "Missing Content",
+      "question": "What should the App Store listing content include?",
+      "answer": "Defer to launch prep",
+      "details": "Create App Store/Play Store listing content closer to launch date. Not documented in PRD now. This allows marketing content to reflect final product state.",
+      "selection": "C"
+    }
+  ],
+  "metadata": {
+    "source_questions": "questions-PRD-assessment-20260110-170000-20260110-171500.json",
+    "source_assessment": "PRD-assessment-20260110-170000.md",
+    "source_prd": "PRD v4 — Boardroom Journal (MVP)",
+    "total_questions": 27,
+    "completed_date": "2026-01-10T17:30:00Z",
+    "session_summary": {
+      "topics_covered": [
+        "Mobile Framework",
+        "Onboarding",
+        "Notifications",
+        "AI/LLM Configuration",
+        "Weekly Brief",
+        "Portfolio Management",
+        "Entry Editing",
+        "Quarterly Report",
+        "Settings",
+        "History Screen",
+        "Device Support",
+        "Visual Design",
+        "Haptics",
+        "Entry Limits",
+        "Rate Limits",
+        "Export Formats",
+        "Missing Content"
+      ],
+      "key_decisions": [
+        "Flutter with Drift ORM as mobile framework",
+        "Minimal 3-screen onboarding with deferred Setup",
+        "In-app prompts only for MVP (no push notifications)",
+        "Claude Opus 4.5 for governance, Sonnet 4.5 for daily operations",
+        "No entry locking - editable indefinitely",
+        "Follow system setting for dark mode",
+        "Phone-only MVP with tablet deferred",
+        "15 min max recording / 7500 words max per entry",
+        "Warning-only soft limits (no blocking)",
+        "Separate documents for prompts and brand guide"
+      ]
+    }
+  }
+}
