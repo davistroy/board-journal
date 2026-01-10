@@ -1,0 +1,1115 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "topic": "Board Role Definitions",
+      "sections": ["C1. Board Roles Not Defined"],
+      "question": "What are the names/titles of the five board roles?",
+      "context": "The entire governance system references 'five board members' and 'five roles' but never specifies what these roles are. Options include functional roles (e.g., 'CFO', 'CTO', 'CHRO'), archetype roles (e.g., 'Devil's Advocate', 'Optimist', 'Pragmatist'), or domain roles (e.g., 'Career Strategist', 'Skills Advisor', 'Network Coach'). This is fundamental to the product's core value proposition and blocks implementation of the governance system."
+    },
+    {
+      "id": 2,
+      "topic": "Board Role Definitions",
+      "sections": ["C1. Board Roles Not Defined"],
+      "question": "What is the specific mandate/responsibility of each board role?",
+      "context": "Each role needs a defined mandate including: what types of questions the role focuses on, what perspective the role brings to governance sessions, and whether there are topics only certain roles address. Without this, the governance session logic cannot be implemented."
+    },
+    {
+      "id": 3,
+      "topic": "Board Role Definitions",
+      "sections": ["C1. Board Roles Not Defined"],
+      "question": "How do roles differ in their interaction style?",
+      "context": "Need to define whether different roles have different 'pushback' thresholds, different evidence requirements, and whether some roles are more supportive vs challenging. This affects the personality and behavior implementation of each AI board member."
+    },
+    {
+      "id": 4,
+      "topic": "Board Role Definitions",
+      "sections": ["C1. Board Roles Not Defined"],
+      "question": "What are the default persona profiles for each role?",
+      "context": "Each role needs defined personality traits, communication style, and example names for each persona. This is critical for prompt engineering and ensuring diverse perspectives during governance sessions."
+    },
+    {
+      "id": 5,
+      "topic": "Board Role Definitions",
+      "sections": ["C1. Board Roles Not Defined"],
+      "question": "How are roles anchored to problems?",
+      "context": "Need to define: Can multiple roles anchor to the same problem? What happens if there are only 3 problems but 5 roles? Is the anchoring algorithm defined or user-selected? Referenced in PRD lines 58, 173-204, 230-232, 295, 324."
+    },
+    {
+      "id": 6,
+      "topic": "Board Role Definitions",
+      "sections": ["C1. Board Roles Not Defined"],
+      "question": "What are example 'anchored demands' for each role type?",
+      "context": "Need 2-3 examples per role, the format/structure of an anchored demand, and how specific demands must be. This provides implementation guidance for the governance session question generation."
+    },
+    {
+      "id": 7,
+      "topic": "LLM Integration",
+      "sections": ["C2. LLM Provider & Integration Strategy"],
+      "question": "Which LLM provider will be used?",
+      "context": "Options include OpenAI (GPT-4, GPT-4o), Anthropic (Claude), Google (Gemini), or multiple providers with fallback. The entire product depends on LLM capabilities for extraction, brief generation, governance conversations, and vagueness detection. Referenced in PRD lines 352-398."
+    },
+    {
+      "id": 8,
+      "topic": "LLM Integration",
+      "sections": ["C2. LLM Provider & Integration Strategy"],
+      "question": "What model(s) will be used for each function?",
+      "context": "Need to specify which model for: daily entry signal extraction, weekly brief generation, governance conversations, and vagueness detection (or whether heuristics are used instead). Different models have different capabilities, costs, and latency characteristics."
+    },
+    {
+      "id": 9,
+      "topic": "LLM Integration",
+      "sections": ["C2. LLM Provider & Integration Strategy"],
+      "question": "What are the cost constraints for LLM usage?",
+      "context": "Need to define: maximum cost per daily entry, maximum cost per weekly brief, maximum cost per governance session, and monthly cost cap per user. This affects model selection and implementation decisions."
+    },
+    {
+      "id": 10,
+      "topic": "LLM Integration",
+      "sections": ["C2. LLM Provider & Integration Strategy"],
+      "question": "How will deterministic outputs be achieved from LLM calls?",
+      "context": "Need to specify: temperature settings for each function, use of structured output modes (JSON mode, function calling), seed values for reproducibility, and output validation and retry strategy."
+    },
+    {
+      "id": 11,
+      "topic": "LLM Integration",
+      "sections": ["C2. LLM Provider & Integration Strategy"],
+      "question": "What is the latency budget for LLM operations?",
+      "context": "Need to define maximum acceptable latency for: signal extraction, brief generation, governance question responses. Also need to determine whether to use streaming vs batch responses."
+    },
+    {
+      "id": 12,
+      "topic": "LLM Integration",
+      "sections": ["C2. LLM Provider & Integration Strategy"],
+      "question": "What is the fallback strategy when LLM services are unavailable?",
+      "context": "Need to define: behavior when LLM service is unavailable, retry logic and backoff strategy, graceful degradation options, and user notification approach."
+    },
+    {
+      "id": 13,
+      "topic": "LLM Integration",
+      "sections": ["C2. LLM Provider & Integration Strategy"],
+      "question": "How will prompts be managed?",
+      "context": "Need to define: version control for prompts, A/B testing capability, and prompt update deployment process. This is critical for maintaining and improving AI quality over time."
+    },
+    {
+      "id": 14,
+      "topic": "Transcription Services",
+      "sections": ["C3. Transcription Service Specification"],
+      "question": "Which transcription service will be used?",
+      "context": "Options include: OpenAI Whisper (API or self-hosted), Deepgram, AssemblyAI, Google Speech-to-Text, Apple/Android native APIs, or a combination (native for streaming, cloud for accuracy). Voice capture is the primary input modality; without this spec, cannot estimate costs, latency, or build recording UX. Referenced in PRD lines 34, 78-108, 254-266."
+    },
+    {
+      "id": 15,
+      "topic": "Transcription Services",
+      "sections": ["C3. Transcription Service Specification"],
+      "question": "Should transcription use streaming or batch processing?",
+      "context": "Options: real-time display during recording (requires streaming), post-recording transcription acceptable, or hybrid approach (streaming preview, batch final). This significantly affects UX and technical architecture."
+    },
+    {
+      "id": 16,
+      "topic": "Transcription Services",
+      "sections": ["C3. Transcription Service Specification"],
+      "question": "What languages are supported in MVP?",
+      "context": "Need to determine: English only or multiple languages, language auto-detection capability, and accent/dialect handling requirements."
+    },
+    {
+      "id": 17,
+      "topic": "Transcription Services",
+      "sections": ["C3. Transcription Service Specification"],
+      "question": "What is the accuracy requirement for transcription?",
+      "context": "Need to define: minimum Word Error Rate (WER) target, handling of technical jargon and proper nouns, and custom vocabulary support requirements."
+    },
+    {
+      "id": 18,
+      "topic": "Transcription Services",
+      "sections": ["C3. Transcription Service Specification"],
+      "question": "What are the audio specifications?",
+      "context": "Need to define: recording format (WAV, M4A, MP3), sample rate requirements, mono vs stereo, maximum recording duration, and file size limits."
+    },
+    {
+      "id": 19,
+      "topic": "Transcription Services",
+      "sections": ["C3. Transcription Service Specification", "Appendix A: PRD NEED INPUT Items"],
+      "question": "What is the silence timeout default for voice recording?",
+      "context": "PRD assumes 8 seconds but this is flagged as needing input. Assessment recommends reducing to 2-3 seconds and making it configurable. Need to determine: the exact default value, whether it should be user-configurable, and how 'silence' is defined (dB threshold)."
+    },
+    {
+      "id": 20,
+      "topic": "Transcription Services",
+      "sections": ["C3. Transcription Service Specification"],
+      "question": "What offline recording capability is supported?",
+      "context": "Need to determine: can users record without network, store-and-forward when network returns, and whether local transcription fallback is available."
+    },
+    {
+      "id": 21,
+      "topic": "Data Architecture",
+      "sections": ["C4. Data Storage Architecture"],
+      "question": "Where is user data stored?",
+      "context": "Options: cloud-only (which provider?), local-first with cloud sync, or hybrid (some local, some cloud). Critical for privacy compliance, sync strategy, and technical architecture. Referenced in PRD lines 55-64, 105-107."
+    },
+    {
+      "id": 22,
+      "topic": "Data Architecture",
+      "sections": ["C4. Data Storage Architecture"],
+      "question": "What database technology will be used?",
+      "context": "Need to specify: Cloud database (PostgreSQL, MongoDB, Firebase), Local database (SQLite, Realm, Core Data), and Sync mechanism (Custom, Firebase, Supabase)."
+    },
+    {
+      "id": 23,
+      "topic": "Data Architecture",
+      "sections": ["C4. Data Storage Architecture"],
+      "question": "What is the data residency strategy?",
+      "context": "Need to determine: are US-only servers acceptable, is EU data residency required for GDPR, and whether region should be user-selectable."
+    },
+    {
+      "id": 24,
+      "topic": "Data Architecture",
+      "sections": ["C4. Data Storage Architecture"],
+      "question": "How is data encrypted?",
+      "context": "Need to specify: encryption at rest (algorithm, key management), encryption in transit (TLS version), end-to-end encryption for transcripts, and client-side encryption before upload."
+    },
+    {
+      "id": 25,
+      "topic": "Data Architecture",
+      "sections": ["C4. Data Storage Architecture"],
+      "question": "What is the backup strategy?",
+      "context": "Need to define: backup frequency, retention period, point-in-time recovery capability, and user-accessible backups/exports."
+    },
+    {
+      "id": 26,
+      "topic": "Data Architecture",
+      "sections": ["C4. Data Storage Architecture"],
+      "question": "What are the data retention policies?",
+      "context": "Need to define: how long transcripts are retained, how long governance sessions are retained, automatic deletion options, and legal hold capabilities."
+    },
+    {
+      "id": 27,
+      "topic": "Security & Privacy",
+      "sections": ["C5. Privacy Policy & Legal Compliance"],
+      "question": "What data is sent to third parties?",
+      "context": "Need to specify for each: transcription service (audio sent? text only?), LLM provider (what context is sent?), analytics (what events/data?), and crash reporting (what data included?). App stores require privacy policy; GDPR/CCPA compliance is legally mandatory. Referenced in PRD lines 342-349, 392-398, 407."
+    },
+    {
+      "id": 28,
+      "topic": "Security & Privacy",
+      "sections": ["C5. Privacy Policy & Legal Compliance"],
+      "question": "What is the data processing legal basis?",
+      "context": "Need to determine if processing is: consent-based, legitimate interest, or contract performance. This affects privacy policy wording and user consent flows."
+    },
+    {
+      "id": 29,
+      "topic": "Security & Privacy",
+      "sections": ["C5. Privacy Policy & Legal Compliance"],
+      "question": "What user rights must be supported?",
+      "context": "Need to define implementation for: right to access (data export), right to deletion (and timeline), right to portability (format), and right to rectification."
+    },
+    {
+      "id": 30,
+      "topic": "Security & Privacy",
+      "sections": ["C5. Privacy Policy & Legal Compliance", "Appendix A: PRD NEED INPUT Items"],
+      "question": "What is the privacy statement wording?",
+      "context": "Need wording for: 'Your data is never used to train AI models', 'Your data is not shared with third parties', audio deletion policy, and third-party data processing disclosure. This is flagged as needing input and should be drafted with legal counsel before launch."
+    },
+    {
+      "id": 31,
+      "topic": "Security & Privacy",
+      "sections": ["C5. Privacy Policy & Legal Compliance"],
+      "question": "What compliance frameworks apply?",
+      "context": "Need to determine applicability of: GDPR (EU users), CCPA (California users), HIPAA (if health-adjacent), and SOC 2 (enterprise customers)."
+    },
+    {
+      "id": 32,
+      "topic": "Security & Privacy",
+      "sections": ["C5. Privacy Policy & Legal Compliance"],
+      "question": "What is the data processing agreement status with third parties?",
+      "context": "Need DPA status with: LLM provider, transcription service, and cloud infrastructure provider. These are required for GDPR compliance."
+    },
+    {
+      "id": 33,
+      "topic": "Security & Privacy",
+      "sections": ["C5. Privacy Policy & Legal Compliance"],
+      "question": "How does 'abstracted' sensitive mode work legally?",
+      "context": "Need to determine: is placeholder replacement sufficient for compliance, who/what performs the abstraction, and whether original data is retained or destroyed."
+    },
+    {
+      "id": 34,
+      "topic": "Authentication",
+      "sections": ["C6. Authentication Flow Details"],
+      "question": "What OAuth scopes are requested from each provider?",
+      "context": "Need to define scopes for: Apple (name, email only?), Google (profile, email only?), and Microsoft (profile, email only?). OAuth sign-in is MVP scope but no flow details provided. Referenced in PRD lines 33, 341."
+    },
+    {
+      "id": 35,
+      "topic": "Authentication",
+      "sections": ["C6. Authentication Flow Details"],
+      "question": "What user data is collected at sign-up?",
+      "context": "Need to specify: display name (from OAuth or user-entered?), email (required or optional?), and timezone (auto-detect or user-select?)."
+    },
+    {
+      "id": 36,
+      "topic": "Authentication",
+      "sections": ["C6. Authentication Flow Details"],
+      "question": "How are sessions managed?",
+      "context": "Need to define: session token duration, refresh token strategy, and concurrent session limit."
+    },
+    {
+      "id": 37,
+      "topic": "Authentication",
+      "sections": ["C6. Authentication Flow Details"],
+      "question": "What is the account recovery flow?",
+      "context": "Need to specify: handling lost access to OAuth provider, email-based recovery option availability, and support escalation path."
+    },
+    {
+      "id": 38,
+      "topic": "Authentication",
+      "sections": ["C6. Authentication Flow Details"],
+      "question": "What is the account deletion flow?",
+      "context": "Need to define: soft delete with recovery period or immediate hard delete, hard delete timeline, and whether data export before deletion is offered."
+    },
+    {
+      "id": 39,
+      "topic": "Authentication",
+      "sections": ["C6. Authentication Flow Details"],
+      "question": "Is biometric authentication supported?",
+      "context": "Need to determine: Face ID / Touch ID support on iOS, fingerprint support on Android, whether it's required or optional, and whether it's for app unlock or re-authentication."
+    },
+    {
+      "id": 40,
+      "topic": "User Experience",
+      "sections": ["C7. Onboarding Flow Definition"],
+      "question": "What is the first-run experience?",
+      "context": "Need to define: splash/welcome screens, feature tour/tutorial, and whether skip option is available. No first-run experience is defined in the PRD. This is critical for user retention and product understanding."
+    },
+    {
+      "id": 41,
+      "topic": "User Experience",
+      "sections": ["C7. Onboarding Flow Definition"],
+      "question": "How is the core loop introduced to new users?",
+      "context": "Options include: animated explanation, sample entry walkthrough, or interactive tutorial. Users need to understand the daily entry → weekly brief → governance session flow."
+    },
+    {
+      "id": 42,
+      "topic": "User Experience",
+      "sections": ["C7. Onboarding Flow Definition"],
+      "question": "When is Setup (portfolio creation) prompted?",
+      "context": "Options: immediately after onboarding, after first entry, after first week, or user-initiated only. The timing affects user engagement and comprehension."
+    },
+    {
+      "id": 43,
+      "topic": "User Experience",
+      "sections": ["C7. Onboarding Flow Definition"],
+      "question": "What are the onboarding steps in order?",
+      "context": "Need to define sequence and inclusion of: account creation (OAuth), timezone confirmation, microphone permission, notification permission (even if not MVP, OS may require), tutorial/walkthrough, and first action prompt."
+    },
+    {
+      "id": 44,
+      "topic": "User Experience",
+      "sections": ["C7. Onboarding Flow Definition"],
+      "question": "How long should onboarding take?",
+      "context": "Need to define: target time to first entry and maximum number of onboarding screens. Shorter onboarding typically leads to better retention."
+    },
+    {
+      "id": 45,
+      "topic": "User Experience",
+      "sections": ["C7. Onboarding Flow Definition"],
+      "question": "What empty states are shown throughout the app?",
+      "context": "Need to design: home with no entries, weekly brief area with no briefs, and governance hub with no portfolio. Empty states are critical for guiding new users."
+    },
+    {
+      "id": 46,
+      "topic": "Error Handling",
+      "sections": ["C8. Error Handling & Recovery Specifications"],
+      "question": "What errors can occur in the Daily Entry flow?",
+      "context": "Need to enumerate: microphone permission denied, recording failure (hardware), transcription service unavailable, transcription timeout, save to storage failed, and network lost mid-transcription. State machines reference 'Error / Recovery' state but provide no details. Referenced in PRD lines 86-87, 409."
+    },
+    {
+      "id": 47,
+      "topic": "Error Handling",
+      "sections": ["C8. Error Handling & Recovery Specifications"],
+      "question": "What is the recovery strategy for each Daily Entry error?",
+      "context": "For each error, need to define: automatic retry (how many times?), user-prompted retry behavior, fallback behavior, and data preservation strategy."
+    },
+    {
+      "id": 48,
+      "topic": "Error Handling",
+      "sections": ["C8. Error Handling & Recovery Specifications"],
+      "question": "What errors can occur in governance sessions?",
+      "context": "Need to enumerate: LLM service unavailable, response timeout, invalid/unparseable response, and session state corruption."
+    },
+    {
+      "id": 49,
+      "topic": "Error Handling",
+      "sections": ["C8. Error Handling & Recovery Specifications"],
+      "question": "How is partial progress preserved during sessions?",
+      "context": "Need to define: auto-save frequency, resume from last good state capability, and manual save points availability."
+    },
+    {
+      "id": 50,
+      "topic": "Error Handling",
+      "sections": ["C8. Error Handling & Recovery Specifications"],
+      "question": "What is the user notification strategy for errors?",
+      "context": "Need to define: toast messages, modal dialogs, inline error states, and whether error codes for support are displayed."
+    },
+    {
+      "id": 51,
+      "topic": "Error Handling",
+      "sections": ["C8. Error Handling & Recovery Specifications"],
+      "question": "What logging/telemetry is captured for errors?",
+      "context": "Need to define: error type and frequency tracking, user context (sanitized), recovery success rate, and support escalation triggers."
+    },
+    {
+      "id": 52,
+      "topic": "Weekly Brief",
+      "sections": ["C9. Weekly Brief Generation Edge Cases"],
+      "question": "What happens if user has zero entries for a week?",
+      "context": "Options: generate empty brief with message, skip generation entirely, or notify user. Weekly brief is a core feature; edge cases will cause user confusion. Referenced in PRD lines 111-135, 279-288."
+    },
+    {
+      "id": 53,
+      "topic": "Weekly Brief",
+      "sections": ["C9. Weekly Brief Generation Edge Cases"],
+      "question": "What if Sunday 8pm brief generation fails?",
+      "context": "Need to define: automatic retry logic, retry schedule, user notification, and manual generation fallback availability."
+    },
+    {
+      "id": 54,
+      "topic": "Weekly Brief",
+      "sections": ["C9. Weekly Brief Generation Edge Cases"],
+      "question": "What if user is in a different timezone than usual (traveling)?",
+      "context": "Need to determine: does brief generate at 'home' 8pm or current 8pm, and how is timezone change detected?"
+    },
+    {
+      "id": 55,
+      "topic": "Weekly Brief",
+      "sections": ["C9. Weekly Brief Generation Edge Cases"],
+      "question": "Can users manually trigger brief generation before Sunday?",
+      "context": "Need to determine: availability of 'Generate now' button, whether this replaces scheduled generation, and whether users can generate a mid-week preview."
+    },
+    {
+      "id": 56,
+      "topic": "Weekly Brief",
+      "sections": ["C9. Weekly Brief Generation Edge Cases"],
+      "question": "What if user has entries from previous week that weren't included in the brief?",
+      "context": "Scenarios include: late entries (Monday 00:01 after brief generated), edited entries after brief generation. Need to determine if regeneration includes new data."
+    },
+    {
+      "id": 57,
+      "topic": "Weekly Brief",
+      "sections": ["C9. Weekly Brief Generation Edge Cases"],
+      "question": "How are regeneration options implemented?",
+      "context": "Need to specify: 'Shorter' reduces word count by what %, 'More actionable' prompt changes, 'More strategic' prompt changes, and maximum regeneration attempts allowed."
+    },
+    {
+      "id": 58,
+      "topic": "Weekly Brief",
+      "sections": ["C9. Weekly Brief Generation Edge Cases"],
+      "question": "How are user edits preserved during regeneration?",
+      "context": "Need to define: which fields are edit-locked, how 'Start over' differs from 'Regenerate', and whether edit history is preserved."
+    },
+    {
+      "id": 59,
+      "topic": "Success Metrics",
+      "sections": ["C10. Success Metrics & KPIs"],
+      "question": "What are the primary success metrics?",
+      "context": "Need targets for: Daily Active Users (DAU), Weekly Active Users (WAU), and user retention (D1, D7, D30). Cannot measure MVP success without defined metrics. Critical for go/no-go decisions."
+    },
+    {
+      "id": 60,
+      "topic": "Success Metrics",
+      "sections": ["C10. Success Metrics & KPIs"],
+      "question": "What are the engagement metrics?",
+      "context": "Need targets for: average entries per user per week, weekly brief view rate, governance session completion rate, and export usage rate."
+    },
+    {
+      "id": 61,
+      "topic": "Success Metrics",
+      "sections": ["C10. Success Metrics & KPIs"],
+      "question": "What are the quality metrics?",
+      "context": "Need to track: entry completion rate (started vs saved), brief regeneration rate (proxy for quality), governance session abandonment rate, and vagueness gate trigger rate."
+    },
+    {
+      "id": 62,
+      "topic": "Success Metrics",
+      "sections": ["C10. Success Metrics & KPIs"],
+      "question": "What are the technical metrics?",
+      "context": "Need to track: transcription accuracy (sampled), brief generation success rate, app crash rate, and average latency by operation."
+    },
+    {
+      "id": 63,
+      "topic": "Success Metrics",
+      "sections": ["C10. Success Metrics & KPIs"],
+      "question": "What are the MVP launch criteria?",
+      "context": "Need to define: minimum beta user count, maximum critical bug count, and minimum feature completion percentage."
+    },
+    {
+      "id": 64,
+      "topic": "Success Metrics",
+      "sections": ["C10. Success Metrics & KPIs"],
+      "question": "What are the post-launch decision points?",
+      "context": "Need to define: metrics threshold for continued investment, pivot indicators, and scale indicators."
+    },
+    {
+      "id": 65,
+      "topic": "Multi-Device Sync",
+      "sections": ["H1. Multi-Device Sync Strategy"],
+      "question": "Is multi-device sync supported in MVP?",
+      "context": "Need to determine: same platform support (two iPhones), cross-platform support (iPhone + Android), or defer to post-MVP. Mobile iOS + Android implies multi-device use cases."
+    },
+    {
+      "id": 66,
+      "topic": "Multi-Device Sync",
+      "sections": ["H1. Multi-Device Sync Strategy"],
+      "question": "What is the sync architecture?",
+      "context": "Options: real-time sync, periodic sync, or manual sync trigger. This significantly affects data layer design."
+    },
+    {
+      "id": 67,
+      "topic": "Multi-Device Sync",
+      "sections": ["H1. Multi-Device Sync Strategy"],
+      "question": "How are sync conflicts resolved?",
+      "context": "Options: last-write-wins, merge strategy, or user-prompted resolution. Conflict resolution is critical for data integrity."
+    },
+    {
+      "id": 68,
+      "topic": "Multi-Device Sync",
+      "sections": ["H1. Multi-Device Sync Strategy"],
+      "question": "What is the sync latency target?",
+      "context": "Need to determine: acceptable latency (seconds or minutes) for entries and for governance state."
+    },
+    {
+      "id": 69,
+      "topic": "Multi-Device Sync",
+      "sections": ["H1. Multi-Device Sync Strategy"],
+      "question": "What happens during sync failures?",
+      "context": "Need to define: offline indicator display, retry strategy, and data integrity guarantees."
+    },
+    {
+      "id": 70,
+      "topic": "Offline Capabilities",
+      "sections": ["H2. Offline Capabilities"],
+      "question": "What features work offline?",
+      "context": "Need to determine: voice recording (store locally), view existing entries, view existing briefs, and start governance session. Mobile apps must handle intermittent connectivity."
+    },
+    {
+      "id": 71,
+      "topic": "Offline Capabilities",
+      "sections": ["H2. Offline Capabilities"],
+      "question": "What features require connectivity?",
+      "context": "Need to determine requirements for: transcription, brief generation, and governance Q&A. Some features may be completely blocked offline."
+    },
+    {
+      "id": 72,
+      "topic": "Offline Capabilities",
+      "sections": ["H2. Offline Capabilities"],
+      "question": "How is offline state communicated to users?",
+      "context": "Need to define: visual indicator, feature degradation messaging, and queue indicator for pending actions."
+    },
+    {
+      "id": 73,
+      "topic": "Offline Capabilities",
+      "sections": ["H2. Offline Capabilities"],
+      "question": "How is data synced when connectivity returns?",
+      "context": "Options: automatic background sync, user-prompted sync. Also need conflict handling strategy."
+    },
+    {
+      "id": 74,
+      "topic": "Performance Requirements",
+      "sections": ["H3. Performance Requirements"],
+      "question": "What are the latency targets by operation?",
+      "context": "Need specific targets for: app launch to usable (seconds), tap record to recording (ms), recording stop to transcript display (seconds), entry save (seconds), brief generation (seconds), and governance question response (seconds). No SLAs defined means developers will make arbitrary tradeoffs. PRD line 263 mentions '<60 seconds' for entry but no other performance specs."
+    },
+    {
+      "id": 75,
+      "topic": "Performance Requirements",
+      "sections": ["H3. Performance Requirements"],
+      "question": "What are the reliability targets?",
+      "context": "Need specific targets for: transcription success rate (%), brief generation success rate (%), and app crash rate (< _% of sessions)."
+    },
+    {
+      "id": 76,
+      "topic": "Performance Requirements",
+      "sections": ["H3. Performance Requirements"],
+      "question": "What are the capacity targets?",
+      "context": "Need to define: maximum concurrent users, maximum entries per user, and maximum transcript length supported."
+    },
+    {
+      "id": 77,
+      "topic": "Performance Requirements",
+      "sections": ["H3. Performance Requirements"],
+      "question": "What are the resource constraints?",
+      "context": "Need targets for: battery usage, storage usage limits, and network data usage."
+    },
+    {
+      "id": 78,
+      "topic": "Board Micro-Review",
+      "sections": ["H4. Board Micro-Review Definition"],
+      "question": "What is the Board Micro-Review?",
+      "context": "Referenced multiple times (PRD lines 56, 121, 281) but never defined. Options: a summary from the board's perspective, quick feedback on the week, or preview of governance concerns."
+    },
+    {
+      "id": 79,
+      "topic": "Board Micro-Review",
+      "sections": ["H4. Board Micro-Review Definition"],
+      "question": "What content does the Board Micro-Review contain?",
+      "context": "Need to specify: which board members contribute, format (bullets or prose), and length (word/bullet count)."
+    },
+    {
+      "id": 80,
+      "topic": "Board Micro-Review",
+      "sections": ["H4. Board Micro-Review Definition"],
+      "question": "How is the Board Micro-Review generated?",
+      "context": "Need to determine: same time as weekly brief, whether it requires portfolio to exist, and whether it uses a different prompt/model."
+    },
+    {
+      "id": 81,
+      "topic": "Board Micro-Review",
+      "sections": ["H4. Board Micro-Review Definition"],
+      "question": "Why is the Board Micro-Review optional?",
+      "context": "Need to clarify: can user toggle it off, is it only shown if portfolio exists, or is it a collapsible section?"
+    },
+    {
+      "id": 82,
+      "topic": "Board Micro-Review",
+      "sections": ["H4. Board Micro-Review Definition"],
+      "question": "What is the UX for viewing the Board Micro-Review?",
+      "context": "Options: inline in brief, separate tab/section, or expandable accordion."
+    },
+    {
+      "id": 83,
+      "topic": "Portfolio Risk",
+      "sections": ["H5. Portfolio Risk Definition"],
+      "question": "What does portfolioRisk represent?",
+      "context": "Field exists in data model (PRD lines 57, 187) but never defined. Options: overall career risk level, concentration risk, or depreciation risk."
+    },
+    {
+      "id": 84,
+      "topic": "Portfolio Risk",
+      "sections": ["H5. Portfolio Risk Definition"],
+      "question": "What values can portfolioRisk have?",
+      "context": "Options: numeric score (1-10), categorical (Low/Medium/High/Critical), or multi-dimensional."
+    },
+    {
+      "id": 85,
+      "topic": "Portfolio Risk",
+      "sections": ["H5. Portfolio Risk Definition"],
+      "question": "How is portfolioRisk calculated?",
+      "context": "Options: algorithm based on problem classifications, user-assessed, or AI-assessed during Setup."
+    },
+    {
+      "id": 86,
+      "topic": "Portfolio Risk",
+      "sections": ["H5. Portfolio Risk Definition"],
+      "question": "How is portfolioRisk displayed?",
+      "context": "Options: visual indicator (color, icon), numeric display, and/or trend over time."
+    },
+    {
+      "id": 87,
+      "topic": "Portfolio Risk",
+      "sections": ["H5. Portfolio Risk Definition"],
+      "question": "What actions does portfolioRisk drive?",
+      "context": "Options: warnings/alerts, recommendations, or governance triggers."
+    },
+    {
+      "id": 88,
+      "topic": "Sensitivity Gate",
+      "sections": ["H6. Sensitivity Gate Implementation"],
+      "question": "What triggers the Sensitivity Gate?",
+      "context": "Referenced at start of governance flows (PRD lines 143, 177) but never explained. Options: always shown at session start, based on prior session content, or user preference setting."
+    },
+    {
+      "id": 89,
+      "topic": "Sensitivity Gate",
+      "sections": ["H6. Sensitivity Gate Implementation"],
+      "question": "What options does the Sensitivity Gate present?",
+      "context": "Options may include: 'Normal mode' vs 'Abstracted mode', content warning acknowledgment, or specific sensitivity settings."
+    },
+    {
+      "id": 90,
+      "topic": "Sensitivity Gate",
+      "sections": ["H6. Sensitivity Gate Implementation"],
+      "question": "What does 'abstracted mode' do technically?",
+      "context": "Options: real-time entity replacement, post-processing replacement. Also need to define what entities are replaced (names, companies, titles)."
+    },
+    {
+      "id": 91,
+      "topic": "Sensitivity Gate",
+      "sections": ["H6. Sensitivity Gate Implementation"],
+      "question": "How are placeholders generated in abstracted mode?",
+      "context": "Options: consistent per entity ('Manager' always = same person), random each time, or user-defined placeholders."
+    },
+    {
+      "id": 92,
+      "topic": "Sensitivity Gate",
+      "sections": ["H6. Sensitivity Gate Implementation"],
+      "question": "Is abstraction reversible?",
+      "context": "Need to determine: can user see original after session, is original stored at all, and what are the legal implications?"
+    },
+    {
+      "id": 93,
+      "topic": "Vagueness Detection",
+      "sections": ["H7. Vagueness Detection Implementation", "Appendix A: PRD NEED INPUT Items"],
+      "question": "Is vagueness detection model-based or rule-based?",
+      "context": "Core enforcement mechanism but only heuristic guidance provided (PRD lines 152-157, 382-389). Options: LLM classification, keyword/pattern matching, or hybrid approach."
+    },
+    {
+      "id": 94,
+      "topic": "Vagueness Detection",
+      "sections": ["H7. Vagueness Detection Implementation"],
+      "question": "What are the exact trigger conditions for vagueness detection?",
+      "context": "PRD lists: no named instance + generic qualifiers + no timeline/stakeholder/outcome. Need to clarify: are all three required (AND) or any (OR), and what is the full list of 'generic qualifiers'?"
+    },
+    {
+      "id": 95,
+      "topic": "Vagueness Detection",
+      "sections": ["H7. Vagueness Detection Implementation"],
+      "question": "How is the false positive rate for vagueness detection managed?",
+      "context": "Need to define: threshold tuning, user feedback mechanism, and override capability."
+    },
+    {
+      "id": 96,
+      "topic": "Vagueness Detection",
+      "sections": ["H7. Vagueness Detection Implementation", "Appendix A: PRD NEED INPUT Items"],
+      "question": "What is the skip behavior for vagueness gates?",
+      "context": "PRD suggests 'two-step skip' but needs clarification: what are the two steps, what is recorded when user skips, and does skip affect outputs? Assessment recommends accepting recommendation and implementing as specified."
+    },
+    {
+      "id": 97,
+      "topic": "Vagueness Detection",
+      "sections": ["H7. Vagueness Detection Implementation"],
+      "question": "Is vagueness detection consistent across sessions?",
+      "context": "Need to determine: does same answer yield same classification, and is there user-specific calibration?"
+    },
+    {
+      "id": 98,
+      "topic": "Daily Entry Cap",
+      "sections": ["H8. Daily Entry Cap Mechanics"],
+      "question": "What time does the daily entry cap reset?",
+      "context": "Hard cap stated (3/day per PRD line 10) but mechanics unclear. Options: midnight device timezone, midnight account timezone, or rolling 24-hour window."
+    },
+    {
+      "id": 99,
+      "topic": "Daily Entry Cap",
+      "sections": ["H8. Daily Entry Cap Mechanics"],
+      "question": "What happens when user hits the daily entry cap?",
+      "context": "Need to define: what message is shown, whether record button is disabled or shows error on tap, and whether there is a countdown to reset."
+    },
+    {
+      "id": 100,
+      "topic": "Daily Entry Cap",
+      "sections": ["H8. Daily Entry Cap Mechanics"],
+      "question": "What is the rationale for 3 entries per day?",
+      "context": "Need to determine: should this be communicated to users, and is it based on research/testing?"
+    },
+    {
+      "id": 101,
+      "topic": "Daily Entry Cap",
+      "sections": ["H8. Daily Entry Cap Mechanics"],
+      "question": "Are there any exceptions to the daily entry cap?",
+      "context": "Questions include: does edit count as new entry, does deleted entry free a slot, is there admin override for testing?"
+    },
+    {
+      "id": 102,
+      "topic": "Daily Entry Cap",
+      "sections": ["H8. Daily Entry Cap Mechanics"],
+      "question": "How is the daily entry cap enforced technically?",
+      "context": "Options: client-side only, server-side validation, or both. Also need race condition handling."
+    },
+    {
+      "id": 103,
+      "topic": "Quote Enforcement",
+      "sections": ["H9. Quote Enforcement Implementation"],
+      "question": "How are verbatim quotes extracted from user transcripts?",
+      "context": "'Quote user words' is required in outputs (PRD lines 161-162, 375-376) but no technical spec. Options: LLM-based extraction, fuzzy matching to transcript, or exact string matching."
+    },
+    {
+      "id": 104,
+      "topic": "Quote Enforcement",
+      "sections": ["H9. Quote Enforcement Implementation"],
+      "question": "What if user's words don't fit the required format?",
+      "context": "Options: force verbatim even if grammatically awkward, allow light editing for clarity, or show both original and clarified."
+    },
+    {
+      "id": 105,
+      "topic": "Quote Enforcement",
+      "sections": ["H9. Quote Enforcement Implementation"],
+      "question": "How are quotes validated against source transcripts?",
+      "context": "Need to define: whether to verify quote exists in source transcript, similarity threshold for fuzzy matching, and fallback if quote not found."
+    },
+    {
+      "id": 106,
+      "topic": "Quote Enforcement",
+      "sections": ["H9. Quote Enforcement Implementation"],
+      "question": "How are quotes formatted in output?",
+      "context": "Options: quotation marks, italics, and/or attribution."
+    },
+    {
+      "id": 107,
+      "topic": "Quote Enforcement",
+      "sections": ["H9. Quote Enforcement Implementation"],
+      "question": "What if user gave no relevant statement for a quote?",
+      "context": "Options: 'No direct statement' placeholder, paraphrase allowed, or skip the field."
+    },
+    {
+      "id": 108,
+      "topic": "Data Model",
+      "sections": ["H10. Data Model Relationships"],
+      "question": "What are the foreign key relationships between data objects?",
+      "context": "Objects defined (PRD lines 55-64) but relationships unclear. Need to specify: WeeklyBrief → DailyEntry (which entries included?), GovernanceSession → ProblemPortfolio (which version?), Bet → GovernanceSession (which session created it?), Bet → Problem (which problem does it relate to?), BoardMember → Problem (anchoredProblemId)."
+    },
+    {
+      "id": 109,
+      "topic": "Data Model",
+      "sections": ["H10. Data Model Relationships"],
+      "question": "What is the cascade delete behavior?",
+      "context": "Need to define: Delete Problem → Delete anchored BoardMember?, Delete Portfolio → Delete all Problems?, Delete Entry → Regenerate Brief?"
+    },
+    {
+      "id": 110,
+      "topic": "Data Model",
+      "sections": ["H10. Data Model Relationships"],
+      "question": "What are the cardinality constraints?",
+      "context": "Need to define: One Portfolio per user or versioned history?, Exactly 5 BoardMembers always?, 3-5 Problems exactly or at least 3?"
+    },
+    {
+      "id": 111,
+      "topic": "Data Model",
+      "sections": ["H10. Data Model Relationships"],
+      "question": "How is historical data handled?",
+      "context": "Need to define: are old portfolios archived, are old bets preserved after resolution, are deleted entries truly deleted or soft-deleted?"
+    },
+    {
+      "id": 112,
+      "topic": "Accessibility",
+      "sections": ["H11. Accessibility Requirements"],
+      "question": "What WCAG level is targeted?",
+      "context": "App store guidelines and legal requirements often require accessibility. Options: WCAG 2.1 Level A (minimum) or WCAG 2.1 Level AA (recommended)."
+    },
+    {
+      "id": 113,
+      "topic": "Accessibility",
+      "sections": ["H11. Accessibility Requirements"],
+      "question": "What screen reader support is required?",
+      "context": "Need to specify: VoiceOver support (iOS), TalkBack support (Android), and whether full app must be navigable via screen reader."
+    },
+    {
+      "id": 114,
+      "topic": "Accessibility",
+      "sections": ["H11. Accessibility Requirements"],
+      "question": "What are the voice-specific accessibility considerations?",
+      "context": "Need to define: alternative text input for all voice features, and captioning of any audio playback."
+    },
+    {
+      "id": 115,
+      "topic": "Accessibility",
+      "sections": ["H11. Accessibility Requirements"],
+      "question": "What are the visual accessibility requirements?",
+      "context": "Need to define: minimum contrast ratios, dynamic text size support, and color-blind friendly palette."
+    },
+    {
+      "id": 116,
+      "topic": "Accessibility",
+      "sections": ["H11. Accessibility Requirements"],
+      "question": "What are the motor accessibility requirements?",
+      "context": "Need to define: minimum touch target sizes, gesture alternatives, and switch control support."
+    },
+    {
+      "id": 117,
+      "topic": "Technical Architecture",
+      "sections": ["M1. Tech Stack Specification"],
+      "question": "What is the mobile framework?",
+      "context": "Options: React Native, Flutter, or Native (Swift/Kotlin). This is a foundational decision affecting all mobile development."
+    },
+    {
+      "id": 118,
+      "topic": "Technical Architecture",
+      "sections": ["M1. Tech Stack Specification"],
+      "question": "What is the backend stack?",
+      "context": "Options: Node.js, Python, Go; Serverless (Lambda/Cloud Functions) or container-based."
+    },
+    {
+      "id": 119,
+      "topic": "Technical Architecture",
+      "sections": ["M1. Tech Stack Specification"],
+      "question": "What is the infrastructure platform?",
+      "context": "Options: AWS, GCP, Azure, or multi-cloud. Affects available services and pricing."
+    },
+    {
+      "id": 120,
+      "topic": "Technical Architecture",
+      "sections": ["M1. Tech Stack Specification"],
+      "question": "What are the CI/CD requirements?",
+      "context": "Need to define: build pipeline, testing requirements, and deployment strategy."
+    },
+    {
+      "id": 121,
+      "topic": "Analytics & Telemetry",
+      "sections": ["M2. Analytics & Telemetry"],
+      "question": "What analytics platform will be used?",
+      "context": "Options: Mixpanel, Amplitude, or Firebase Analytics."
+    },
+    {
+      "id": 122,
+      "topic": "Analytics & Telemetry",
+      "sections": ["M2. Analytics & Telemetry"],
+      "question": "What events should be tracked?",
+      "context": "Need to define: event taxonomy, required properties per event, and PII handling in analytics."
+    },
+    {
+      "id": 123,
+      "topic": "Analytics & Telemetry",
+      "sections": ["M2. Analytics & Telemetry"],
+      "question": "What is the crash reporting strategy?",
+      "context": "Options: Crashlytics, Sentry, or Bugsnag. Also need to define what data is included in crash reports."
+    },
+    {
+      "id": 124,
+      "topic": "Governance Session",
+      "sections": ["M3. Governance Session Abandonment"],
+      "question": "What happens if user closes app mid-governance session?",
+      "context": "Options: auto-save current state, resume prompt on return, or discard partial progress."
+    },
+    {
+      "id": 125,
+      "topic": "Governance Session",
+      "sections": ["M3. Governance Session Abandonment"],
+      "question": "How long is a partial governance session preserved?",
+      "context": "Options: 24 hours, until next session start, or user must explicitly discard."
+    },
+    {
+      "id": 126,
+      "topic": "Governance Session",
+      "sections": ["M3. Governance Session Abandonment"],
+      "question": "Can user explicitly abandon a governance session?",
+      "context": "Need to define: 'Exit without saving' option availability, confirmation dialog, and partial save option."
+    },
+    {
+      "id": 127,
+      "topic": "Entry Editing",
+      "sections": ["M4. Entry Editing After Save"],
+      "question": "Can users edit entries after saving?",
+      "context": "Need to specify: can edit transcript, can edit extracted signals, and whether there's a time limit on edits."
+    },
+    {
+      "id": 128,
+      "topic": "Entry Editing",
+      "sections": ["M4. Entry Editing After Save"],
+      "question": "How do edits affect the weekly brief?",
+      "context": "Options: regeneration required, automatic update, or manual sync."
+    },
+    {
+      "id": 129,
+      "topic": "Entry Editing",
+      "sections": ["M4. Entry Editing After Save"],
+      "question": "Is edit history preserved for entries?",
+      "context": "Options: version history, diff view, and/or restore previous version capability."
+    },
+    {
+      "id": 130,
+      "topic": "Text Input",
+      "sections": ["M5. Text Input for Daily Entries"],
+      "question": "Is text-only entry supported?",
+      "context": "Need to determine: full feature parity with voice, or different UX flow."
+    },
+    {
+      "id": 131,
+      "topic": "Text Input",
+      "sections": ["M5. Text Input for Daily Entries"],
+      "question": "How does Gap Check work for text entries?",
+      "context": "Options: same follow-up questions as voice, inline prompts, or skip gap check for text."
+    },
+    {
+      "id": 132,
+      "topic": "Text Input",
+      "sections": ["M5. Text Input for Daily Entries"],
+      "question": "Are text and voice entries distinguished?",
+      "context": "Need to determine: visual indicator, different processing, and whether combined in weekly brief."
+    },
+    {
+      "id": 133,
+      "topic": "Bet Resolution",
+      "sections": ["M6. Bet Resolution Flow"],
+      "question": "How are bets resolved?",
+      "context": "Options: prompted at 90-day mark, user-initiated resolution, or part of Quarterly session."
+    },
+    {
+      "id": 134,
+      "topic": "Bet Resolution",
+      "sections": ["M6. Bet Resolution Flow"],
+      "question": "What resolution options exist for bets?",
+      "context": "Options may include: Correct / Wrong / Partially Correct / Inconclusive. Also need to determine if evidence is required for resolution."
+    },
+    {
+      "id": 135,
+      "topic": "Bet Resolution",
+      "sections": ["M6. Bet Resolution Flow"],
+      "question": "What happens after a bet is resolved?",
+      "context": "Need to define: is bet archived, does it impact portfolio risk, and is it displayed in reports?"
+    },
+    {
+      "id": 136,
+      "topic": "Export",
+      "sections": ["M7. Export Format Specifications"],
+      "question": "What exactly is exported in Markdown?",
+      "context": "Options: single entry, weekly brief, governance session output, or all of the above."
+    },
+    {
+      "id": 137,
+      "topic": "Export",
+      "sections": ["M7. Export Format Specifications"],
+      "question": "What is the Markdown format/template?",
+      "context": "Need to define: heading structure, metadata inclusion, and frontmatter (YAML) format."
+    },
+    {
+      "id": 138,
+      "topic": "Export",
+      "sections": ["M7. Export Format Specifications"],
+      "question": "What share targets are supported?",
+      "context": "Options: native share sheet only, specific app integrations, and/or copy to clipboard."
+    },
+    {
+      "id": 139,
+      "topic": "Notifications",
+      "sections": ["M8. Notification Permission Handling"],
+      "question": "Do we need notification permission even if reminders are out of scope?",
+      "context": "Possible uses: weekly brief ready notification, governance session reminders (future)."
+    },
+    {
+      "id": 140,
+      "topic": "Notifications",
+      "sections": ["M8. Notification Permission Handling"],
+      "question": "When is notification permission requested?",
+      "context": "Options: onboarding, first relevant feature use, or never in MVP."
+    },
+    {
+      "id": 141,
+      "topic": "Notifications",
+      "sections": ["M8. Notification Permission Handling"],
+      "question": "How is notification permission denial handled?",
+      "context": "Need to define: feature degradation, and re-prompt strategy."
+    },
+    {
+      "id": 142,
+      "topic": "Entry Display",
+      "sections": ["L1. Entry Timestamp Display"],
+      "question": "How are entry times displayed?",
+      "context": "Options: relative ('2 hours ago'), absolute ('3:45 PM'), or both."
+    },
+    {
+      "id": 143,
+      "topic": "Entry Display",
+      "sections": ["L1. Entry Timestamp Display"],
+      "question": "What timezone is displayed for entries?",
+      "context": "Options: creation timezone or current device timezone."
+    },
+    {
+      "id": 144,
+      "topic": "Entry Display",
+      "sections": ["L1. Entry Timestamp Display"],
+      "question": "How are entries grouped?",
+      "context": "Options: by day, by week, or flat list."
+    },
+    {
+      "id": 145,
+      "topic": "Settings",
+      "sections": ["L2. Settings Persistence"],
+      "question": "Where are settings stored?",
+      "context": "Options: local only or synced to cloud."
+    },
+    {
+      "id": 146,
+      "topic": "Settings",
+      "sections": ["L2. Settings Persistence"],
+      "question": "What is the default state for each setting?",
+      "context": "PRD specifies: audio retention = delete, persona tone = warm-direct blunt. Need to define defaults for other settings."
+    },
+    {
+      "id": 147,
+      "topic": "Settings",
+      "sections": ["L2. Settings Persistence"],
+      "question": "Are settings migrated on app update?",
+      "context": "Need to define: migration strategy and default handling for new settings."
+    },
+    {
+      "id": 148,
+      "topic": "History View",
+      "sections": ["L3. History View Specifications"],
+      "question": "How is history organized?",
+      "context": "PRD mentions Entries tab vs Reports tab. Options: separated tabs, combined timeline, and/or search capability."
+    },
+    {
+      "id": 149,
+      "topic": "History View",
+      "sections": ["L3. History View Specifications"],
+      "question": "What filtering/sorting is available in history?",
+      "context": "Options: by date range, by type, and/or by content search."
+    },
+    {
+      "id": 150,
+      "topic": "History View",
+      "sections": ["L3. History View Specifications"],
+      "question": "What are the pagination/loading strategies for history?",
+      "context": "Options: infinite scroll, page-based. Also need initial load count."
+    },
+    {
+      "id": 151,
+      "topic": "Acceptance Criteria",
+      "sections": ["Appendix B: Acceptance Criteria Improvements"],
+      "question": "How should 'fast and painless' be defined measurably?",
+      "context": "PRD line 24 uses 'fast and painless' without metrics. Assessment suggests: <30 sec entry, <3 taps to start."
+    },
+    {
+      "id": 152,
+      "topic": "Acceptance Criteria",
+      "sections": ["Appendix B: Acceptance Criteria Improvements"],
+      "question": "How should 'short, readable, and sharp' be defined measurably?",
+      "context": "PRD line 25 uses 'short, readable, and sharp' without metrics. Assessment suggests: <500 words, Flesch-Kincaid grade <10."
+    },
+    {
+      "id": 153,
+      "topic": "Acceptance Criteria",
+      "sections": ["Appendix B: Acceptance Criteria Improvements"],
+      "question": "What conditions apply to the '<60 seconds' entry save requirement?",
+      "context": "PRD line 263 specifies 'Save an entry in <60 seconds' but needs to specify: network conditions, entry length, and device type."
+    }
+  ],
+  "metadata": {
+    "source_document": "PRD-ASSESSMENT.md",
+    "total_questions": 153,
+    "generated_date": "2026-01-10T14:30:00Z",
+    "topics_summary": [
+      "Board Role Definitions",
+      "LLM Integration",
+      "Transcription Services",
+      "Data Architecture",
+      "Security & Privacy",
+      "Authentication",
+      "User Experience",
+      "Error Handling",
+      "Weekly Brief",
+      "Success Metrics",
+      "Multi-Device Sync",
+      "Offline Capabilities",
+      "Performance Requirements",
+      "Board Micro-Review",
+      "Portfolio Risk",
+      "Sensitivity Gate",
+      "Vagueness Detection",
+      "Daily Entry Cap",
+      "Quote Enforcement",
+      "Data Model",
+      "Accessibility",
+      "Technical Architecture",
+      "Analytics & Telemetry",
+      "Governance Session",
+      "Entry Editing",
+      "Text Input",
+      "Bet Resolution",
+      "Export",
+      "Notifications",
+      "Entry Display",
+      "Settings",
+      "History View",
+      "Acceptance Criteria"
+    ]
+  }
+}
