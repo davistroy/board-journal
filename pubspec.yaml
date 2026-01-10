@@ -30,11 +30,34 @@ dependencies:
   # Sharing
   share_plus: ^7.2.1
 
+  # Audio recording
+  record: ^5.1.2
+
   # State management
   flutter_riverpod: ^2.4.9
 
   # Navigation
   go_router: ^14.2.0
+
+  # Background tasks
+  workmanager: ^0.5.2
+
+  # Notifications
+  flutter_local_notifications: ^16.3.2
+
+  # Timezone handling
+  timezone: ^0.9.2
+
+  # Shared preferences for background state
+  shared_preferences: ^2.2.2
+
+  # Authentication
+  flutter_secure_storage: ^9.0.0
+  sign_in_with_apple: ^5.0.0
+  google_sign_in: ^6.2.1
+
+  # Connectivity
+  connectivity_plus: ^6.0.3
 
 dev_dependencies:
   flutter_test:

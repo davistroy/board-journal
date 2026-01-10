@@ -1,0 +1,110 @@
+# Boardroom Journal Backend - Docker Compose for Local Development
+#
+# Usage:
+#   docker compose up -d        # Start all services
+#   docker compose logs -f      # View logs
+#   docker compose down         # Stop all services
+#   docker compose down -v      # Stop and remove volumes
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: boardroom-journal-db
+    environment:
+      POSTGRES_USER: boardroom
+      POSTGRES_PASSWORD: local_dev_password
+      POSTGRES_DB: boardroom_journal
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./lib/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U boardroom -d boardroom_journal"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - boardroom-network
+
+  # Backend API Server
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: boardroom-journal-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Server
+      HOST: "0.0.0.0"
+      PORT: "8080"
+      ENVIRONMENT: "development"
+
+      # Database
+      DATABASE_HOST: postgres
+      DATABASE_PORT: "5432"
+      DATABASE_NAME: boardroom_journal
+      DATABASE_USER: boardroom
+      DATABASE_PASSWORD: local_dev_password
+      DATABASE_POOL_SIZE: "10"
+
+      # JWT (use a real secret in production!)
+      JWT_SECRET: local_dev_jwt_secret_change_in_production
+      JWT_ACCESS_TOKEN_EXPIRY_MINUTES: "15"
+      JWT_REFRESH_TOKEN_EXPIRY_DAYS: "30"
+
+      # Rate limiting
+      RATE_LIMIT_ACCOUNT_CREATION_PER_HOUR: "3"
+      RATE_LIMIT_AUTH_ATTEMPTS_BEFORE_LOCKOUT: "5"
+      RATE_LIMIT_AUTH_LOCKOUT_MINUTES: "15"
+
+      # Request limits
+      MAX_REQUEST_BODY_SIZE: "10485760"
+
+      # OAuth (optional for local dev - use mock mode)
+      # APPLE_CLIENT_ID: ""
+      # APPLE_TEAM_ID: ""
+      # APPLE_KEY_ID: ""
+      # APPLE_PRIVATE_KEY: ""
+      # GOOGLE_CLIENT_ID: ""
+      # GOOGLE_CLIENT_SECRET: ""
+
+      # AI Services (optional for local dev - endpoints will return 503)
+      # CLAUDE_API_KEY: ""
+      # DEEPGRAM_API_KEY: ""
+    ports:
+      - "8080:8080"
+    networks:
+      - boardroom-network
+    restart: unless-stopped
+
+  # Optional: pgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: boardroom-journal-pgadmin
+    profiles:
+      - tools
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.dev
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - boardroom-network
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+
+networks:
+  boardroom-network:
+    driver: bridge

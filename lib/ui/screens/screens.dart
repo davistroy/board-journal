@@ -3,6 +3,9 @@
 /// Import this file to access all screens in the app.
 library;
 
+// Onboarding
+export 'onboarding/onboarding.dart';
+
 // Home
 export 'home/home_screen.dart';
 
@@ -23,6 +26,9 @@ export 'governance/quarterly_screen.dart';
 
 // Settings
 export 'settings/settings_screen.dart';
+export 'settings/persona_editor_screen.dart';
+export 'settings/portfolio_editor_screen.dart';
+export 'settings/version_history_screen.dart';
 
 // History
 export 'history/history_screen.dart';
