@@ -212,7 +212,21 @@ flutter run
 
 ```
 lib/
-├── main.dart                 # App entry point
+├── main.dart                 # App entry point with ProviderScope
+├── router/
+│   └── router.dart           # go_router configuration
+├── providers/
+│   ├── database_provider.dart    # Database singleton
+│   └── repository_providers.dart # Repository + stream providers
+├── ui/
+│   └── screens/              # App screens
+│       ├── home/             # Home screen (main hub)
+│       ├── record_entry/     # Voice/text entry capture
+│       ├── entry_review/     # Entry editing
+│       ├── weekly_brief/     # Brief viewer
+│       ├── governance/       # Governance hub + runners
+│       ├── settings/         # App settings
+│       └── history/          # Entry/report history
 └── data/
     ├── data.dart             # Barrel export for data layer
     ├── database/
@@ -220,25 +234,8 @@ lib/
     │   ├── database.g.dart   # Generated code (run build_runner)
     │   ├── converters/       # Type converters for enums
     │   └── tables/           # Drift table definitions
-    │       ├── daily_entries.dart
-    │       ├── weekly_briefs.dart
-    │       ├── problems.dart
-    │       ├── portfolio_health.dart
-    │       ├── portfolio_versions.dart
-    │       ├── board_members.dart
-    │       ├── governance_sessions.dart
-    │       ├── bets.dart
-    │       ├── evidence_items.dart
-    │       ├── resetup_triggers.dart
-    │       └── user_preferences.dart
-    └── enums/                # Domain enums
-        ├── signal_type.dart
-        ├── bet_status.dart
-        ├── evidence_type.dart
-        ├── board_role_type.dart
-        ├── governance_session_type.dart
-        ├── entry_type.dart
-        └── problem_direction.dart
+    ├── enums/                # Domain enums
+    └── repositories/         # Data access layer (12 repos)
 ```
 
 ### Code Generation
