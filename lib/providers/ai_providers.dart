@@ -171,3 +171,77 @@ final extractionProvider =
     NotifierProvider.autoDispose<ExtractionNotifier, ExtractionState>(
   ExtractionNotifier.new,
 );
+
+// ==================
+// Weekly Brief Generation Service Provider
+// ==================
+
+/// Provider for the weekly brief generation service.
+///
+/// Uses Claude Sonnet for daily operations per PRD Section 3A.1.
+final weeklyBriefGenerationServiceProvider =
+    Provider<WeeklyBriefGenerationService?>((ref) {
+  final client = ref.watch(claudeClientProvider);
+
+  if (client == null) {
+    return null;
+  }
+
+  return WeeklyBriefGenerationService(client);
+});
+
+// ==================
+// Brief Generation State Management
+// ==================
+
+/// State for brief generation process.
+enum BriefGenerationStatus {
+  /// Not started.
+  idle,
+
+  /// Generation in progress.
+  generating,
+
+  /// Generation completed successfully.
+  completed,
+
+  /// Generation failed (can retry).
+  failed,
+
+  /// AI service not configured.
+  notConfigured,
+}
+
+/// State class for brief generation.
+class BriefGenerationState {
+  final BriefGenerationStatus status;
+  final GeneratedBrief? brief;
+  final String? error;
+  final BriefRegenerationOptions options;
+
+  const BriefGenerationState({
+    this.status = BriefGenerationStatus.idle,
+    this.brief,
+    this.error,
+    this.options = const BriefRegenerationOptions(),
+  });
+
+  BriefGenerationState copyWith({
+    BriefGenerationStatus? status,
+    GeneratedBrief? brief,
+    String? error,
+    BriefRegenerationOptions? options,
+  }) {
+    return BriefGenerationState(
+      status: status ?? this.status,
+      brief: brief ?? this.brief,
+      error: error,
+      options: options ?? this.options,
+    );
+  }
+
+  bool get isGenerating => status == BriefGenerationStatus.generating;
+  bool get isCompleted => status == BriefGenerationStatus.completed;
+  bool get isFailed => status == BriefGenerationStatus.failed;
+  bool get isNotConfigured => status == BriefGenerationStatus.notConfigured;
+}

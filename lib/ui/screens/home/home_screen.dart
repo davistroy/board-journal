@@ -242,10 +242,20 @@ class _LatestBriefCard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'No briefs yet. Record entries throughout the week and your first brief will generate Sunday at 8pm.',
+                    'No briefs yet. Generate one now or wait until Sunday 8pm for automatic generation.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      FilledButton.tonalIcon(
+                        onPressed: () => context.go(AppRoutes.latestWeeklyBrief),
+                        icon: const Icon(Icons.auto_awesome),
+                        label: const Text('Generate Brief'),
+                      ),
+                    ],
                   ),
                 ],
               ),
