@@ -443,7 +443,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 
 ## Test Coverage
 
-**43 Test Files:**
+**46 Test Files:**
 
 | Test File | Coverage |
 |-----------|----------|
@@ -489,6 +489,9 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | **quick_version_screen_test.dart** | 15-min audit UI, sensitivity gate, abandon flow |
 | **setup_screen_test.dart** | Portfolio setup UI, problem collection, exit flow |
 | **quarterly_screen_test.dart** | Quarterly report UI, board interrogation, bet eval |
+| **token_storage_test.dart** | Secure token storage, expiry checks, user persistence |
+| **sync_queue_test.dart** | Offline queue, priority ordering, persistence |
+| **signal_list_widget_test.dart** | Signal display, grouping, re-extraction UI |
 
 ---
 
@@ -496,24 +499,25 @@ SensitivityGate → Gate 0 (Require Portfolio)
 
 | Category | Count | Lines of Code (approx) |
 |----------|-------|------------------------|
-| Source Files (lib/) | 139 | ~13,000 |
-| Test Files (test/) | 43 | ~7,800 |
+| Source Files (lib/) | 138 | ~12,900 |
+| Test Files (test/) | 46 | ~8,500 |
 | Backend Files (backend/) | 18 | ~1,500 |
-| **Total Dart Files** | 200 | ~22,300 |
+| **Total Dart Files** | 202 | ~22,900 |
 
 **By Layer:**
 - Data Layer: ~35 files (~4,000 LOC)
 - Services Layer: ~25 files (~3,500 LOC)
 - Providers: ~10 files (~1,500 LOC)
 - Router: 2 files (~200 LOC)
-- UI/Screens: ~30 files (~4,000 LOC)
+- UI/Screens: ~29 files (~3,900 LOC)
 - Widgets: ~15 files (~2,000 LOC)
 - Models: ~10 files (~1,000 LOC)
 - Repository Tests: 12 files (~2,500 LOC)
-- Service Tests: 16 files (~2,500 LOC)
-- UI Tests: 11 files (~2,000 LOC) - **~75% UI coverage**
+- Service Tests: 18 files (~3,000 LOC)
+- UI Tests: 12 files (~2,500 LOC) - **~80% UI coverage**
 - Enum Tests: 1 file (~400 LOC) - **100% coverage on BetStatus transitions**
-- Other Tests: 3 files (~300 LOC)
+- Widget Tests: 1 file (~200 LOC)
+- Other Tests: 2 files (~200 LOC)
 
 ---
 
@@ -581,6 +585,13 @@ The following features are explicitly out of scope for MVP (per PRD Section 2.2)
 ---
 
 ## Recent Fixes
+
+- **Duplicate File Removal (Jan 11, 2026):** Removed legacy stub file `lib/ui/screens/governance/quarterly_screen.dart` and updated barrel file to export the correct implementation from `quarterly/quarterly_screen.dart`.
+
+- **New Test Files (Jan 11, 2026):** Added 3 new test files to improve coverage:
+  - `test/services/auth/token_storage_test.dart` - Secure token storage tests
+  - `test/services/sync/sync_queue_test.dart` - Offline sync queue tests
+  - `test/ui/widgets/signal_list_widget_test.dart` - Signal display widget tests
 
 - **Import Path Correction (Jan 11, 2026):** Fixed incorrect `package:board_journal` imports to `package:boardroom_journal` in 4 test files:
   - `test/services/setup_service_test.dart`
