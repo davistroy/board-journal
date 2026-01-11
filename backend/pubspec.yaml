@@ -1,0 +1,43 @@
+name: boardroom_journal_backend
+description: Backend REST API server for Boardroom Journal
+version: 1.0.0
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  # HTTP server
+  shelf: ^1.4.1
+  shelf_router: ^1.1.4
+  shelf_cors_headers: ^0.1.5
+
+  # Database
+  postgres: ^3.1.1
+
+  # JWT authentication
+  dart_jsonwebtoken: ^2.12.0
+
+  # Password hashing
+  crypto: ^3.0.3
+
+  # Environment configuration
+  dotenv: ^4.2.0
+
+  # JSON
+  json_annotation: ^4.8.1
+
+  # HTTP client for AI proxies
+  http: ^1.1.0
+
+  # UUID generation
+  uuid: ^4.2.1
+
+  # Logging
+  logging: ^1.2.0
+
+dev_dependencies:
+  test: ^1.24.9
+  mockito: ^5.4.4
+  build_runner: ^2.4.7
+  json_serializable: ^6.7.1
+  lints: ^3.0.0

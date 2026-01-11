@@ -5,6 +5,12 @@ import '../ui/screens/screens.dart';
 
 /// Route path constants for type-safe navigation.
 abstract class AppRoutes {
+  // Onboarding
+  static const onboardingWelcome = '/onboarding/welcome';
+  static const onboardingPrivacy = '/onboarding/privacy';
+  static const onboardingSignin = '/onboarding/signin';
+
+  // Main app
   static const home = '/';
   static const recordEntry = '/record-entry';
   static const entryReview = '/entry/:entryId';
@@ -15,17 +21,39 @@ abstract class AppRoutes {
   static const setup = '/governance/setup';
   static const quarterly = '/governance/quarterly';
   static const settings = '/settings';
+  static const personaEditor = '/settings/personas';
+  static const portfolioEditor = '/settings/portfolio';
+  static const versionHistory = '/settings/versions';
   static const history = '/history';
 }
 
-/// Creates the app router configuration.
+/// Creates a basic app router without auth redirects.
 ///
-/// Uses go_router for declarative routing with deep linking support.
+/// Note: The auth-aware router is implemented in main.dart using Riverpod.
+/// This function is kept for backwards compatibility and testing.
 GoRouter createRouter() {
   return GoRouter(
     initialLocation: AppRoutes.home,
     debugLogDiagnostics: true,
     routes: [
+      // Onboarding routes
+      GoRoute(
+        path: AppRoutes.onboardingWelcome,
+        name: 'onboardingWelcome',
+        builder: (context, state) => const WelcomeScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.onboardingPrivacy,
+        name: 'onboardingPrivacy',
+        builder: (context, state) => const PrivacyScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.onboardingSignin,
+        name: 'onboardingSignin',
+        builder: (context, state) => const SigninScreen(),
+      ),
+
+      // Main app routes
       GoRoute(
         path: AppRoutes.home,
         name: 'home',
@@ -81,6 +109,21 @@ GoRouter createRouter() {
         path: AppRoutes.settings,
         name: 'settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.personaEditor,
+        name: 'personaEditor',
+        builder: (context, state) => const PersonaEditorScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.portfolioEditor,
+        name: 'portfolioEditor',
+        builder: (context, state) => const PortfolioEditorScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.versionHistory,
+        name: 'versionHistory',
+        builder: (context, state) => const VersionHistoryScreen(),
       ),
       GoRoute(
         path: AppRoutes.history,

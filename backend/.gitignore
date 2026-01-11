@@ -1,0 +1,34 @@
+# Dart
+.dart_tool/
+.packages
+pubspec.lock
+build/
+doc/api/
+
+# Generated files
+*.g.dart
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+
+# Logs
+*.log
+
+# Build artifacts
+bin/server
