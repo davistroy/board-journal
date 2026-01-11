@@ -152,7 +152,7 @@ void main() {
       expect(response['refresh_token'], isNotEmpty);
       expect(response['expires_in'], equals(900)); // 15 minutes
       expect(response['token_type'], equals('Bearer'));
-      expect(response['user']['id'], equals('test-user-id'));
+      expect((response['user'] as Map<String, dynamic>)['id'], equals('test-user-id'));
     });
   });
 

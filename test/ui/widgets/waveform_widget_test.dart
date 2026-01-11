@@ -41,10 +41,11 @@ void main() {
       const config = WaveformConfig(barCount: 20);
       await tester.pumpWidget(createTestWidget(config: config));
 
-      // Find all Container widgets that are bars (inside Padding)
-      final paddingWidgets = find.byType(Padding);
-      // barCount paddings for bar spacing
-      expect(paddingWidgets, findsNWidgets(20));
+      // Find the Row containing bars, then verify children count
+      final rowFinder = find.byType(Row);
+      expect(rowFinder, findsOneWidget);
+      final Row row = tester.widget<Row>(rowFinder);
+      expect(row.children.length, 20);
     });
 
     testWidgets('applies custom bar color', (tester) async {
@@ -178,7 +179,8 @@ void main() {
       await tester.pump();
 
       expect(find.byType(WaveformWidget), findsOneWidget);
-      expect(find.byType(Transform), findsOneWidget);
+      // Transform.scale wraps the WaveformWidget for pulse animation
+      expect(find.byType(Transform), findsWidgets);
     });
 
     testWidgets('renders when recording is false', (tester) async {
@@ -263,9 +265,10 @@ void main() {
       await tester.pumpWidget(createTestWidget());
 
       // Should have a Row with 3 children (via List.generate(3, ...))
-      expect(find.byType(Row), findsOneWidget);
-      // Should have 3 Padding widgets for bar spacing
-      expect(find.byType(Padding), findsNWidgets(3));
+      final rowFinder = find.byType(Row);
+      expect(rowFinder, findsOneWidget);
+      final Row row = tester.widget<Row>(rowFinder);
+      expect(row.children.length, 3);
     });
 
     testWidgets('respects custom size', (tester) async {

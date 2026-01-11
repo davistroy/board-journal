@@ -584,7 +584,7 @@ class _DirectionOption extends StatelessWidget {
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
-          color: isSelected ? color.withValues(alpha: 0.1) : null,
+          color: isSelected ? color.withOpacity(0.1) : null,
         ),
         child: Row(
           children: [

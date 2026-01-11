@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../../data/data.dart';
 import '../../../../services/services.dart';
 
 /// View for displaying the final quarterly report.

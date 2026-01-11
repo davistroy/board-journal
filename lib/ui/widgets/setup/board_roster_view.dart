@@ -242,7 +242,7 @@ class _BoardMemberCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   backgroundColor: isGrowth
-                      ? Colors.purple.withValues(alpha: 0.2)
+                      ? Colors.purple.withOpacity(0.2)
                       : Theme.of(context).colorScheme.primaryContainer,
                   child: Text(
                     member.personaName?.substring(0, 1).toUpperCase() ?? '?',
@@ -340,7 +340,7 @@ class _BoardMemberCard extends StatelessWidget {
                   color: Theme.of(context)
                       .colorScheme
                       .surfaceContainerHighest
-                      .withValues(alpha: 0.5),
+                      .withOpacity(0.5),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(

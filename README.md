@@ -281,10 +281,10 @@ dart run build_runner watch
 
 ## Testing
 
-The project has comprehensive test coverage with **74 test files**:
+The project has comprehensive test coverage with **78 test files** and **1718+ passing tests**:
 
 ```bash
-# Run all tests
+# Run all Flutter tests
 flutter test
 
 # Run tests with coverage
@@ -292,18 +292,31 @@ flutter test --coverage
 
 # Run a specific test file
 flutter test test/data/repositories/daily_entry_repository_test.dart
+
+# Run backend tests
+cd backend && dart test
 ```
+
+### Test Status
+
+| Component | Tests | Status |
+|-----------|-------|--------|
+| Flutter Unit Tests | 1718 | Passing |
+| Backend Tests | 43 | Passing |
+| **Total** | **1761** | **All Passing** |
 
 ### Test Coverage by Layer
 
 | Layer | Test Files | Coverage |
 |-------|------------|----------|
-| Repositories | 12 | All 12 repositories tested |
-| Services | 23 | AI, sync, auth, export, audio, governance |
+| Repositories | 13 | All 12 repositories + base repository |
+| Services | 30+ | AI, sync, auth, export, audio, governance, scheduling |
 | Providers | 11 | All provider categories tested |
 | Screens | 12 | All screens with widget tests |
-| Widgets | 4 | Standalone widgets tested |
-| Other | 12 | Models, router, enums, utilities |
+| Widgets | 4 | Signals, waveform, sync indicator, silence countdown |
+| Integration | 4 | End-to-end flows (portfolio setup, bet lifecycle) |
+| Backend | 3 | Auth, sync, middleware routes |
+| Other | 10+ | Models, router, enums, utilities |
 
 ### Continuous Integration
 

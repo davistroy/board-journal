@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
+import 'package:boardroom_journal/data/enums/bet_status.dart';
 import 'package:boardroom_journal/data/enums/board_role_type.dart';
 import 'package:boardroom_journal/data/enums/evidence_type.dart';
 import 'package:boardroom_journal/services/ai/claude_client.dart';
@@ -28,6 +29,9 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-opus-4-5-20250514',
+              inputTokens: 100,
+              outputTokens: 50,
               content:
                   'Your portfolio is strengthening with a 10% shift toward appreciating skills.',
             ));
@@ -52,7 +56,7 @@ void main() {
           systemPrompt: anyNamed('systemPrompt'),
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
-        )).thenThrow(ClaudeError('API error', isRetryable: true));
+        )).thenThrow(ClaudeError(message: 'API error', isRetryable: true));
 
         expect(
           () => service.generateTrendDescription(
@@ -73,6 +77,9 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-opus-4-5-20250514',
+              inputTokens: 100,
+              outputTokens: 50,
               content:
                   'What specific evidence can you show for your claim about the Q1 deliverable?',
             ));
@@ -97,7 +104,7 @@ void main() {
           systemPrompt: anyNamed('systemPrompt'),
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
-        )).thenThrow(ClaudeError('API error', isRetryable: true));
+        )).thenThrow(ClaudeError(message: 'API error', isRetryable: true));
 
         final result = await service.generateBoardQuestion(
           roleType: BoardRoleType.accountability,
@@ -115,6 +122,9 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-opus-4-5-20250514',
+              inputTokens: 100,
+              outputTokens: 50,
               content: '"What evidence do you have?"',
             ));
 
@@ -137,6 +147,9 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-opus-4-5-20250514',
+              inputTokens: 100,
+              outputTokens: 50,
               content: '''
 # Quarterly Report
 
@@ -182,7 +195,7 @@ Previous bet was marked CORRECT.
           systemPrompt: anyNamed('systemPrompt'),
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
-        )).thenThrow(ClaudeError('API error', isRetryable: true));
+        )).thenThrow(ClaudeError(message: 'API error', isRetryable: true));
 
         expect(
           () => service.generateReport(
@@ -200,6 +213,9 @@ Previous bet was marked CORRECT.
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-opus-4-5-20250514',
+              inputTokens: 100,
+              outputTokens: 50,
               content: '''
 [
   {
@@ -232,7 +248,7 @@ Previous bet was marked CORRECT.
           systemPrompt: anyNamed('systemPrompt'),
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
-        )).thenAnswer((_) async => ClaudeResponse(content: '[]'));
+        )).thenAnswer((_) async => ClaudeResponse(content: '[]', model: 'claude-opus-4-5-20250514', inputTokens: 100, outputTokens: 50));
 
         final result = await service.extractEvidence(
           'I think I might do something eventually.',
@@ -247,6 +263,9 @@ Previous bet was marked CORRECT.
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-opus-4-5-20250514',
+              inputTokens: 100,
+              outputTokens: 50,
               content: '''
 ```json
 [
@@ -273,7 +292,7 @@ Previous bet was marked CORRECT.
           systemPrompt: anyNamed('systemPrompt'),
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
-        )).thenThrow(ClaudeError('API error', isRetryable: true));
+        )).thenThrow(ClaudeError(message: 'API error', isRetryable: true));
 
         final result = await service.extractEvidence('Some text');
 

@@ -372,7 +372,7 @@ void main() {
           wrongIf: 'Test',
         );
 
-        await Future.delayed(const Duration(milliseconds: 100));
+        await Future.delayed(const Duration(seconds: 1));
 
         await repository.create(
           prediction: 'New bet',

@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../data/database/database.dart';
+import '../../../data/data.dart';
 import '../../../providers/providers.dart';
 import '../../../router/router.dart';
 import '../../../services/ai/ai.dart';
@@ -110,7 +110,7 @@ class _WeeklyBriefViewerScreenState
               Icon(
                 Icons.summarize_outlined,
                 size: 80,
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
               ),
               const SizedBox(height: 24),
               Text(
@@ -249,7 +249,7 @@ class _WeeklyBriefViewerScreenState
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+        color: colorScheme.primaryContainer.withOpacity(0.3),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -307,7 +307,7 @@ class _WeeklyBriefViewerScreenState
   Widget _buildMicroReviewSection(WeeklyBrief brief, ColorScheme colorScheme) {
     return Card(
       elevation: 0,
-      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      color: colorScheme.surfaceContainerHighest.withOpacity(0.5),
       child: ExpansionTile(
         initiallyExpanded: !brief.microReviewCollapsed,
         onExpansionChanged: (expanded) => _updateMicroReviewCollapsed(

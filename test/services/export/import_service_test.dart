@@ -137,7 +137,7 @@ void main() {
 
       test('warns for different version but still valid', () {
         final json = jsonEncode({
-          'version': '1.5',
+          'version': '2.0',
           'exportedAt': DateTime.now().toIso8601String(),
           'data': {
             'dailyEntries': [],

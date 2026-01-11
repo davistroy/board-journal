@@ -34,7 +34,7 @@ void main() {
         final container = ProviderContainer(
           overrides: [
             transcriptionConfigProvider.overrideWithValue(
-              TranscriptionConfig(apiKey: null),
+              const TranscriptionConfig(deepgramApiKey: null),
             ),
           ],
         );
@@ -70,8 +70,10 @@ void main() {
       expect(VoiceRecordingPhase.values, contains(VoiceRecordingPhase.stopping));
       expect(VoiceRecordingPhase.values, contains(VoiceRecordingPhase.transcribing));
       expect(VoiceRecordingPhase.values, contains(VoiceRecordingPhase.editTranscript));
-      expect(VoiceRecordingPhase.values, contains(VoiceRecordingPhase.extractingSignals));
-      expect(VoiceRecordingPhase.values, contains(VoiceRecordingPhase.complete));
+      expect(VoiceRecordingPhase.values, contains(VoiceRecordingPhase.gapCheck));
+      expect(VoiceRecordingPhase.values, contains(VoiceRecordingPhase.followUp));
+      expect(VoiceRecordingPhase.values, contains(VoiceRecordingPhase.confirmSave));
+      expect(VoiceRecordingPhase.values, contains(VoiceRecordingPhase.saved));
       expect(VoiceRecordingPhase.values, contains(VoiceRecordingPhase.error));
     });
   });
@@ -83,14 +85,21 @@ void main() {
       expect(state.phase, VoiceRecordingPhase.idle);
       expect(state.duration, Duration.zero);
       expect(state.audioFilePath, isNull);
-      expect(state.transcript, isNull);
+      expect(state.transcriptRaw, isNull);
+      expect(state.transcriptEdited, isNull);
       expect(state.error, isNull);
-      expect(state.waveformData, isEmpty);
-      expect(state.silenceCountdown, isNull);
+      expect(state.waveformData.isEmpty, isTrue);
+      expect(state.silenceSeconds, 0);
     });
 
     test('isRecording returns true during recording', () {
       const state = VoiceRecordingState(phase: VoiceRecordingPhase.recording);
+
+      expect(state.isRecording, isTrue);
+    });
+
+    test('isRecording returns true when paused', () {
+      const state = VoiceRecordingState(phase: VoiceRecordingPhase.paused);
 
       expect(state.isRecording, isTrue);
     });
@@ -101,67 +110,41 @@ void main() {
       expect(state.isRecording, isFalse);
     });
 
-    test('isPaused returns true when paused', () {
-      const state = VoiceRecordingState(phase: VoiceRecordingPhase.paused);
-
-      expect(state.isPaused, isTrue);
-    });
-
-    test('isProcessing returns true during transcribing', () {
+    test('isTranscribing returns true during transcribing', () {
       const state = VoiceRecordingState(phase: VoiceRecordingPhase.transcribing);
 
-      expect(state.isProcessing, isTrue);
+      expect(state.isTranscribing, isTrue);
     });
 
-    test('isProcessing returns true during extractingSignals', () {
-      const state = VoiceRecordingState(phase: VoiceRecordingPhase.extractingSignals);
+    test('hasTranscript returns false when no transcript', () {
+      const state = VoiceRecordingState();
 
-      expect(state.isProcessing, isTrue);
+      expect(state.hasTranscript, isFalse);
     });
 
-    test('hasError returns true when error is set', () {
+    test('hasTranscript returns true when transcript is set', () {
       const state = VoiceRecordingState(
-        phase: VoiceRecordingPhase.error,
-        error: 'Recording failed',
+        transcriptRaw: 'This is a test transcript.',
       );
 
-      expect(state.hasError, isTrue);
+      expect(state.hasTranscript, isTrue);
     });
 
-    test('canStartRecording returns true when idle', () {
-      const state = VoiceRecordingState(phase: VoiceRecordingPhase.idle);
+    test('currentTranscript returns edited transcript when available', () {
+      const state = VoiceRecordingState(
+        transcriptRaw: 'Original text',
+        transcriptEdited: 'Edited text',
+      );
 
-      expect(state.canStartRecording, isTrue);
+      expect(state.currentTranscript, 'Edited text');
     });
 
-    test('canStartRecording returns true when error', () {
-      const state = VoiceRecordingState(phase: VoiceRecordingPhase.error);
+    test('currentTranscript returns raw transcript when no edit', () {
+      const state = VoiceRecordingState(
+        transcriptRaw: 'Original text',
+      );
 
-      expect(state.canStartRecording, isTrue);
-    });
-
-    test('canPauseRecording returns true when recording', () {
-      const state = VoiceRecordingState(phase: VoiceRecordingPhase.recording);
-
-      expect(state.canPauseRecording, isTrue);
-    });
-
-    test('canResumeRecording returns true when paused', () {
-      const state = VoiceRecordingState(phase: VoiceRecordingPhase.paused);
-
-      expect(state.canResumeRecording, isTrue);
-    });
-
-    test('canStopRecording returns true when recording', () {
-      const state = VoiceRecordingState(phase: VoiceRecordingPhase.recording);
-
-      expect(state.canStopRecording, isTrue);
-    });
-
-    test('canStopRecording returns true when paused', () {
-      const state = VoiceRecordingState(phase: VoiceRecordingPhase.paused);
-
-      expect(state.canStopRecording, isTrue);
+      expect(state.currentTranscript, 'Original text');
     });
 
     test('copyWith preserves values', () {
@@ -194,10 +177,25 @@ void main() {
 
     test('wordCount returns correct count for transcript', () {
       const state = VoiceRecordingState(
-        transcript: 'This is a test transcript with seven words.',
+        transcriptRaw: 'This is a test transcript with seven words.',
       );
 
       expect(state.wordCount, 8);
+    });
+
+    test('isOverLimit returns true when over 7500 words', () {
+      // Create a string with more than 7500 words
+      final longText = List.generate(7501, (i) => 'word').join(' ');
+      final state = VoiceRecordingState(transcriptRaw: longText);
+
+      expect(state.isOverLimit, isTrue);
+    });
+
+    test('isNearWordLimit returns true when between 6500 and 7500 words', () {
+      final nearLimitText = List.generate(7000, (i) => 'word').join(' ');
+      final state = VoiceRecordingState(transcriptRaw: nearLimitText);
+
+      expect(state.isNearWordLimit, isTrue);
     });
   });
 }

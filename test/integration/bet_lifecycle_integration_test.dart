@@ -29,20 +29,21 @@ void main() {
 
   group('Bet Creation', () {
     test('bet created with 90-day due date', () async {
-      final beforeCreate = DateTime.now().toUtc();
+      // Use a small tolerance window for timing
+      final beforeCreate = DateTime.now().toUtc().subtract(const Duration(seconds: 1));
 
       final betId = await betRepository.create(
         prediction: 'Product launch by end of Q2',
         wrongIf: 'Product not in app stores by June 30',
       );
 
-      final afterCreate = DateTime.now().toUtc();
+      final afterCreate = DateTime.now().toUtc().add(const Duration(seconds: 1));
 
       final bet = await betRepository.getById(betId);
       expect(bet, isNotNull);
       expect(bet!.status, 'open');
 
-      // Due date should be approximately 90 days from creation
+      // Due date should be approximately 90 days from creation (with tolerance)
       final expectedMin = beforeCreate.add(const Duration(days: 90));
       final expectedMax = afterCreate.add(const Duration(days: 90));
 

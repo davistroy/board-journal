@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../data/data.dart';
 import '../../../services/governance/setup_state.dart';
 
 /// Widget for displaying the completed Setup output.
@@ -40,7 +41,7 @@ class SetupOutputView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.1),
+                  color: Colors.green.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -361,7 +362,7 @@ class _MetricBox extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -445,7 +446,7 @@ class _StatementCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: color.withValues(alpha: 0.1),
+      color: color.withOpacity(0.1),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
@@ -501,7 +502,7 @@ class _BoardMemberSummaryCard extends StatelessWidget {
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: member.isGrowthRole
-              ? Colors.purple.withValues(alpha: 0.2)
+              ? Colors.purple.withOpacity(0.2)
               : Theme.of(context).colorScheme.primaryContainer,
           child: Text(
             member.personaName?.substring(0, 1).toUpperCase() ?? '?',
@@ -521,7 +522,7 @@ class _BoardMemberSummaryCard extends StatelessWidget {
             ? Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.purple.withValues(alpha: 0.1),
+                  color: Colors.purple.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Text(

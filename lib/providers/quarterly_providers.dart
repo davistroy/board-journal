@@ -541,10 +541,14 @@ class QuarterlySessionNotifier
       // Use signature question as fallback
       final member = await service.getCurrentBoardMember(data);
       if (member != null) {
+        final roleType = BoardRoleType.values.firstWhere(
+          (r) => r.name == member.roleType,
+          orElse: () => BoardRoleType.accountability,
+        );
         state = state.copyWith(
           currentBoardMember: member,
           currentBoardQuestion:
-              member.anchoredDemand ?? member.roleType.signatureQuestion,
+              member.anchoredDemand ?? roleType.signatureQuestion,
         );
       }
     }

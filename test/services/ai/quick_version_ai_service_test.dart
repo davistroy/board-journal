@@ -34,6 +34,7 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-sonnet-4-5-20250514',
               content: responseJson,
               inputTokens: 100,
               outputTokens: 50,
@@ -65,6 +66,7 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-sonnet-4-5-20250514',
               content: responseJson,
               inputTokens: 100,
               outputTokens: 50,
@@ -95,6 +97,7 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-sonnet-4-5-20250514',
               content: responseJson,
               inputTokens: 100,
               outputTokens: 50,
@@ -127,6 +130,7 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-sonnet-4-5-20250514',
               content: responseJson,
               inputTokens: 100,
               outputTokens: 50,
@@ -156,6 +160,7 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-sonnet-4-5-20250514',
               content: responseJson,
               inputTokens: 100,
               outputTokens: 50,
@@ -177,6 +182,7 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-sonnet-4-5-20250514',
               content: 'Not valid JSON',
               inputTokens: 100,
               outputTokens: 50,
@@ -198,7 +204,7 @@ void main() {
           systemPrompt: anyNamed('systemPrompt'),
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
-        )).thenThrow(ClaudeError('API error', isRetryable: true));
+        )).thenThrow(ClaudeError(message: 'API error', isRetryable: true));
 
         expect(
           () => service.evaluateDirection(
@@ -231,16 +237,17 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-sonnet-4-5-20250514',
               content: responseJson,
               inputTokens: 200,
               outputTokens: 300,
             ));
 
         final sessionData = QuickVersionSessionData(
-          currentState: QuickVersionState.generatingOutput,
+          currentState: QuickVersionState.generateOutput,
           roleContext: 'Senior Engineer',
           problems: [
-            QuickVersionProblem(name: 'Strategy', timePercent: 50),
+            IdentifiedProblem(name: 'Strategy'),
           ],
           avoidedDecision: 'Hiring',
           comfortWork: 'Meetings',
@@ -259,10 +266,10 @@ void main() {
           systemPrompt: anyNamed('systemPrompt'),
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
-        )).thenThrow(ClaudeError('Network error', isRetryable: true));
+        )).thenThrow(ClaudeError(message: 'Network error', isRetryable: true));
 
         final sessionData = QuickVersionSessionData(
-          currentState: QuickVersionState.generatingOutput,
+          currentState: QuickVersionState.generateOutput,
           roleContext: 'Manager',
           problems: [],
         );

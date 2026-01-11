@@ -234,7 +234,7 @@ void main() {
       test('all roles have signature questions', () {
         for (final role in BoardRoleType.values) {
           expect(role.signatureQuestion, isNotEmpty);
-          expect(role.signatureQuestion, endsWith('?') | endsWith('.'));
+          expect(role.signatureQuestion, anyOf(endsWith('?'), endsWith('.')));
         }
       });
 

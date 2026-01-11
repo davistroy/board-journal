@@ -58,7 +58,7 @@ class _SensitivityGateViewState extends State<SensitivityGateView> {
                     color: Theme.of(context)
                         .colorScheme
                         .primaryContainer
-                        .withValues(alpha: 0.5),
+                        .withOpacity(0.5),
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: Icon(

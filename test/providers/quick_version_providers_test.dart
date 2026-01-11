@@ -59,7 +59,7 @@ void main() {
     test('isCompleted returns false when state is not finalized', () {
       const state = QuickVersionSessionState(
         data: QuickVersionSessionData(
-          currentState: QuickVersionState.question1RoleContext,
+          currentState: QuickVersionState.q1RoleContext,
         ),
       );
 
@@ -69,35 +69,35 @@ void main() {
     test('questionNumber returns correct value for question states', () {
       const state1 = QuickVersionSessionState(
         data: QuickVersionSessionData(
-          currentState: QuickVersionState.question1RoleContext,
+          currentState: QuickVersionState.q1RoleContext,
         ),
       );
       expect(state1.questionNumber, 1);
 
       const state2 = QuickVersionSessionState(
         data: QuickVersionSessionData(
-          currentState: QuickVersionState.question2PaidProblems,
+          currentState: QuickVersionState.q2PaidProblems,
         ),
       );
       expect(state2.questionNumber, 2);
 
       const state3 = QuickVersionSessionState(
         data: QuickVersionSessionData(
-          currentState: QuickVersionState.question3DirectionLoop,
+          currentState: QuickVersionState.q3DirectionLoop,
         ),
       );
       expect(state3.questionNumber, 3);
 
       const state4 = QuickVersionSessionState(
         data: QuickVersionSessionData(
-          currentState: QuickVersionState.question4AvoidedDecision,
+          currentState: QuickVersionState.q4AvoidedDecision,
         ),
       );
       expect(state4.questionNumber, 4);
 
       const state5 = QuickVersionSessionState(
         data: QuickVersionSessionData(
-          currentState: QuickVersionState.question5ComfortWork,
+          currentState: QuickVersionState.q5ComfortWork,
         ),
       );
       expect(state5.questionNumber, 5);
@@ -106,7 +106,7 @@ void main() {
     test('progressPercent returns value from state', () {
       const state = QuickVersionSessionState(
         data: QuickVersionSessionData(
-          currentState: QuickVersionState.question3DirectionLoop,
+          currentState: QuickVersionState.q3DirectionLoop,
         ),
       );
 
@@ -167,11 +167,11 @@ void main() {
     test('has all expected states', () {
       expect(QuickVersionState.values, contains(QuickVersionState.initial));
       expect(QuickVersionState.values, contains(QuickVersionState.sensitivityGate));
-      expect(QuickVersionState.values, contains(QuickVersionState.question1RoleContext));
-      expect(QuickVersionState.values, contains(QuickVersionState.question2PaidProblems));
-      expect(QuickVersionState.values, contains(QuickVersionState.question3DirectionLoop));
-      expect(QuickVersionState.values, contains(QuickVersionState.question4AvoidedDecision));
-      expect(QuickVersionState.values, contains(QuickVersionState.question5ComfortWork));
+      expect(QuickVersionState.values, contains(QuickVersionState.q1RoleContext));
+      expect(QuickVersionState.values, contains(QuickVersionState.q2PaidProblems));
+      expect(QuickVersionState.values, contains(QuickVersionState.q3DirectionLoop));
+      expect(QuickVersionState.values, contains(QuickVersionState.q4AvoidedDecision));
+      expect(QuickVersionState.values, contains(QuickVersionState.q5ComfortWork));
       expect(QuickVersionState.values, contains(QuickVersionState.generateOutput));
       expect(QuickVersionState.values, contains(QuickVersionState.finalized));
     });
@@ -183,23 +183,23 @@ void main() {
 
       expect(data.currentState, QuickVersionState.initial);
       expect(data.abstractionMode, isFalse);
-      expect(data.skipCount, 0);
+      expect(data.vaguenessSkipCount, 0);
     });
 
     test('canSkip returns true when skip count is low', () {
-      const data = QuickVersionSessionData(skipCount: 0);
+      const data = QuickVersionSessionData(vaguenessSkipCount: 0);
 
       expect(data.canSkip, isTrue);
     });
 
     test('canSkip returns true when skip count is 1', () {
-      const data = QuickVersionSessionData(skipCount: 1);
+      const data = QuickVersionSessionData(vaguenessSkipCount: 1);
 
       expect(data.canSkip, isTrue);
     });
 
     test('canSkip returns false when skip count reaches max', () {
-      const data = QuickVersionSessionData(skipCount: 2);
+      const data = QuickVersionSessionData(vaguenessSkipCount: 2);
 
       expect(data.canSkip, isFalse);
     });

@@ -351,7 +351,7 @@ class _StatementCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: color.withValues(alpha: 0.1),
+      color: color.withOpacity(0.1),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
@@ -433,7 +433,7 @@ class _ProblemSummaryCard extends StatelessWidget {
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
-            color: _directionColor.withValues(alpha: 0.1),
+            color: _directionColor.withOpacity(0.1),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(

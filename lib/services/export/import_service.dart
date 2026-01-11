@@ -321,7 +321,7 @@ class ImportService {
       currentState: json['currentState'] as String,
       abstractionMode: json['abstractionMode'] as bool? ?? false,
       vaguenessSkipCount: json['vaguenessSkipCount'] as int? ?? 0,
-      transcriptJson: json['transcriptJson'] as String?,
+      transcriptJson: json['transcriptJson'] as String? ?? '[]',
       isCompleted: json['isCompleted'] as bool? ?? false,
       outputMarkdown: json['outputMarkdown'] as String?,
       createdPortfolioVersionId: json['createdPortfolioVersionId'] as String?,

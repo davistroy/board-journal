@@ -35,8 +35,8 @@ void main() {
 
         final brief = await repository.getById(id);
         expect(brief, isNotNull);
-        expect(brief!.weekStartUtc, weekStart);
-        expect(brief.weekEndUtc, weekEnd);
+        expect(brief!.weekStartUtc.toUtc(), weekStart);
+        expect(brief.weekEndUtc.toUtc(), weekEnd);
         expect(brief.weekTimezone, 'America/New_York');
         expect(brief.briefMarkdown, contains('productive week'));
         expect(brief.boardMicroReviewMarkdown, 'Board review content');

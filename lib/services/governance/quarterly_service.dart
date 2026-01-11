@@ -288,7 +288,7 @@ class QuarterlyService {
     // Update the bet in the database
     await _betRepository.evaluate(
       betId,
-      status: status,
+      newStatus: status,
       evaluationNotes: rationale,
     );
 
@@ -296,11 +296,11 @@ class QuarterlyService {
     if (evidence != null && evidence.isNotEmpty) {
       for (final item in evidence) {
         await _evidenceRepository.create(
-          claimType: 'bet_evaluation',
-          claimReference: betId,
+          sessionId: sessionId,
           evidenceType: item.type,
-          evidenceDescription: item.description,
-          strength: item.strength,
+          statementText: item.description,
+          strengthFlag: item.strength.name,
+          context: 'bet_evaluation:$betId',
         );
       }
     }
@@ -739,8 +739,12 @@ class QuarterlyService {
     required BoardMember member,
     required QuarterlySessionData data,
   }) async {
+    final roleType = BoardRoleType.values.firstWhere(
+      (r) => r.name == member.roleType,
+      orElse: () => BoardRoleType.accountability,
+    );
     return _aiService.generateBoardQuestion(
-      roleType: member.roleType,
+      roleType: roleType,
       personaName: member.personaName,
       anchoredProblemId: member.anchoredProblemId,
       anchoredDemand: member.anchoredDemand,
@@ -762,8 +766,13 @@ class QuarterlyService {
       answer: response,
     );
 
+    final roleType = BoardRoleType.values.firstWhere(
+      (r) => r.name == member.roleType,
+      orElse: () => BoardRoleType.accountability,
+    );
+
     final boardResponse = BoardInterrogationResponse(
-      roleType: member.roleType,
+      roleType: roleType,
       personaName: member.personaName,
       anchoredProblemId: member.anchoredProblemId,
       anchoredDemand: member.anchoredDemand,
@@ -778,7 +787,7 @@ class QuarterlyService {
       answer: response,
       wasVague: vaguenessResult.isVague,
       state: currentData.currentState,
-      roleType: member.roleType,
+      roleType: roleType,
       personaName: member.personaName,
     );
 
@@ -965,7 +974,6 @@ class QuarterlyService {
         prediction: currentData.newBet!.prediction,
         wrongIf: currentData.newBet!.wrongIf,
         sourceSessionId: sessionId,
-        durationDays: currentData.newBet!.durationDays,
       );
     }
 

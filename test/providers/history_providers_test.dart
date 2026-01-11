@@ -104,22 +104,21 @@ void main() {
   group('ExportSummary', () {
     test('can be created with counts', () {
       final summary = ExportSummary(
-        dailyEntryCount: 10,
-        weeklyBriefCount: 5,
-        governanceSessionCount: 3,
-        betCount: 2,
-        problemCount: 4,
-        boardMemberCount: 7,
-        totalItemCount: 31,
+        dailyEntriesCount: 10,
+        weeklyBriefsCount: 5,
+        governanceSessionsCount: 3,
+        betsCount: 2,
+        problemsCount: 4,
+        boardMembersCount: 7,
       );
 
-      expect(summary.dailyEntryCount, 10);
-      expect(summary.weeklyBriefCount, 5);
-      expect(summary.governanceSessionCount, 3);
-      expect(summary.betCount, 2);
-      expect(summary.problemCount, 4);
-      expect(summary.boardMemberCount, 7);
-      expect(summary.totalItemCount, 31);
+      expect(summary.dailyEntriesCount, 10);
+      expect(summary.weeklyBriefsCount, 5);
+      expect(summary.governanceSessionsCount, 3);
+      expect(summary.betsCount, 2);
+      expect(summary.problemsCount, 4);
+      expect(summary.boardMembersCount, 7);
+      expect(summary.totalCount, 31);
     });
   });
 }

@@ -157,7 +157,7 @@ void main() {
       expect(SetupState.values, contains(SetupState.collectProblem4));
       expect(SetupState.values, contains(SetupState.collectProblem5));
       expect(SetupState.values, contains(SetupState.timeAllocation));
-      expect(SetupState.values, contains(SetupState.portfolioHealth));
+      expect(SetupState.values, contains(SetupState.calculateHealth));
       expect(SetupState.values, contains(SetupState.createCoreRoles));
       expect(SetupState.values, contains(SetupState.createGrowthRoles));
       expect(SetupState.values, contains(SetupState.createPersonas));

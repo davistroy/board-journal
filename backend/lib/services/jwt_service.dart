@@ -63,12 +63,18 @@ class JwtService {
         throw JwtValidationError('Invalid token type');
       }
 
+      // Extract issuedAt from payload 'iat' claim
+      final iatSeconds = payload['iat'] as int?;
+      final issuedAt = iatSeconds != null
+          ? DateTime.fromMillisecondsSinceEpoch(iatSeconds * 1000, isUtc: true)
+          : null;
+
       return JwtPayload(
         userId: payload['sub'] as String,
         email: payload['email'] as String,
-        issuedAt: jwt.issuedAt,
+        issuedAt: issuedAt,
         expiresAt: DateTime.fromMillisecondsSinceEpoch(
-          (jwt.payload['exp'] as int) * 1000,
+          (payload['exp'] as int) * 1000,
           isUtc: true,
         ),
       );

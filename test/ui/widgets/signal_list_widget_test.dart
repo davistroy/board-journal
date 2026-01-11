@@ -141,9 +141,12 @@ void main() {
 
       expect(find.text('Extracting...'), findsOneWidget);
 
-      // Button should be disabled
-      final button = tester.widget<TextButton>(find.byType(TextButton));
-      expect(button.onPressed, isNull);
+      // Button should be disabled - find the TextButton that contains the 'Extracting...' text
+      // TextButton.icon creates a TextButton with an icon and label as children
+      final textButtonFinder = find.byWidgetPredicate((widget) =>
+          widget is TextButton &&
+          widget.onPressed == null);
+      expect(textButtonFinder, findsOneWidget);
     });
 
     testWidgets('does not show empty signal types', (tester) async {
@@ -178,7 +181,7 @@ void main() {
       expect(find.text('Avoided Decision'), findsOneWidget);
       expect(find.text('Comfort Work'), findsOneWidget);
       expect(find.text('Actions'), findsOneWidget);
-      expect(find.text('Learnings'), findsOneWidget);
+      expect(find.text('Learnings/Insights'), findsOneWidget);
     });
   });
 

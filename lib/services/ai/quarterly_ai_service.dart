@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../../data/enums/board_role_type.dart';
+import '../../data/enums/evidence_type.dart';
 import '../governance/quarterly_state.dart';
 import 'claude_client.dart';
 

@@ -181,7 +181,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           aiConfigProvider.overrideWithValue(
-            AIConfig(anthropicApiKey: null, openAiApiKey: null),
+            AIConfig(anthropicApiKey: ''),
           ),
         ],
       );
@@ -196,7 +196,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           aiConfigProvider.overrideWithValue(
-            AIConfig(anthropicApiKey: 'test-key', openAiApiKey: null),
+            AIConfig(anthropicApiKey: 'test-key'),
           ),
         ],
       );
@@ -213,7 +213,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           aiConfigProvider.overrideWithValue(
-            AIConfig(anthropicApiKey: null, openAiApiKey: null),
+            AIConfig(anthropicApiKey: ''),
           ),
         ],
       );
@@ -228,7 +228,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           aiConfigProvider.overrideWithValue(
-            AIConfig(anthropicApiKey: 'test-key', openAiApiKey: null),
+            AIConfig(anthropicApiKey: 'test-key'),
           ),
         ],
       );

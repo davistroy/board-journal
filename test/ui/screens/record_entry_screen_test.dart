@@ -110,12 +110,12 @@ void main() {
       await tester.tap(find.text('Type Instead'));
       await tester.pumpAndSettle();
 
-      // Find the save button and verify it's disabled
-      final saveButton = find.widgetWithText(ElevatedButton, 'Save Entry');
+      // Find the save button in the bottom action bar (FilledButton with 'Save Entry')
+      final saveButton = find.widgetWithText(FilledButton, 'Save Entry');
       expect(saveButton, findsOneWidget);
 
-      final button = tester.widget<ElevatedButton>(saveButton);
-      expect(button.onPressed, isNull); // Button should be disabled
+      final button = tester.widget<FilledButton>(saveButton);
+      expect(button.onPressed, isNull); // Button should be disabled when text is empty
     });
 
     testWidgets('typing text updates word count', (tester) async {
@@ -134,20 +134,16 @@ void main() {
       expect(find.textContaining('7'), findsWidgets);
     });
 
-    testWidgets('has discard/cancel button', (tester) async {
+    testWidgets('has back navigation button in text mode', (tester) async {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Type Instead'));
       await tester.pumpAndSettle();
 
-      // Should have a way to cancel/discard
-      expect(
-        find.byIcon(Icons.close).evaluate().isNotEmpty ||
-            find.text('Discard').evaluate().isNotEmpty ||
-            find.text('Cancel').evaluate().isNotEmpty,
-        isTrue,
-      );
+      // In text mode, there's a back arrow button in the AppBar that navigates back
+      // (which shows a discard dialog if there's text). This is the way to cancel/discard.
+      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
     });
   });
 

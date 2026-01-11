@@ -95,7 +95,8 @@ void main() {
       final router = createRouter();
 
       // The router should start at home
-      expect(router.routerDelegate.currentConfiguration.uri.path, '/');
+      // Use routeInformationProvider to get the initial location before navigation
+      expect(router.routeInformationProvider.value.uri.path, '/');
     });
 
     test('contains all expected routes', () {

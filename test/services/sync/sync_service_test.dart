@@ -1,11 +1,12 @@
 import 'dart:async';
 
 import 'package:boardroom_journal/data/database/database.dart';
+import 'package:boardroom_journal/models/models.dart';
 import 'package:boardroom_journal/services/api/api.dart';
 import 'package:boardroom_journal/services/auth/auth.dart';
 import 'package:boardroom_journal/services/sync/sync.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -41,15 +42,22 @@ class MockConnectivity extends Mock implements Connectivity {
   final StreamController<List<ConnectivityResult>> _controller =
       StreamController<List<ConnectivityResult>>.broadcast();
 
+  List<ConnectivityResult> _currentConnectivity = [ConnectivityResult.wifi];
+
   @override
   Stream<List<ConnectivityResult>> get onConnectivityChanged => _controller.stream;
 
   @override
   Future<List<ConnectivityResult>> checkConnectivity() async {
-    return [ConnectivityResult.wifi];
+    return _currentConnectivity;
+  }
+
+  void setConnectivity(List<ConnectivityResult> result) {
+    _currentConnectivity = result;
   }
 
   void simulateConnectivityChange(List<ConnectivityResult> result) {
+    _currentConnectivity = result;
     _controller.add(result);
   }
 
@@ -142,17 +150,43 @@ void main() {
     });
 
     test('handles offline state correctly', () async {
-      // Simulate going offline
-      mockConnectivity.simulateConnectivityChange([ConnectivityResult.none]);
+      // Set connectivity to offline before creating a new SyncService
+      // that will check connectivity during initialize()
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-      // Give time for status to update
+      // Create a new mock connectivity that reports offline
+      final offlineConnectivity = MockConnectivity();
+      offlineConnectivity.setConnectivity([ConnectivityResult.none]);
+
+      // Create a new sync service with the offline connectivity
+      final offlineSyncService = SyncService(
+        apiClient: ApiClient(
+          config: ApiConfig.development(),
+          tokenStorage: mockTokenStorage,
+          authService: mockAuthService,
+        ),
+        config: ApiConfig.development(),
+        database: database,
+        queue: SyncQueue(prefs),
+        conflictResolver: ConflictResolver(),
+        prefs: prefs,
+        connectivity: offlineConnectivity,
+      );
+
+      // Initialize the service - this will check connectivity and set offline state
+      // Use unawaited since initialize() will try to sync and fail without a server
+      unawaited(offlineSyncService.initialize().catchError((_) {}));
+
+      // Give time for initialization to process connectivity check
       await Future.delayed(const Duration(milliseconds: 100));
 
-      // Try to sync - should not proceed
-      await syncService.syncAll();
+      // Status should be offline because checkConnectivity returns none
+      expect(offlineSyncService.currentStatus.state, equals(SyncState.offline));
 
-      // Status should be offline
-      expect(syncService.currentStatus.state, equals(SyncState.offline));
+      // Clean up
+      offlineSyncService.dispose();
+      offlineConnectivity.dispose();
     });
 
     test('notifyLocalChange increments pending count', () async {

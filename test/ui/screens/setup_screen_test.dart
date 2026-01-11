@@ -30,34 +30,62 @@ GoRouter _createTestRouter() {
 
 /// Wraps a widget with all necessary providers for testing.
 Widget createTestApp({
+  SetupSessionState? initialState,
   List<Override> overrides = const [],
 }) {
+  final allOverrides = <Override>[
+    // Override the setupSessionProvider with initial state
+    if (initialState != null)
+      setupSessionProvider.overrideWith(
+        () => _TestSetupSessionNotifier(initialState),
+      ),
+    hasInProgressSetupProvider.overrideWith(
+      (ref) async => null,
+    ),
+    rememberedSetupAbstractionModeProvider.overrideWith(
+      (ref) async => null,
+    ),
+    // Override the setup service to prevent actual initialization
+    setupServiceProvider.overrideWith(
+      (ref) => null,
+    ),
+    ...overrides,
+  ];
+
   return ProviderScope(
-    overrides: overrides,
+    overrides: allOverrides,
     child: MaterialApp.router(
       routerConfig: _createTestRouter(),
     ),
   );
 }
 
+/// Test notifier that returns a fixed state and prevents initialization.
+class _TestSetupSessionNotifier extends SetupSessionNotifier {
+  final SetupSessionState _initialState;
+
+  _TestSetupSessionNotifier(this._initialState);
+
+  @override
+  SetupSessionState build() => _initialState;
+
+  // Override methods to prevent actual operations
+  @override
+  Future<void> startSession({bool? abstractionMode}) async {}
+
+  @override
+  Future<void> resumeSession(String sessionId) async {}
+}
+
 void main() {
   group('SetupScreen', () {
     testWidgets('displays initial state in app bar', (tester) async {
       await tester.pumpWidget(createTestApp(
-        overrides: [
-          setupSessionProvider.overrideWith(
-            (ref) => SetupSessionNotifier(ref)
-              ..state = SetupSessionData(
-                currentState: SetupState.sensitivityGate,
-              ),
+        initialState: SetupSessionState(
+          data: SetupSessionData(
+            currentState: SetupState.sensitivityGate,
           ),
-          hasInProgressSetupProvider.overrideWith(
-            (ref) async => null,
-          ),
-          rememberedSetupAbstractionModeProvider.overrideWith(
-            (ref) async => null,
-          ),
-        ],
+        ),
       ));
 
       await tester.pump();
@@ -68,23 +96,12 @@ void main() {
 
     testWidgets('shows loading state initially', (tester) async {
       await tester.pumpWidget(createTestApp(
-        overrides: [
-          setupSessionProvider.overrideWith(
-            (ref) => SetupSessionNotifier(ref)
-              ..state = const SetupSessionData(
-                currentState: SetupState.initial,
-              ),
+        initialState: const SetupSessionState(
+          data: SetupSessionData(
+            currentState: SetupState.initial,
           ),
-          hasInProgressSetupProvider.overrideWith(
-            (ref) => Future.delayed(
-              const Duration(seconds: 10),
-              () => null,
-            ),
-          ),
-          rememberedSetupAbstractionModeProvider.overrideWith(
-            (ref) async => null,
-          ),
-        ],
+          isLoading: true,
+        ),
       ));
 
       await tester.pump();
@@ -94,20 +111,11 @@ void main() {
 
     testWidgets('has close button in app bar', (tester) async {
       await tester.pumpWidget(createTestApp(
-        overrides: [
-          setupSessionProvider.overrideWith(
-            (ref) => SetupSessionNotifier(ref)
-              ..state = SetupSessionData(
-                currentState: SetupState.sensitivityGate,
-              ),
+        initialState: SetupSessionState(
+          data: SetupSessionData(
+            currentState: SetupState.sensitivityGate,
           ),
-          hasInProgressSetupProvider.overrideWith(
-            (ref) async => null,
-          ),
-          rememberedSetupAbstractionModeProvider.overrideWith(
-            (ref) async => null,
-          ),
-        ],
+        ),
       ));
 
       await tester.pump();
@@ -116,21 +124,14 @@ void main() {
     });
 
     testWidgets('shows progress percentage when active', (tester) async {
+      // isActive requires sessionId != null and state not finalized/abandoned
       await tester.pumpWidget(createTestApp(
-        overrides: [
-          setupSessionProvider.overrideWith(
-            (ref) => SetupSessionNotifier(ref)
-              ..state = SetupSessionData(
-                currentState: SetupState.collectProblem1,
-              ),
+        initialState: SetupSessionState(
+          sessionId: 'test-session',
+          data: SetupSessionData(
+            currentState: SetupState.collectProblem1,
           ),
-          hasInProgressSetupProvider.overrideWith(
-            (ref) async => null,
-          ),
-          rememberedSetupAbstractionModeProvider.overrideWith(
-            (ref) async => null,
-          ),
-        ],
+        ),
       ));
 
       await tester.pump();
@@ -142,47 +143,33 @@ void main() {
 
   group('SetupScreen - Sensitivity Gate', () {
     testWidgets('displays sensitivity gate options', (tester) async {
+      // Need sessionId for isActive to be true and isConfigured to be true
       await tester.pumpWidget(createTestApp(
-        overrides: [
-          setupSessionProvider.overrideWith(
-            (ref) => SetupSessionNotifier(ref)
-              ..state = SetupSessionData(
-                currentState: SetupState.sensitivityGate,
-              ),
+        initialState: SetupSessionState(
+          sessionId: 'test-session',
+          data: SetupSessionData(
+            currentState: SetupState.sensitivityGate,
           ),
-          hasInProgressSetupProvider.overrideWith(
-            (ref) async => null,
-          ),
-          rememberedSetupAbstractionModeProvider.overrideWith(
-            (ref) async => null,
-          ),
-        ],
+          isConfigured: true,
+        ),
       ));
 
       await tester.pump();
 
-      // Should show abstraction mode toggle
-      expect(find.textContaining('Abstraction'), findsWidgets);
+      // Should show abstraction mode toggle - the text is 'Abstraction Mode'
+      expect(find.text('Abstraction Mode'), findsOneWidget);
     });
   });
 
   group('SetupScreen - Exit Confirmation', () {
     testWidgets('close button shows exit confirmation', (tester) async {
       await tester.pumpWidget(createTestApp(
-        overrides: [
-          setupSessionProvider.overrideWith(
-            (ref) => SetupSessionNotifier(ref)
-              ..state = SetupSessionData(
-                currentState: SetupState.collectProblem1,
-              ),
+        initialState: SetupSessionState(
+          sessionId: 'test-session',
+          data: SetupSessionData(
+            currentState: SetupState.collectProblem1,
           ),
-          hasInProgressSetupProvider.overrideWith(
-            (ref) async => null,
-          ),
-          rememberedSetupAbstractionModeProvider.overrideWith(
-            (ref) async => null,
-          ),
-        ],
+        ),
       ));
 
       await tester.pump();
@@ -197,53 +184,40 @@ void main() {
 
   group('SetupScreen - Problem Collection', () {
     testWidgets('displays problem collection view', (tester) async {
+      // Need sessionId for isActive and isConfigured for the view to render
       await tester.pumpWidget(createTestApp(
-        overrides: [
-          setupSessionProvider.overrideWith(
-            (ref) => SetupSessionNotifier(ref)
-              ..state = SetupSessionData(
-                currentState: SetupState.collectProblem1,
-              ),
+        initialState: SetupSessionState(
+          sessionId: 'test-session',
+          data: SetupSessionData(
+            currentState: SetupState.collectProblem1,
           ),
-          hasInProgressSetupProvider.overrideWith(
-            (ref) async => null,
-          ),
-          rememberedSetupAbstractionModeProvider.overrideWith(
-            (ref) async => null,
-          ),
-        ],
+          isConfigured: true,
+        ),
       ));
 
       await tester.pump();
 
-      // Should show problem collection UI
-      expect(find.byType(TextField), findsWidgets);
+      // ProblemFormView uses TextFormField widgets which are built on TextField
+      expect(find.byType(TextFormField), findsWidgets);
     });
   });
 
   group('SetupScreen - Finalized State', () {
     testWidgets('shows completion view when finalized', (tester) async {
       await tester.pumpWidget(createTestApp(
-        overrides: [
-          setupSessionProvider.overrideWith(
-            (ref) => SetupSessionNotifier(ref)
-              ..state = SetupSessionData(
-                currentState: SetupState.finalized,
-              ),
+        initialState: SetupSessionState(
+          sessionId: 'test-session',
+          data: SetupSessionData(
+            currentState: SetupState.finalized,
           ),
-          hasInProgressSetupProvider.overrideWith(
-            (ref) async => null,
-          ),
-          rememberedSetupAbstractionModeProvider.overrideWith(
-            (ref) async => null,
-          ),
-        ],
+          isConfigured: true,
+        ),
       ));
 
       await tester.pump();
 
-      // Should show completion state
-      expect(find.textContaining('Complete'), findsWidgets);
+      // Should show completion state - 'Setup Complete' is the actual text
+      expect(find.text('Setup Complete'), findsOneWidget);
     });
   });
 }

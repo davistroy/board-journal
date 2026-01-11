@@ -259,6 +259,12 @@ void main() {
           activeBoardMembersStreamProvider.overrideWith(
             (ref) => Stream.value(<BoardMember>[]),
           ),
+          boardMembersStreamProvider.overrideWith(
+            (ref) => Stream.value(<BoardMember>[]),
+          ),
+          problemsStreamProvider.overrideWith(
+            (ref) => Stream.value(<Problem>[]),
+          ),
         ],
       ));
 
@@ -269,7 +275,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Per PRD 5.5: Board tab shows roles and personas
-      expect(find.byType(Scaffold), findsOneWidget);
+      // When portfolio exists but no board members, shows "No Board Members" state
+      expect(find.text('No Board Members'), findsOneWidget);
     });
 
     testWidgets('Board tab shows message when no board exists', (tester) async {
@@ -288,8 +295,8 @@ void main() {
       await tester.tap(find.text('Board'));
       await tester.pumpAndSettle();
 
-      // Should indicate board isn't set up
-      expect(find.textContaining('Set up'), findsWidgets);
+      // Should indicate board isn't set up - actual text is "Complete Setup to create your board of directors"
+      expect(find.textContaining('Complete Setup'), findsOneWidget);
     });
   });
 

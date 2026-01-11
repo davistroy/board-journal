@@ -35,57 +35,59 @@ void main() {
 
     group('AbstractionModeNotifier', () {
       test('initializes with false (default)', () async {
-        // Wait for initialization
-        await Future.delayed(const Duration(milliseconds: 100));
+        // Wait for the async initialization to complete
+        final notifier = container.read(abstractionModeNotifierProvider.notifier);
+
+        // Wait for state to settle
+        await Future<void>.delayed(const Duration(milliseconds: 200));
 
         final state = container.read(abstractionModeNotifierProvider);
-
-        // Should be loaded with false
         expect(state.hasValue, isTrue);
         expect(state.valueOrNull, isFalse);
       });
 
       test('setEnabled updates state', () async {
-        await Future.delayed(const Duration(milliseconds: 100));
+        final notifier = container.read(abstractionModeNotifierProvider.notifier);
+        await Future<void>.delayed(const Duration(milliseconds: 200));
 
-        await container.read(abstractionModeNotifierProvider.notifier).setEnabled(true);
+        await notifier.setEnabled(true);
 
         final state = container.read(abstractionModeNotifierProvider);
         expect(state.valueOrNull, isTrue);
       });
 
       test('toggle switches state', () async {
-        await Future.delayed(const Duration(milliseconds: 100));
+        final notifier = container.read(abstractionModeNotifierProvider.notifier);
+        await Future<void>.delayed(const Duration(milliseconds: 200));
 
         // Initially false
         expect(container.read(abstractionModeNotifierProvider).valueOrNull, isFalse);
 
         // Toggle to true
-        await container.read(abstractionModeNotifierProvider.notifier).toggle();
-        await Future.delayed(const Duration(milliseconds: 50));
+        await notifier.toggle();
         expect(container.read(abstractionModeNotifierProvider).valueOrNull, isTrue);
 
         // Toggle to false
-        await container.read(abstractionModeNotifierProvider.notifier).toggle();
-        await Future.delayed(const Duration(milliseconds: 50));
+        await notifier.toggle();
         expect(container.read(abstractionModeNotifierProvider).valueOrNull, isFalse);
       });
     });
 
     group('AnalyticsNotifier', () {
       test('initializes with true (default per PRD)', () async {
-        await Future.delayed(const Duration(milliseconds: 100));
+        final notifier = container.read(analyticsNotifierProvider.notifier);
+        await Future<void>.delayed(const Duration(milliseconds: 200));
 
         final state = container.read(analyticsNotifierProvider);
-
         expect(state.hasValue, isTrue);
         expect(state.valueOrNull, isTrue);
       });
 
       test('setEnabled updates state', () async {
-        await Future.delayed(const Duration(milliseconds: 100));
+        final notifier = container.read(analyticsNotifierProvider.notifier);
+        await Future<void>.delayed(const Duration(milliseconds: 200));
 
-        await container.read(analyticsNotifierProvider.notifier).setEnabled(false);
+        await notifier.setEnabled(false);
 
         final state = container.read(analyticsNotifierProvider);
         expect(state.valueOrNull, isFalse);
@@ -308,9 +310,11 @@ void main() {
         final problemRepo = container.read(problemRepositoryProvider);
 
         await dailyRepo.create(
-          transcriptText: 'Test entry.',
-          recordedAtUtc: DateTime.now().toUtc(),
-          recordingDurationSeconds: 60,
+          transcriptRaw: 'Test entry.',
+          transcriptEdited: 'Test entry.',
+          entryType: EntryType.voice,
+          timezone: 'UTC',
+          durationSeconds: 60,
         );
 
         await problemRepo.create(

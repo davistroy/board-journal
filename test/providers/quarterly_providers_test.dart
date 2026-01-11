@@ -73,7 +73,7 @@ void main() {
     test('isCompleted returns false when state is not finalized', () {
       const state = QuarterlySessionState(
         data: QuarterlySessionData(
-          currentState: QuarterlyState.question1BetEvaluation,
+          currentState: QuarterlyState.q1LastBetEvaluation,
         ),
       );
 
@@ -83,7 +83,7 @@ void main() {
     test('progressPercent returns value from state', () {
       const state = QuarterlySessionState(
         data: QuarterlySessionData(
-          currentState: QuarterlyState.question5PortfolioCheck,
+          currentState: QuarterlyState.q5PortfolioCheck,
         ),
       );
 
@@ -95,7 +95,7 @@ void main() {
     test('currentStateName returns display name from state', () {
       const state = QuarterlySessionState(
         data: QuarterlySessionData(
-          currentState: QuarterlyState.question1BetEvaluation,
+          currentState: QuarterlyState.q1LastBetEvaluation,
         ),
       );
 
@@ -136,7 +136,7 @@ void main() {
     test('isInBoardInterrogation returns false for other states', () {
       const state = QuarterlySessionState(
         data: QuarterlySessionData(
-          currentState: QuarterlyState.question1BetEvaluation,
+          currentState: QuarterlyState.q1LastBetEvaluation,
         ),
       );
 
@@ -197,17 +197,17 @@ void main() {
       expect(QuarterlyState.values, contains(QuarterlyState.initial));
       expect(QuarterlyState.values, contains(QuarterlyState.sensitivityGate));
       expect(QuarterlyState.values, contains(QuarterlyState.gate0Prerequisites));
-      expect(QuarterlyState.values, contains(QuarterlyState.question1BetEvaluation));
-      expect(QuarterlyState.values, contains(QuarterlyState.question2CommitmentsVsActuals));
-      expect(QuarterlyState.values, contains(QuarterlyState.question3AvoidedDecision));
-      expect(QuarterlyState.values, contains(QuarterlyState.question4ComfortWork));
-      expect(QuarterlyState.values, contains(QuarterlyState.question5PortfolioCheck));
-      expect(QuarterlyState.values, contains(QuarterlyState.question6PortfolioHealth));
+      expect(QuarterlyState.values, contains(QuarterlyState.q1LastBetEvaluation));
+      expect(QuarterlyState.values, contains(QuarterlyState.q2CommitmentsVsActuals));
+      expect(QuarterlyState.values, contains(QuarterlyState.q3AvoidedDecision));
+      expect(QuarterlyState.values, contains(QuarterlyState.q4ComfortWork));
+      expect(QuarterlyState.values, contains(QuarterlyState.q5PortfolioCheck));
+      expect(QuarterlyState.values, contains(QuarterlyState.q6PortfolioHealthUpdate));
       expect(QuarterlyState.values, contains(QuarterlyState.coreBoardInterrogation));
       expect(QuarterlyState.values, contains(QuarterlyState.growthBoardInterrogation));
       expect(QuarterlyState.values, contains(QuarterlyState.boardInterrogationClarify));
-      expect(QuarterlyState.values, contains(QuarterlyState.question9TriggerCheck));
-      expect(QuarterlyState.values, contains(QuarterlyState.question10NextBet));
+      expect(QuarterlyState.values, contains(QuarterlyState.q9TriggerCheck));
+      expect(QuarterlyState.values, contains(QuarterlyState.q10NextBet));
       expect(QuarterlyState.values, contains(QuarterlyState.generateReport));
       expect(QuarterlyState.values, contains(QuarterlyState.finalized));
       expect(QuarterlyState.values, contains(QuarterlyState.abandoned));

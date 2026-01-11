@@ -200,7 +200,7 @@ extension QuarterlyStateExtension on QuarterlyState {
       case QuarterlyState.q3AvoidedDecision:
       case QuarterlyState.q3Clarify:
         return QuarterlyState.q4ComfortWork;
-      case QuarterlyState.q4AvoidedDecision:
+      case QuarterlyState.q4ComfortWork:
       case QuarterlyState.q4Clarify:
         return QuarterlyState.q5PortfolioCheck;
       case QuarterlyState.q5PortfolioCheck:

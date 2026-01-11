@@ -325,9 +325,10 @@ void main() {
       };
 
       expect(response['tables'], hasLength(3));
-      expect(response['record_counts']['daily_entries'], equals(2));
-      expect(response['record_counts']['weekly_briefs'], equals(0));
-      expect(response['record_counts']['problems'], equals(1));
+      final recordCounts = response['record_counts'] as Map<String, dynamic>;
+      expect(recordCounts['daily_entries'], equals(2));
+      expect(recordCounts['weekly_briefs'], equals(0));
+      expect(recordCounts['problems'], equals(1));
     });
   });
 }

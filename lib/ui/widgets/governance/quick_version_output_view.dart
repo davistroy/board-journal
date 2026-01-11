@@ -38,7 +38,7 @@ class QuickVersionOutputView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.1),
+                  color: Colors.green.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -111,7 +111,7 @@ class QuickVersionOutputView extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Card(
-              color: Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.3),
+              color: Theme.of(context).colorScheme.errorContainer.withOpacity(0.3),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -170,7 +170,7 @@ class QuickVersionOutputView extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Card(
-              color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.5),
+              color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.5),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -200,7 +200,7 @@ class QuickVersionOutputView extends StatelessWidget {
                           color: Theme.of(context)
                               .colorScheme
                               .surface
-                              .withValues(alpha: 0.7),
+                              .withOpacity(0.7),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
@@ -427,7 +427,7 @@ class _ProblemDirectionsTable extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.1),
+                      color: color.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(

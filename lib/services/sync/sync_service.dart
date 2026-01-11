@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:drift/drift.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/database/database.dart';

@@ -315,7 +315,7 @@ void main() {
           initialState: 'q1',
         );
 
-        await Future.delayed(const Duration(milliseconds: 100));
+        await Future.delayed(const Duration(seconds: 1));
 
         await repository.create(
           sessionType: GovernanceSessionType.setup,

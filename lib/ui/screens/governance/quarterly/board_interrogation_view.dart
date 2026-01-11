@@ -35,6 +35,13 @@ class _BoardInterrogationViewState
     extends ConsumerState<BoardInterrogationView> {
   final _controller = TextEditingController();
 
+  BoardRoleType _getRoleType(BoardMember member) {
+    return BoardRoleType.values.firstWhere(
+      (r) => r.name == member.roleType,
+      orElse: () => BoardRoleType.accountability,
+    );
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -234,7 +241,7 @@ class _BoardInterrogationViewState
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          member.roleType.displayName,
+                          _getRoleType(member).displayName,
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
@@ -259,7 +266,7 @@ class _BoardInterrogationViewState
                   ],
                   const SizedBox(height: 8),
                   Text(
-                    member.roleType.function,
+                    _getRoleType(member).function,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontStyle: FontStyle.italic,
                           color: Theme.of(context).colorScheme.outline,
@@ -306,7 +313,7 @@ class _BoardInterrogationViewState
               ),
               const SizedBox(height: 12),
               Text(
-                widget.currentQuestion ?? widget.currentMember!.roleType.signatureQuestion,
+                widget.currentQuestion ?? _getRoleType(widget.currentMember!).signatureQuestion,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       fontStyle: FontStyle.italic,
                     ),

@@ -121,7 +121,7 @@ void main() {
     });
 
     test('statusText shows next scheduled time when scheduled', () {
-      final nextTime = DateTime(2026, 1, 12, 20, 0); // Sunday 8pm
+      final nextTime = DateTime(2026, 1, 11, 20, 0); // Sunday 8pm
       final state = BriefSchedulerState(
         isScheduled: true,
         nextScheduledTime: nextTime,
@@ -130,7 +130,7 @@ void main() {
       expect(state.statusText, contains('Next brief'));
       expect(state.statusText, contains('Sun'));
       expect(state.statusText, contains('Jan'));
-      expect(state.statusText, contains('12'));
+      expect(state.statusText, contains('11'));
     });
   });
 
@@ -158,7 +158,7 @@ void main() {
     // but we can verify the schedule behavior indirectly
 
     test('getState shows correct status text format', () {
-      final nextTime = DateTime(2026, 1, 12, 20, 0); // Sunday 8pm
+      final nextTime = DateTime(2026, 1, 11, 20, 0); // Sunday 8pm
       final state = BriefSchedulerState(
         isScheduled: true,
         nextScheduledTime: nextTime,

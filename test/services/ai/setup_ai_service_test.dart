@@ -35,6 +35,7 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-opus-4-5-20250514',
               content: responseJson,
               inputTokens: 100,
               outputTokens: 50,
@@ -79,6 +80,7 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-opus-4-5-20250514',
               content: responseJson,
               inputTokens: 100,
               outputTokens: 50,
@@ -101,6 +103,7 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-opus-4-5-20250514',
               content: 'Not valid JSON',
               inputTokens: 100,
               outputTokens: 50,
@@ -122,7 +125,7 @@ void main() {
           systemPrompt: anyNamed('systemPrompt'),
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
-        )).thenThrow(ClaudeError('API error', isRetryable: true));
+        )).thenThrow(ClaudeError(message: 'API error', isRetryable: true));
 
         expect(
           () => service.generateHealthStatements(
@@ -158,6 +161,7 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-opus-4-5-20250514',
               content: responseJson,
               inputTokens: 100,
               outputTokens: 100,
@@ -187,6 +191,7 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-opus-4-5-20250514',
               content: 'Not valid JSON',
               inputTokens: 100,
               outputTokens: 50,
@@ -220,6 +225,7 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-opus-4-5-20250514',
               content: responseJson,
               inputTokens: 100,
               outputTokens: 100,
@@ -241,6 +247,7 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-opus-4-5-20250514',
               content: 'Invalid JSON here',
               inputTokens: 100,
               outputTokens: 50,
@@ -265,6 +272,7 @@ void main() {
             userMessage: anyNamed('userMessage'),
             maxTokens: anyNamed('maxTokens'),
           )).thenAnswer((_) async => ClaudeResponse(
+                model: 'claude-opus-4-5-20250514',
                 content: 'Invalid', // Force default
                 inputTokens: 100,
                 outputTokens: 50,
@@ -297,6 +305,7 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-opus-4-5-20250514',
               content: responseJson,
               inputTokens: 100,
               outputTokens: 50,
@@ -320,6 +329,7 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-opus-4-5-20250514',
               content: '''
 {
   "direction": "APPRECIATING",
@@ -347,6 +357,7 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-opus-4-5-20250514',
               content: '''
 {
   "direction": "unknown_value",
@@ -374,6 +385,7 @@ void main() {
           userMessage: anyNamed('userMessage'),
           maxTokens: anyNamed('maxTokens'),
         )).thenAnswer((_) async => ClaudeResponse(
+              model: 'claude-opus-4-5-20250514',
               content: 'Not JSON',
               inputTokens: 100,
               outputTokens: 50,

@@ -241,7 +241,7 @@ void main() {
 
       test('includes board members section in Markdown', () async {
         await boardMemberRepo.create(
-          roleType: BoardRoleType.challenger,
+          roleType: BoardRoleType.devilsAdvocate,
           personaName: 'Dr. Sarah Chen',
           personaBackground: 'Former CEO with 20 years experience',
           personaCommunicationStyle: 'Direct and challenging',
@@ -251,7 +251,7 @@ void main() {
 
         expect(markdown, contains('## Board Members'));
         expect(markdown, contains('Dr. Sarah Chen'));
-        expect(markdown, contains('challenger'));
+        expect(markdown, contains('devilsAdvocate'));
       });
     });
 

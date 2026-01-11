@@ -9,7 +9,7 @@ export 'claude_client.dart';
 export 'models/extracted_signal.dart';
 export 'quarterly_ai_service.dart';
 export 'quick_version_ai_service.dart';
-export 'setup_ai_service.dart';
+export 'setup_ai_service.dart' hide DirectionEvaluation;
 export 'signal_extraction_service.dart';
 export 'transcription_service.dart';
 export 'vagueness_detection_service.dart';

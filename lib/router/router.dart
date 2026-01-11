@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+export 'package:go_router/go_router.dart';
+
 import '../ui/screens/screens.dart';
 
 /// Route path constants for type-safe navigation.

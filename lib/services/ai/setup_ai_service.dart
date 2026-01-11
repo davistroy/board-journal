@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../../data/enums/board_role_type.dart';
+import '../../data/enums/problem_direction.dart';
 import '../governance/setup_state.dart';
 import 'claude_client.dart';
 

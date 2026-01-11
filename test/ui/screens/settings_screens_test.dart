@@ -112,15 +112,18 @@ void main() {
           problemsStreamProvider.overrideWith(
             (ref) => Stream.value(<Problem>[]),
           ),
-          portfolioHealthStreamProvider.overrideWith(
-            (ref) => Stream.value(null),
+          totalAllocationProvider.overrideWith(
+            (ref) async => 0,
+          ),
+          allocationValidationProvider.overrideWith(
+            (ref) async => null,
           ),
         ],
       ));
 
       await tester.pump();
 
-      expect(find.text('Portfolio'), findsOneWidget);
+      expect(find.text('Edit Portfolio'), findsOneWidget);
     });
 
     testWidgets('has back button', (tester) async {
@@ -130,8 +133,11 @@ void main() {
           problemsStreamProvider.overrideWith(
             (ref) => Stream.value(<Problem>[]),
           ),
-          portfolioHealthStreamProvider.overrideWith(
-            (ref) => Stream.value(null),
+          totalAllocationProvider.overrideWith(
+            (ref) async => 0,
+          ),
+          allocationValidationProvider.overrideWith(
+            (ref) async => null,
           ),
         ],
       ));
@@ -148,8 +154,11 @@ void main() {
           problemsStreamProvider.overrideWith(
             (ref) => Stream.value(<Problem>[]),
           ),
-          portfolioHealthStreamProvider.overrideWith(
-            (ref) => Stream.value(null),
+          totalAllocationProvider.overrideWith(
+            (ref) async => 0,
+          ),
+          allocationValidationProvider.overrideWith(
+            (ref) async => null,
           ),
         ],
       ));
@@ -165,8 +174,8 @@ void main() {
       await tester.pumpWidget(createTestApp(
         initialLocation: '/settings/versions',
         overrides: [
-          portfolioVersionsStreamProvider.overrideWith(
-            (ref) => Stream.value(<PortfolioVersion>[]),
+          allVersionsProvider.overrideWith(
+            (ref) async => <PortfolioVersion>[],
           ),
         ],
       ));
@@ -180,8 +189,8 @@ void main() {
       await tester.pumpWidget(createTestApp(
         initialLocation: '/settings/versions',
         overrides: [
-          portfolioVersionsStreamProvider.overrideWith(
-            (ref) => Stream.value(<PortfolioVersion>[]),
+          allVersionsProvider.overrideWith(
+            (ref) async => <PortfolioVersion>[],
           ),
         ],
       ));
@@ -195,15 +204,15 @@ void main() {
       await tester.pumpWidget(createTestApp(
         initialLocation: '/settings/versions',
         overrides: [
-          portfolioVersionsStreamProvider.overrideWith(
-            (ref) => Stream.value(<PortfolioVersion>[]),
+          allVersionsProvider.overrideWith(
+            (ref) async => <PortfolioVersion>[],
           ),
         ],
       ));
 
       await tester.pump();
 
-      expect(find.textContaining('version'), findsWidgets);
+      expect(find.textContaining('Version'), findsWidgets);
     });
   });
 }

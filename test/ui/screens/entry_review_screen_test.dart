@@ -1,25 +1,28 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:boardroom_journal/data/data.dart';
-import 'package:boardroom_journal/providers/providers.dart';
+import 'package:boardroom_journal/providers/providers.dart' hide entryByIdProvider;
 import 'package:boardroom_journal/ui/screens/screens.dart';
 
 /// Creates a mock DailyEntry for testing.
 DailyEntry _createMockEntry({
   String id = 'test-entry-id',
   String transcript = 'Test transcript content',
-  String? signalsJson,
+  String? extractedSignalsJson,
 }) {
   return DailyEntry(
     id: id,
     entryType: EntryType.text.name,
     transcriptRaw: transcript,
     transcriptEdited: transcript,
-    signalsJson: signalsJson ?? '[]',
+    extractedSignalsJson: extractedSignalsJson ?? '{}',
     wordCount: transcript.split(' ').length,
+    durationSeconds: null,
     createdAtUtc: DateTime.now().toUtc(),
     createdAtTimezone: 'America/New_York',
     updatedAtUtc: DateTime.now().toUtc(),
@@ -75,14 +78,15 @@ Widget createTestApp({
 void main() {
   group('EntryReviewScreen', () {
     testWidgets('displays loading state initially', (tester) async {
+      // Use a Completer that never completes to simulate loading state
+      // without leaving pending timers
+      final completer = Completer<DailyEntry?>();
+
       await tester.pumpWidget(createTestApp(
         entryId: 'test-id',
         overrides: [
           entryByIdProvider('test-id').overrideWith(
-            (ref) => Future.delayed(
-              const Duration(seconds: 10),
-              () => _createMockEntry(),
-            ),
+            (ref) => completer.future,
           ),
         ],
       ));
@@ -105,7 +109,7 @@ void main() {
       expect(find.textContaining('My test journal entry'), findsOneWidget);
     });
 
-    testWidgets('displays Entry Review in app bar', (tester) async {
+    testWidgets('displays Review Entry in app bar', (tester) async {
       await tester.pumpWidget(createTestApp(
         entryId: 'test-id',
         mockEntry: _createMockEntry(),
@@ -113,7 +117,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('Entry Review'), findsOneWidget);
+      expect(find.text('Review Entry'), findsOneWidget);
     });
 
     testWidgets('has back navigation button', (tester) async {
@@ -135,7 +139,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.edit), findsOneWidget);
+      expect(find.byIcon(Icons.edit_outlined), findsOneWidget);
     });
 
     testWidgets('has delete button in app bar', (tester) async {
@@ -170,10 +174,7 @@ void main() {
       await tester.pumpWidget(createTestApp(
         entryId: 'test-id',
         mockEntry: _createMockEntry(
-          signalsJson: '''[
-            {"type": "wins", "text": "Completed project milestone"},
-            {"type": "blockers", "text": "Waiting on approval"}
-          ]''',
+          extractedSignalsJson: '''{"wins": ["Completed project milestone"], "blockers": ["Waiting on approval"]}''',
         ),
       ));
 
@@ -227,7 +228,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.edit));
+      await tester.tap(find.byIcon(Icons.edit_outlined));
       await tester.pumpAndSettle();
 
       // In edit mode, should show a TextField instead of read-only text
@@ -242,10 +243,11 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.edit));
+      await tester.tap(find.byIcon(Icons.edit_outlined));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.save), findsOneWidget);
+      // Save button is a TextButton with 'Save' text, not an icon
+      expect(find.text('Save'), findsOneWidget);
     });
   });
 }

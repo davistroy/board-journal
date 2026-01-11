@@ -7,7 +7,7 @@ library;
 
 export 'ai_providers.dart';
 export 'audio_providers.dart';
-export 'auth_providers.dart';
+export 'auth_providers.dart' hide isOnboardingCompletedProvider;
 export 'database_provider.dart';
 export 'history_providers.dart';
 export 'quarterly_providers.dart';
@@ -16,4 +16,4 @@ export 'repository_providers.dart';
 export 'scheduling_providers.dart';
 export 'settings_providers.dart';
 export 'setup_providers.dart';
-export 'sync_providers.dart';
+export 'sync_providers.dart' hide sharedPreferencesProvider;

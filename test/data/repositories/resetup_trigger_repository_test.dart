@@ -37,7 +37,7 @@ void main() {
         expect(trigger.description, 'New job promotion');
         expect(trigger.condition, contains('Role or responsibilities'));
         expect(trigger.recommendedAction, 'full_resetup');
-        expect(trigger.dueAtUtc, dueDate);
+        expect(trigger.dueAtUtc?.toUtc(), dueDate);
         expect(trigger.isMet, isFalse);
       });
 
@@ -66,7 +66,7 @@ void main() {
         expect(trigger.recommendedAction, 'full_resetup');
 
         final expectedDue = setupDate.add(const Duration(days: 365));
-        expect(trigger.dueAtUtc, expectedDue);
+        expect(trigger.dueAtUtc?.toUtc(), expectedDue);
       });
     });
 

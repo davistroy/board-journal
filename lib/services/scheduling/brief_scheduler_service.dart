@@ -297,12 +297,33 @@ class BriefSchedulerState {
   /// Whether a task is currently scheduled.
   final bool isScheduled;
 
+  /// Last error message (null if no error).
+  final String? lastError;
+
   const BriefSchedulerState({
     this.nextScheduledTime,
     this.lastExecutionTime,
     this.currentRetryCount = 0,
     this.isScheduled = false,
+    this.lastError,
   });
+
+  /// Creates a copy of this state with the given fields replaced.
+  BriefSchedulerState copyWith({
+    DateTime? nextScheduledTime,
+    DateTime? lastExecutionTime,
+    int? currentRetryCount,
+    bool? isScheduled,
+    String? lastError,
+  }) {
+    return BriefSchedulerState(
+      nextScheduledTime: nextScheduledTime ?? this.nextScheduledTime,
+      lastExecutionTime: lastExecutionTime ?? this.lastExecutionTime,
+      currentRetryCount: currentRetryCount ?? this.currentRetryCount,
+      isScheduled: isScheduled ?? this.isScheduled,
+      lastError: lastError ?? this.lastError,
+    );
+  }
 
   /// Whether currently in retry mode.
   bool get isRetrying => currentRetryCount > 0;

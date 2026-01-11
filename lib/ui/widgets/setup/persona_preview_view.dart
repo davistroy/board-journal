@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../data/data.dart';
 import '../../../services/governance/setup_state.dart';
 
 /// Widget for previewing and editing a board member persona.

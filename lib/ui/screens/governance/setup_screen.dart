@@ -119,7 +119,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
         children: [
           _buildStateView(context, sessionState, notifier),
           Container(
-            color: Colors.black.withValues(alpha: 0.3),
+            color: Colors.black.withOpacity(0.3),
             child: const Center(
               child: Card(
                 child: Padding(
@@ -491,7 +491,7 @@ class _PortfolioCompletenessView extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.green.withValues(alpha: 0.1),
+                color: Colors.green.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(24),
               ),
               child: const Icon(

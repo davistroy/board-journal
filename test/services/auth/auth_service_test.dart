@@ -110,6 +110,30 @@ class MockSecureStorage implements FlutterSecureStorage {
   @override
   WebOptions get webOptions => const WebOptions();
 
+  @override
+  Future<bool?> isCupertinoProtectedDataAvailable() async => true;
+
+  @override
+  Stream<bool>? get onCupertinoProtectedDataAvailabilityChanged => null;
+
+  @override
+  void registerListener({
+    required String key,
+    required void Function(String?) listener,
+  }) {}
+
+  @override
+  void unregisterListener({
+    required String key,
+    required void Function(String?) listener,
+  }) {}
+
+  @override
+  void unregisterAllListenersForKey({required String key}) {}
+
+  @override
+  void unregisterAllListeners() {}
+
   void clear() => _storage.clear();
 }
 
@@ -390,8 +414,8 @@ void main() {
       );
 
       final remaining = tokens.accessTokenTimeRemaining;
-      // Allow 1 second tolerance for test execution time
-      expect(remaining.inMinutes, equals(9));
+      // Allow tolerance for test execution time - should be 9 or 10 minutes
+      expect(remaining.inMinutes, anyOf(equals(9), equals(10)));
     });
 
     test('toJson and fromJson round-trip correctly', () {

@@ -119,7 +119,15 @@ void main() {
     test('refreshToken updates tokens on success', () async {
       when(mockAuthService.initialize())
           .thenAnswer((_) async => AuthState.initial());
-      when(mockAuthService.refreshToken()).thenAnswer((_) async => true);
+      when(mockAuthService.refreshToken()).thenAnswer((_) async => AuthResult.success(
+        user: AppUser(
+          id: 'user-123',
+          email: 'test@example.com',
+          name: 'Test User',
+          provider: AuthProvider.apple,
+          createdAt: DateTime.now(),
+        ),
+      ));
 
       authNotifier = AuthNotifier(mockAuthService);
       await Future.delayed(Duration.zero);
@@ -245,4 +253,7 @@ class MockAuthNotifier extends StateNotifier<AuthState> implements AuthNotifier 
 
   @override
   Future<void> completeOnboarding() async {}
+
+  @override
+  void clearError() {}
 }

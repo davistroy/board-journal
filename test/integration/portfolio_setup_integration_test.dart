@@ -125,7 +125,7 @@ void main() {
       );
 
       await boardMemberRepository.create(
-        roleType: BoardRoleType.arrogance,
+        roleType: BoardRoleType.longTermPositioning,
         personaName: 'Sam Wu',
         personaBackground: 'Venture capitalist',
         personaCommunicationStyle: 'Blunt, challenging',
@@ -135,7 +135,7 @@ void main() {
       );
 
       await boardMemberRepository.create(
-        roleType: BoardRoleType.vagueness,
+        roleType: BoardRoleType.devilsAdvocate,
         personaName: 'Taylor Kim',
         personaBackground: 'Strategy consultant',
         personaCommunicationStyle: 'Precise, clarifying',

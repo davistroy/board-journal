@@ -119,7 +119,7 @@ void main() {
           strengthFlag: 'strong',
           problemId: 'problem-1',
         );
-        await Future.delayed(const Duration(milliseconds: 10));
+        await Future.delayed(const Duration(seconds: 1));
         await repository.create(
           sessionId: 'session-2',
           evidenceType: EvidenceType.artifact,
