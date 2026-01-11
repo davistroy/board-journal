@@ -527,7 +527,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 - Widgets: ~15 files (~2,000 LOC)
 - Models: ~10 files (~1,000 LOC)
 - Repository Tests: 12 files (~2,500 LOC)
-- Service Tests: 18 files (~3,000 LOC)
+- Service Tests: 23 files (~4,000 LOC)
 - UI Tests: 12 files (~2,500 LOC) - **~80% UI coverage**
 - Enum Tests: 1 file (~400 LOC) - **100% coverage on BetStatus transitions**
 - Widget Tests: 1 file (~200 LOC)
