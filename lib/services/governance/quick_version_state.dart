@@ -7,6 +7,9 @@
 /// - Vague response triggers concrete example follow-up
 /// - Max 2 skips per session
 
+import '../../data/enums/problem_direction.dart';
+export '../../data/enums/problem_direction.dart';
+
 /// States in the Quick Version state machine.
 enum QuickVersionState {
   /// Initial state before starting.
@@ -361,31 +364,6 @@ class IdentifiedProblem {
       errorCost != null &&
       trustRequired != null &&
       direction != null;
-}
-
-/// Problem direction classification.
-enum ProblemDirection {
-  /// Skill/problem becoming more valuable.
-  appreciating,
-
-  /// Skill/problem becoming less valuable.
-  depreciating,
-
-  /// Direction unclear, revisit next quarter.
-  stable,
-}
-
-extension ProblemDirectionExtension on ProblemDirection {
-  String get displayName {
-    switch (this) {
-      case ProblemDirection.appreciating:
-        return 'Appreciating';
-      case ProblemDirection.depreciating:
-        return 'Depreciating';
-      case ProblemDirection.stable:
-        return 'Stable';
-    }
-  }
 }
 
 /// The complete session data for a Quick Version audit.

@@ -64,7 +64,10 @@ class DailyEntryRepository {
   Future<List<DailyEntry>> getAll({int? limit, int? offset}) async {
     final query = _db.select(_db.dailyEntries)
       ..where((e) => e.deletedAtUtc.isNull())
-      ..orderBy([(e) => OrderingTerm.desc(e.createdAtUtc)]);
+      ..orderBy([
+        (e) => OrderingTerm.desc(e.createdAtUtc),
+        (e) => OrderingTerm.desc(e.updatedAtUtc),
+      ]);
 
     if (limit != null) {
       query.limit(limit, offset: offset);

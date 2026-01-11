@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../../../data/enums/signal_type.dart';
 
 /// Represents a signal extracted from a journal entry.
@@ -63,6 +65,15 @@ class ExtractedSignals {
   final List<ExtractedSignal> signals;
 
   const ExtractedSignals(this.signals);
+
+  /// Creates from a JSON string stored in the database.
+  factory ExtractedSignals.fromJsonString(String jsonString) {
+    if (jsonString.isEmpty || jsonString == '{}') {
+      return const ExtractedSignals([]);
+    }
+    final json = jsonDecode(jsonString) as Map<String, dynamic>;
+    return ExtractedSignals.fromJson(json);
+  }
 
   /// Creates from the JSON format stored in the database.
   /// Format: {"wins": ["text1", "text2"], "blockers": [...], ...}

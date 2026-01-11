@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
-import 'package:board_journal/services/ai/claude_client.dart';
-import 'package:board_journal/services/ai/vagueness_detection_service.dart';
+import 'package:boardroom_journal/services/ai/claude_client.dart';
+import 'package:boardroom_journal/services/ai/vagueness_detection_service.dart';
 
 @GenerateMocks([ClaudeClient])
 import 'vagueness_detection_service_test.mocks.dart';
@@ -159,9 +159,11 @@ void main() {
           outputTokens: 50,
         ));
 
+        // Answer that bypasses heuristics: no vague words, no concrete indicators
+        // This forces the AI call to be made
         final result = await service.checkVagueness(
           question: 'What are you working on?',
-          answer: 'Just doing some strategy work',
+          answer: 'Doing strategy work for the initiative',
         );
 
         expect(result.isVague, true);
