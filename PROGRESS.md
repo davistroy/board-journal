@@ -443,7 +443,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 
 ## Test Coverage
 
-**64 Test Files:**
+**67 Test Files:**
 
 | Test File | Coverage |
 |-----------|----------|
@@ -510,6 +510,9 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | **export_format_test.dart** | ExportData, ExportSummary, ImportResult, HistoryItem, ConflictStrategy |
 | **router_test.dart** | AppRoutes constants, GoRouter creation, route configuration |
 | **api_config_test.dart** | ApiConfig factories, computed properties, retryDelay, ApiEndpoints paths |
+| **quick_version_state_test.dart** | QuickVersionState enum, extensions, QuickVersionQA, IdentifiedProblem, session data |
+| **setup_state_test.dart** | SetupState enum, TimeAllocationStatus, SetupProblem, SetupBoardMember, session data |
+| **quarterly_state_test.dart** | QuarterlyState enum, BetEvaluation, QuarterlyEvidence, BoardInterrogationResponse, session data |
 
 ---
 
@@ -518,9 +521,9 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | Category | Count | Lines of Code (approx) |
 |----------|-------|------------------------|
 | Source Files (lib/) | 138 | ~12,900 |
-| Test Files (test/) | 64 | ~12,400 |
+| Test Files (test/) | 67 | ~13,600 |
 | Backend Files (backend/) | 18 | ~1,500 |
-| **Total Dart Files** | 220 | ~26,800 |
+| **Total Dart Files** | 223 | ~28,000 |
 
 **By Layer:**
 - Data Layer: ~35 files (~4,000 LOC)
