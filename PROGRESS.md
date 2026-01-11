@@ -443,7 +443,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 
 ## Test Coverage
 
-**62 Test Files:**
+**63 Test Files:**
 
 | Test File | Coverage |
 |-----------|----------|
@@ -508,6 +508,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | **background_task_handler_test.dart** | Background task state, retry count, scheduling persistence |
 | **auth_models_test.dart** | AuthStatus, AuthProvider, AppUser, AuthState, AuthTokens classes |
 | **export_format_test.dart** | ExportData, ExportSummary, ImportResult, HistoryItem, ConflictStrategy |
+| **router_test.dart** | AppRoutes constants, GoRouter creation, route configuration |
 
 ---
 
@@ -516,9 +517,9 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | Category | Count | Lines of Code (approx) |
 |----------|-------|------------------------|
 | Source Files (lib/) | 138 | ~12,900 |
-| Test Files (test/) | 62 | ~12,000 |
+| Test Files (test/) | 63 | ~12,200 |
 | Backend Files (backend/) | 18 | ~1,500 |
-| **Total Dart Files** | 213 | ~25,300 |
+| **Total Dart Files** | 214 | ~25,500 |
 
 **By Layer:**
 - Data Layer: ~35 files (~4,000 LOC)
