@@ -269,4 +269,3 @@ final pullToRefreshProvider = Provider<Future<void> Function()>((ref) {
     await ref.read(syncNotifierProvider.notifier).syncAll();
   };
 });
-
