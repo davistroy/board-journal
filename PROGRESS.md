@@ -443,7 +443,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 
 ## Test Coverage
 
-**53 Test Files:**
+**55 Test Files:**
 
 | Test File | Coverage |
 |-----------|----------|
@@ -499,6 +499,8 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | **audio_providers_test.dart** | Recording state, transcription config, phase transitions |
 | **ai_providers_test.dart** | Extraction state, brief generation state, client providers |
 | **scheduling_providers_test.dart** | Scheduler actions, missed brief detection, state management |
+| **history_providers_test.dart** | HistoryItem types, pagination, export/import providers |
+| **quick_version_providers_test.dart** | Session state, question tracking, progress computation |
 
 ---
 
@@ -507,9 +509,9 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | Category | Count | Lines of Code (approx) |
 |----------|-------|------------------------|
 | Source Files (lib/) | 138 | ~12,900 |
-| Test Files (test/) | 53 | ~10,000 |
+| Test Files (test/) | 55 | ~10,400 |
 | Backend Files (backend/) | 18 | ~1,500 |
-| **Total Dart Files** | 204 | ~23,300 |
+| **Total Dart Files** | 206 | ~23,700 |
 
 **By Layer:**
 - Data Layer: ~35 files (~4,000 LOC)
