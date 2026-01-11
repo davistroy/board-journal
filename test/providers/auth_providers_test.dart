@@ -33,8 +33,7 @@ void main() {
       when(mockAuthService.initialize())
           .thenAnswer((_) async => AuthState.initial());
       when(mockAuthService.signInWithApple()).thenAnswer(
-        (_) async => AuthResult(
-          success: true,
+        (_) async => AuthResult.success(
           user: AppUser(
             id: 'user-123',
             email: 'test@example.com',
@@ -56,10 +55,7 @@ void main() {
       when(mockAuthService.initialize())
           .thenAnswer((_) async => AuthState.initial());
       when(mockAuthService.signInWithApple()).thenAnswer(
-        (_) async => AuthResult(
-          success: false,
-          error: 'Sign in cancelled',
-        ),
+        (_) async => AuthResult.failure('Sign in cancelled'),
       );
 
       authNotifier = AuthNotifier(mockAuthService);
@@ -75,8 +71,7 @@ void main() {
       when(mockAuthService.initialize())
           .thenAnswer((_) async => AuthState.initial());
       when(mockAuthService.signInWithGoogle()).thenAnswer(
-        (_) async => AuthResult(
-          success: true,
+        (_) async => AuthResult.success(
           user: AppUser(
             id: 'user-456',
             email: 'google@example.com',
@@ -217,13 +212,13 @@ class MockAuthNotifier extends StateNotifier<AuthState> implements AuthNotifier 
   MockAuthNotifier(super.state);
 
   @override
-  Future<AuthResult> signInWithApple() async => AuthResult(success: false);
+  Future<AuthResult> signInWithApple() async => AuthResult.failure('Mock');
 
   @override
-  Future<AuthResult> signInWithGoogle() async => AuthResult(success: false);
+  Future<AuthResult> signInWithGoogle() async => AuthResult.failure('Mock');
 
   @override
-  Future<AuthResult> signInWithMicrosoft() async => AuthResult(success: false);
+  Future<AuthResult> signInWithMicrosoft() async => AuthResult.failure('Mock');
 
   @override
   Future<void> signOut() async {}
