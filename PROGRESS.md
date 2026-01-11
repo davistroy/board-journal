@@ -644,6 +644,9 @@ The following features are explicitly out of scope for MVP (per PRD Section 2.2)
 - **Silence Countdown Widget Tests (Jan 11, 2026):** Added widget tests for silence detection UI:
   - `test/ui/widgets/silence_countdown_widget_test.dart` - SilenceCountdownWidget, SilenceCountdownOverlay, SilenceIndicator
 
+- **CI/CD Pipeline (Jan 11, 2026):** Added GitHub Actions workflow for automated testing:
+  - `.github/workflows/ci.yml` - Runs tests, static analysis, and build verification on push/PR
+
 ---
 
 *Last updated: January 11, 2026*
