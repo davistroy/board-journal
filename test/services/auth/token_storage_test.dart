@@ -267,14 +267,14 @@ void main() {
     group('getUser', () {
       test('returns AppUser from stored JSON', () async {
         when(mockStorage.read(key: 'auth_user')).thenAnswer((_) async =>
-            '{"id":"user-123","email":"test@example.com","displayName":"Test User"}');
+            '{"id":"user-123","email":"test@example.com","name":"Test User","provider":"google","createdAt":"2024-01-01T00:00:00.000Z"}');
 
         final result = await tokenStorage.getUser();
 
         expect(result, isNotNull);
         expect(result!.id, 'user-123');
         expect(result.email, 'test@example.com');
-        expect(result.displayName, 'Test User');
+        expect(result.name, 'Test User');
       });
 
       test('returns null when no user stored', () async {
