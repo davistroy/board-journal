@@ -350,8 +350,24 @@ void main() {
 }
 
 /// Mock sync notifier for testing.
-class _MockSyncNotifier extends SyncNotifier {
-  _MockSyncNotifier(SyncStatus status) : super(null) {
-    state = status;
-  }
+class _MockSyncNotifier extends StateNotifier<SyncStatus> implements SyncNotifier {
+  _MockSyncNotifier(SyncStatus status) : super(status);
+
+  @override
+  Future<void> syncAll() async {}
+
+  @override
+  Future<void> syncChanges() async {}
+
+  @override
+  Future<void> fullDownload() async {}
+
+  @override
+  void notifyLocalChange() {}
+
+  @override
+  void onAppResumed() {}
+
+  @override
+  void onAppPaused() {}
 }
