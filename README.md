@@ -279,6 +279,42 @@ For continuous generation during development:
 dart run build_runner watch
 ```
 
+## Testing
+
+The project has comprehensive test coverage with **74 test files**:
+
+```bash
+# Run all tests
+flutter test
+
+# Run tests with coverage
+flutter test --coverage
+
+# Run a specific test file
+flutter test test/data/repositories/daily_entry_repository_test.dart
+```
+
+### Test Coverage by Layer
+
+| Layer | Test Files | Coverage |
+|-------|------------|----------|
+| Repositories | 12 | All 12 repositories tested |
+| Services | 23 | AI, sync, auth, export, audio, governance |
+| Providers | 11 | All provider categories tested |
+| Screens | 12 | All screens with widget tests |
+| Widgets | 4 | Standalone widgets tested |
+| Other | 12 | Models, router, enums, utilities |
+
+### Continuous Integration
+
+Tests run automatically on push and pull requests via GitHub Actions:
+
+- **Static analysis:** `flutter analyze`
+- **Unit & widget tests:** `flutter test --coverage`
+- **Build verification:** Android APK and iOS build checks
+
+See [`.github/workflows/ci.yml`](.github/workflows/ci.yml) for the full CI configuration.
+
 ## Documentation
 
 - **[PROGRESS.md](PROGRESS.md)** — Development progress and completed milestones
