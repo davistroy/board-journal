@@ -37,7 +37,9 @@ void main() {
           user: AppUser(
             id: 'user-123',
             email: 'test@example.com',
-            displayName: 'Test User',
+            name: 'Test User',
+            provider: AuthProvider.apple,
+            createdAt: DateTime.now(),
           ),
         ),
       );
@@ -75,7 +77,9 @@ void main() {
           user: AppUser(
             id: 'user-456',
             email: 'google@example.com',
-            displayName: 'Google User',
+            name: 'Google User',
+            provider: AuthProvider.google,
+            createdAt: DateTime.now(),
           ),
         ),
       );
@@ -95,6 +99,9 @@ void main() {
           user: AppUser(
             id: 'user-123',
             email: 'test@example.com',
+            name: 'Test User',
+            provider: AuthProvider.apple,
+            createdAt: DateTime.now(),
           ),
           onboardingCompleted: true,
         ),
@@ -149,7 +156,13 @@ void main() {
           authProvider.overrideWith(
             (ref) => MockAuthNotifier(
               AuthState.authenticated(
-                user: AppUser(id: 'test', email: 'test@test.com'),
+                user: AppUser(
+                  id: 'test',
+                  email: 'test@test.com',
+                  name: 'Test',
+                  provider: AuthProvider.google,
+                  createdAt: DateTime.now(),
+                ),
                 onboardingCompleted: true,
               ),
             ),
@@ -167,7 +180,9 @@ void main() {
       final testUser = AppUser(
         id: 'user-123',
         email: 'test@example.com',
-        displayName: 'Test',
+        name: 'Test',
+        provider: AuthProvider.apple,
+        createdAt: DateTime.now(),
       );
 
       final container = ProviderContainer(

@@ -247,7 +247,9 @@ void main() {
         final user = AppUser(
           id: 'user-123',
           email: 'test@example.com',
-          displayName: 'Test User',
+          name: 'Test User',
+          provider: AuthProvider.google,
+          createdAt: DateTime.now(),
         );
 
         when(mockStorage.write(key: anyNamed('key'), value: anyNamed('value')))
