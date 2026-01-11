@@ -55,7 +55,7 @@ final syncQueueProvider = Provider<SyncQueue>((ref) {
 /// Provider for the conflict resolver.
 final conflictResolverProvider = Provider<ConflictResolver>((ref) {
   final resolver = ConflictResolver(
-    onConflictNotification: (message) {
+    onConflictNotification: (_) {
       // This would typically trigger a UI notification
       // The message is also available via the conflict stream
     },
