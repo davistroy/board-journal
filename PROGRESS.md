@@ -443,7 +443,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 
 ## Test Coverage
 
-**70 Test Files:**
+**71 Test Files:**
 
 | Test File | Coverage |
 |-----------|----------|
@@ -459,6 +459,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | **portfolio_health_repository_test.dart** | Upsert, trend detection, growth role checks |
 | **portfolio_version_repository_test.dart** | Snapshots, versioning, comparisons |
 | **resetup_trigger_repository_test.dart** | Triggers, approaching/past due, annual |
+| **base_repository_test.dart** | SyncStatus enum/extension, PaginatedResult, DateRange factories |
 | **enums_test.dart** | BetStatus transitions (100%), BoardRoleType, SignalType, ProblemDirection |
 | extracted_signal_test.dart | Signal models, JSON serialization |
 | signal_extraction_service_test.dart | Claude client, extraction service |
@@ -524,9 +525,9 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | Category | Count | Lines of Code (approx) |
 |----------|-------|------------------------|
 | Source Files (lib/) | 138 | ~12,900 |
-| Test Files (test/) | 70 | ~14,200 |
+| Test Files (test/) | 71 | ~14,400 |
 | Backend Files (backend/) | 18 | ~1,500 |
-| **Total Dart Files** | 226 | ~28,600 |
+| **Total Dart Files** | 227 | ~28,800 |
 
 **By Layer:**
 - Data Layer: ~35 files (~4,000 LOC)
@@ -627,6 +628,9 @@ The following features are explicitly out of scope for MVP (per PRD Section 2.2)
   - `test/services/ai/ai_config_test.dart` - AIConfig constructor, factories, and validation
   - `test/services/ai/claude_client_test.dart` - ClaudeConfig, ClaudeResponse, ClaudeError, ClaudeClient
   - `test/services/audio/waveform_data_test.dart` - WaveformData rolling buffer and WaveformConfig
+
+- **Base Repository Tests (Jan 11, 2026):** Added tests for foundational data layer utilities:
+  - `test/data/repositories/base_repository_test.dart` - SyncStatus enum/extension, PaginatedResult, DateRange
 
 ---
 
