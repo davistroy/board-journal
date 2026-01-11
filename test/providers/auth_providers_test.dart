@@ -124,9 +124,8 @@ void main() {
       authNotifier = AuthNotifier(mockAuthService);
       await Future.delayed(Duration.zero);
 
-      final result = await authNotifier.refreshToken();
+      await authNotifier.refreshToken();
 
-      expect(result, isTrue);
       verify(mockAuthService.refreshToken()).called(1);
     });
   });
@@ -153,7 +152,7 @@ void main() {
     test('isAuthenticatedProvider returns auth status', () {
       final container = ProviderContainer(
         overrides: [
-          authProvider.overrideWith(
+          authNotifierProvider.overrideWith(
             (ref) => MockAuthNotifier(
               AuthState.authenticated(
                 user: AppUser(
@@ -187,7 +186,7 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          authProvider.overrideWith(
+          authNotifierProvider.overrideWith(
             (ref) => MockAuthNotifier(
               AuthState.authenticated(
                 user: testUser,
@@ -208,7 +207,7 @@ void main() {
     test('currentUserProvider returns null when unauthenticated', () {
       final container = ProviderContainer(
         overrides: [
-          authProvider.overrideWith(
+          authNotifierProvider.overrideWith(
             (ref) => MockAuthNotifier(AuthState.initial()),
           ),
         ],
@@ -236,11 +235,14 @@ class MockAuthNotifier extends StateNotifier<AuthState> implements AuthNotifier 
   Future<AuthResult> signInWithMicrosoft() async => AuthResult.failure('Mock');
 
   @override
+  Future<AuthResult> skipSignIn() async => AuthResult.failure('Mock');
+
+  @override
   Future<void> signOut() async {}
 
   @override
-  Future<bool> refreshToken() async => false;
+  Future<void> refreshToken() async {}
 
   @override
-  Future<void> setOnboardingCompleted() async {}
+  Future<void> completeOnboarding() async {}
 }
