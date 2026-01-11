@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 
+import '../../../data/data.dart';
 import '../../../models/export_format.dart';
 import '../../../providers/history_providers.dart';
 import '../../../router/router.dart';
@@ -178,15 +181,31 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         context.go('/weekly-brief/${item.id}');
         break;
       case HistoryItemType.governanceSession:
-        // TODO: Navigate to governance session detail view
-        // For now, show a snackbar
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Governance session detail view coming soon'),
-          ),
-        );
+        // Show governance session details in a bottom sheet
+        final session = item.data as GovernanceSession;
+        _showGovernanceSessionDetails(context, session);
         break;
     }
+  }
+
+  void _showGovernanceSessionDetails(BuildContext context, GovernanceSession session) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) {
+          return _GovernanceSessionDetailSheet(
+            session: session,
+            scrollController: scrollController,
+          );
+        },
+      ),
+    );
   }
 
   void _showExportDialog(BuildContext context) {
@@ -509,6 +528,156 @@ class _ExportDialogState extends ConsumerState<_ExportDialog> {
         _error = 'Export failed: $e';
         _isExporting = false;
       });
+    }
+  }
+}
+
+/// Bottom sheet for displaying governance session details.
+class _GovernanceSessionDetailSheet extends StatelessWidget {
+  final GovernanceSession session;
+  final ScrollController scrollController;
+
+  const _GovernanceSessionDetailSheet({
+    required this.session,
+    required this.scrollController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final sessionTypeLabel = _getSessionTypeLabel(session.sessionType);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      child: Column(
+        children: [
+          // Drag handle
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.onSurfaceVariant.withOpacity(0.4),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          // Header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.gavel,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        sessionTypeLabel,
+                        style: theme.textTheme.titleMedium,
+                      ),
+                      Text(
+                        _formatDate(session.completedAtUtc ?? session.startedAtUtc),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.copy),
+                  tooltip: 'Copy to clipboard',
+                  onPressed: () => _copyToClipboard(context),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.share),
+                  tooltip: 'Share',
+                  onPressed: () => _share(context),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 24),
+          // Content
+          Expanded(
+            child: session.outputMarkdown != null && session.outputMarkdown!.isNotEmpty
+                ? SingleChildScrollView(
+                    controller: scrollController,
+                    padding: const EdgeInsets.all(16),
+                    child: SelectableText(
+                      session.outputMarkdown!,
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  )
+                : Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.description_outlined,
+                          size: 48,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No output available',
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getSessionTypeLabel(String sessionType) {
+    switch (sessionType) {
+      case 'quick':
+        return '15-Minute Audit';
+      case 'setup':
+        return 'Portfolio Setup';
+      case 'quarterly':
+        return 'Quarterly Report';
+      default:
+        return 'Governance Session';
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    final months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  }
+
+  void _copyToClipboard(BuildContext context) {
+    if (session.outputMarkdown != null) {
+      Clipboard.setData(ClipboardData(text: session.outputMarkdown!));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Copied to clipboard'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _share(BuildContext context) {
+    if (session.outputMarkdown != null) {
+      final sessionTypeLabel = _getSessionTypeLabel(session.sessionType);
+      Share.share(session.outputMarkdown!, subject: sessionTypeLabel);
     }
   }
 }

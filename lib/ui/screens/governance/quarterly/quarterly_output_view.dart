@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../../services/services.dart';
 
@@ -305,13 +306,6 @@ class QuarterlyOutputView extends StatelessWidget {
   }
 
   void _shareReport(BuildContext context) {
-    // TODO: Implement sharing functionality
-    Clipboard.setData(ClipboardData(text: outputMarkdown));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Report copied to clipboard for sharing'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    Share.share(outputMarkdown, subject: 'Quarterly Report');
   }
 }

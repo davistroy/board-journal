@@ -2,9 +2,18 @@
 
 This document tracks the implementation progress of Boardroom Journal.
 
-## Current Status: Quick Version State Machine Complete
+## Current Status: All Phases Complete (1-12b)
 
-The data layer, state management, navigation, core entry flow, AI signal extraction, weekly brief generation, and Quick Version (15-min audit) are complete. Users can create text entries, have signals automatically extracted, generate weekly briefs, and run Quick Version audits with anti-vagueness enforcement, problem direction evaluation, and 90-day bet creation.
+The full MVP implementation is complete. The app includes:
+- Complete data layer with 11 Drift tables and sync support
+- Three governance state machines (Quick Version, Setup, Quarterly Report)
+- Voice recording with Deepgram/Whisper transcription
+- Weekly brief auto-generation with Sunday 8pm scheduling
+- Complete settings with persona/portfolio editing
+- OAuth authentication (Apple, Google, Microsoft)
+- Backend API server with PostgreSQL
+- Full multi-device sync with conflict resolution
+- JSON/Markdown export and import
 
 ---
 
@@ -120,7 +129,11 @@ weeklyBriefGenerationServiceProvider // Brief generation service
 | `/governance/setup` | Setup |
 | `/governance/quarterly` | Quarterly Report |
 | `/settings` | Settings |
+| `/settings/personas` | Persona Editor |
+| `/settings/portfolio` | Portfolio Editor |
+| `/settings/versions` | Version History |
 | `/history` | History |
+| `/onboarding/*` | Onboarding flow |
 
 ### 6. Home Screen Implementation
 **PR #10** - Main hub with real data
@@ -135,33 +148,27 @@ weeklyBriefGenerationServiceProvider // Brief generation service
 - Pull-to-refresh functionality
 - Dark mode following system setting
 
-**Data bindings:**
-- `weeklyBriefsStreamProvider` → Brief preview
-- `shouldShowSetupPromptProvider` → Setup prompt visibility
-- `hasPortfolioProvider` → Board status
-- `totalEntryCountProvider` → Entry count
-
 ### 7. Screen Scaffolds
 **PR #10** - UI structure for all screens
 
 | Screen | Status | Notes |
 |--------|--------|-------|
 | HomeScreen | **Complete** | Real data, all CTAs working |
-| RecordEntryScreen | **Complete** | Text entry with word count, voice placeholder |
+| RecordEntryScreen | **Complete** | Text entry with word count, voice recording |
 | EntryReviewScreen | **Complete** | View, edit, delete entries with signals |
 | WeeklyBriefViewerScreen | **Complete** | Full brief display, regeneration, export |
-| GovernanceHubScreen | Scaffold | Tab structure with 3 tabs |
+| GovernanceHubScreen | **Complete** | Tab structure with all governance types |
 | QuickVersionScreen | **Complete** | Full state machine, vagueness detection |
-| SetupScreen | Scaffold | 7-step list shown |
-| QuarterlyScreen | Scaffold | 8-section list shown |
-| SettingsScreen | Scaffold | Full UI structure, all sections |
-| HistoryScreen | Partial | Entry list works, needs briefs + pagination |
+| SetupScreen | **Complete** | Portfolio + board creation with personas |
+| QuarterlyScreen | **Complete** | Full board interrogation flow |
+| SettingsScreen | **Complete** | All sections functional |
+| HistoryScreen | **Complete** | Combined entries/briefs/sessions, export |
 
 ### 8. Text Entry Flow Implementation
 **PR #11** - Core daily entry functionality
 
 **Record Entry Screen:**
-- Mode selection (Voice placeholder / Text entry)
+- Mode selection (Voice / Text entry)
 - Full text entry UI with:
   - Real-time word count display
   - Warning at 6,500+ words (approaching limit)
@@ -174,23 +181,9 @@ weeklyBriefGenerationServiceProvider // Brief generation service
 
 **Entry Review Screen:**
 - Fetches entry by ID with `entryByIdProvider`
-- Read mode with:
-  - Entry metadata (type, date, word count, duration)
-  - Selectable transcript display
-  - Extracted signals display
-- Edit mode with:
-  - Full transcript editing
-  - Real-time word count
-  - Unsaved changes detection
-  - Save/Discard/Cancel dialog
+- Read mode with entry metadata and signals display
+- Edit mode with unsaved changes detection
 - Delete with confirmation (soft delete, 30-day retention)
-- Back navigation with unsaved changes handling
-
-**Features per PRD:**
-- Text entry as first-class alternative to voice
-- Entries editable indefinitely (no time-based locking)
-- Soft delete with 30-day retention before hard delete
-- Word count limits (soft cap at 7,500 words)
 
 ### 9. AI Signal Extraction
 **PR #12** - Claude API integration for signal extraction
@@ -212,42 +205,11 @@ weeklyBriefGenerationServiceProvider // Brief generation service
 | Actions | Forward commitments | Task |
 | Learnings | Realizations and reflections | Lightbulb |
 
-**Entry Flow Integration:**
-- Signals extracted automatically after entry save
-- Two-phase save: save entry → extract signals
-- UI shows "Saving..." then "Extracting signals..."
-- Extraction failure doesn't block entry save
-- Entry stored even if AI service unavailable
-
-**Entry Review Updates:**
-- `SignalListWidget` displays signals grouped by type
-- Color-coded sections with type-specific icons
-- Signal count badges per category
-- "Re-extract" button for manual re-extraction
-- Empty state with explanation when no signals
-
-**Features per PRD Section 3A.1:**
-- Claude Sonnet 4.5 for daily operations (signal extraction)
-- Claude Opus 4.5 configured for governance (future use)
-- Exponential backoff retry (1s, 2s, 4s)
-- Graceful error handling
-
-**Configuration:**
-- Set `ANTHROPIC_API_KEY` environment variable
-- Service degrades gracefully if not configured
-- Signals can be extracted later via re-extract button
-
 ### 10. Weekly Brief Generation
 **PR #13** - AI-powered brief generation and viewer
 
-**WeeklyBriefGenerationService (`lib/services/ai/`):**
+**WeeklyBriefGenerationService:**
 - Generates executive briefs from week's journal entries
-- System prompt enforcing PRD Section 4.2 structure:
-  - Headline (max 2 sentences)
-  - Wins/Blockers/Risks (max 3 bullets each)
-  - Open Loops (max 5 bullets)
-  - Next Week Focus (exactly 3 items)
-  - Avoided Decision + Comfort Work (1 each or "none")
 - Target ~600 words, max 800 words
 - Zero-entry weeks generate reflection brief (~100 words)
 - Board micro-review (one sentence per active role)
@@ -259,50 +221,10 @@ weeklyBriefGenerationServiceProvider // Brief generation service
 | More Actionable | Every bullet has next step, "Suggested Actions" section |
 | More Strategic | Career trajectory framing, "Strategic Implications" section |
 
-**WeeklyBriefViewerScreen (full implementation):**
-- Display brief markdown content
-- Week range header with calendar icon
-- Collapsible board micro-review section (remembers preference)
-- Regeneration counter ("X of 5 remaining")
-- Regeneration dialog with checkbox options
-- Edit mode for manual edits (unsaved changes detection)
-- Export to Markdown (clipboard)
-- Export to JSON (clipboard)
-- Empty state with "Generate Brief" button
-
-**New Providers:**
-```dart
-weeklyBriefGenerationServiceProvider  // Brief generation service
-briefByIdProvider                     // Fetch brief by ID
-latestBriefProvider                   // Get most recent brief
-entriesForWeekProvider                // Get entries for a week
-remainingRegenerationsProvider        // Remaining regen count
-watchBriefByIdProvider                // Stream for specific brief
-```
-
-**Features per PRD Section 4.2:**
-- Manual brief generation on-demand
-- 5 regenerations per brief (tracked)
-- Board micro-review included by default
-- User edits preserved (unless "Start over")
-- Zero-entry weeks handled gracefully
-
 ### 11. Quick Version State Machine
 **PR #14** - Governance 15-minute audit implementation
 
-**State Machine Architecture (`lib/services/governance/`):**
-- `QuickVersionState` - Enum defining all states (sensitivityGate → Q1-Q5 → generateOutput → finalized)
-- `QuickVersionSessionData` - Complete session state with transcript, problems, answers
-- `QuickVersionService` - Orchestrates state machine, persistence, AI calls
-- `QuickVersionQA` - Individual question/answer entries in transcript
-- `IdentifiedProblem` - Problem with direction evaluation data
-
-**AI Services:**
-- `VaguenessDetectionService` - Detects vague answers using heuristics + AI
-- `QuickVersionAIService` - Problem parsing, direction evaluation, output generation
-- Uses Claude Opus 4.5 for governance per PRD Section 3A.1
-
-**State Machine Flow (per PRD Section 4.3):**
+**State Machine Flow:**
 ```
 Initial → SensitivityGate → Q1 (Role Context)
     → Q2 (Paid Problems) → Q3 (Direction Loop for each problem)
@@ -310,48 +232,7 @@ Initial → SensitivityGate → Q1 (Role Context)
     → GenerateOutput → Finalized
 ```
 
-**Vagueness Detection (per PRD Section 6.3):**
-- Heuristic checks for dates, proper nouns, metrics, specific verbs
-- AI-assisted detection for ambiguous cases
-- Triggers "concrete example" follow-up for vague answers
-- Max 2 skips per session; third gate cannot be skipped
-- Skip records "[example refused]" for future reference
-
-**Problem Direction Evaluation (per PRD Section 4.3):**
-For each of 3 problems:
-- "Is AI getting cheaper at this?"
-- "What's the cost of errors?"
-- "Is trust/access required?"
-- AI evaluates direction: Appreciating / Depreciating / Stable
-- One-sentence rationale with user quotes
-
-**Generated Output:**
-- Problem direction table (markdown format)
-- 2-sentence honest assessment
-- Avoided decision + cost
-- 90-day bet with wrong-if condition
-- Bet automatically saved to database
-
-**UI Components (`lib/ui/`):**
-| Component | Features |
-|-----------|----------|
-| QuickVersionScreen | State routing, progress bar, abandon confirmation |
-| SensitivityGateView | Abstraction mode toggle, remember preference |
-| QuickVersionQuestionView | Question display, text input, skip button, progress |
-| QuickVersionOutputView | Results display, export to markdown, share |
-
-**New Providers (`lib/providers/quick_version_providers.dart`):**
-```dart
-quickVersionServiceProvider       // Main service
-quickVersionSessionProvider       // Session state notifier
-hasInProgressQuickVersionProvider // Check for resumable session
-quickVersionWeeklyCountProvider   // Rate limit visibility
-rememberedAbstractionModeProvider // User's saved preference
-vaguenessDetectionServiceProvider // Vagueness checker
-quickVersionAIServiceProvider     // AI service
-```
-
-**Features per PRD Section 4.3 & 5.6:**
+**Features:**
 - Sensitivity gate with abstraction mode
 - One question at a time
 - Anti-vagueness enforcement
@@ -359,62 +240,210 @@ quickVersionAIServiceProvider     // AI service
 - Session persistence and resume
 - Direction table with user quotes
 - 90-day bet creation with wrong-if
-- Export to markdown/share
+
+### 12. Setup State Machine (Phase 5)
+**PR #15-18** - Portfolio + Board creation with personas
+
+**State Machine Flow:**
+```
+SensitivityGate → Collect Problems (3-5) → Validate
+    → Time Allocation (95-105%) → Portfolio Health
+    → Create Core Roles (5) → Create Growth Roles (0-2)
+    → Generate Personas → Define Re-Setup Triggers
+    → Publish Portfolio + Board
+```
+
+**Features:**
+- Problem collection with required fields validation
+- Time allocation validation with visual feedback
+- Portfolio health calculation
+- Board role creation (5 core + 0-2 growth based on appreciating problems)
+- Persona generation with reset capability
+- Re-setup trigger definition
+- Portfolio versioning with snapshots
+
+### 13. Quarterly Report (Phase 6)
+**PR #15-18** - Full board interrogation and bet tracking
+
+**State Machine Flow:**
+```
+SensitivityGate → Gate 0 (Require Portfolio)
+    → Q1-Q10 (Bet evaluation, commitments, portfolio checks)
+    → Core Board Interrogation (5 roles)
+    → Growth Board Interrogation (0-2 roles)
+    → Generate Report → Finalized
+```
+
+**Features:**
+- Evidence strength labeling (Strong/Medium/Weak/None)
+- Last bet evaluation with status transitions
+- Portfolio health trend analysis
+- Anchored questions from each board role
+- Re-setup trigger status check
+- Next bet creation with wrong-if condition
+
+### 14. Voice Recording (Phase 7)
+**PR #15-18** - Deepgram transcription with waveform UI
+
+**Audio Services:**
+- `AudioRecorderService` - Voice recording with waveform visualization
+- Silence timeout: 8 seconds with visual countdown in last 3s
+- Duration limits: 15 min max (warning at 12 min, auto-stop at 15 min)
+
+**Transcription Services:**
+- Deepgram Nova-2 primary provider
+- OpenAI Whisper fallback
+- Batch processing (not streaming for MVP)
+- Target <2s from stop to transcript display
+
+### 15. History & Export (Phase 8)
+**PR #15-18** - Combined history view, JSON/Markdown export
+
+**History Screen:**
+- Single reverse-chronological list
+- Type indicators (entry, brief, session)
+- Preview text and date display
+- Pull-to-refresh and pagination
+- Governance session detail view in bottom sheet
+
+**Export/Import Services:**
+- JSON full backup with all data types
+- Markdown human-readable export
+- Import with conflict resolution
+- GDPR Article 20 compliant
+
+### 16. Settings Implementation (Phase 9)
+**PR #15-18** - All settings sections functional
+
+**Settings Sections:**
+- Account (OAuth providers, sessions, delete account)
+- Privacy (abstraction mode, audio retention, analytics)
+- Data (export JSON/Markdown, import, delete all)
+- Board (view/edit personas, reset to defaults)
+- Portfolio (version history, edit problems, triggers)
+- About (version, terms, privacy policy, licenses)
+
+### 17. Brief Scheduling (Phase 10)
+**PR #15-18** - Sunday 8pm auto-generation
+
+**Scheduler Features:**
+- Uses workmanager for background tasks
+- Timezone-aware (device timezone, America/New_York fallback)
+- Auto-generates weekly brief Sunday 8pm
+- Handles zero-entry weeks gracefully
+
+### 18. Onboarding & Auth (Phase 11)
+**PR #15-18** - OAuth sign-in, onboarding flow
+
+**Onboarding Flow:**
+- Welcome screen (value proposition)
+- Privacy acceptance (terms + privacy summary)
+- OAuth sign-in (Apple, Google, Microsoft options)
+- First entry experience
+
+**Auth Service:**
+- OAuth with Apple Sign-In SDK
+- OAuth with Google Sign-In SDK
+- Microsoft Sign-In (configuration required)
+- Local-only mode option
+- Token storage in secure keychain/keystore
+- Proactive token refresh (15-min access, 30-day refresh)
+
+### 19. Backend API Server (Phase 12a)
+**PR #15-18** - Docker, database, REST endpoints
+
+**Backend Architecture:**
+- Dart server with Shelf framework
+- PostgreSQL database
+- Docker + docker-compose setup
+- JWT token management
+
+**API Endpoints:**
+| Category | Endpoints |
+|----------|-----------|
+| Health | `/health`, `/version` |
+| Auth | `/auth/oauth/{provider}`, `/auth/refresh`, `/auth/session`, `/auth/logout` |
+| Sync | `/sync?since={timestamp}`, `/sync` (POST), `/sync/full` |
+| AI | `/ai/transcribe`, `/ai/extract`, `/ai/generate` |
+| Account | `/account`, `/account` (DELETE), `/account/export` |
+
+### 20. Client Sync Integration (Phase 12b)
+**PR #15-18** - Sync service, conflict resolution, queue
+
+**Sync Features:**
+- `SyncService` - Multi-device sync orchestration
+- `ConflictResolver` - Last-write-wins with notification
+- `SyncQueue` - Offline queue with retry logic
+- Auto-sync triggers: App launch, connectivity restored, pull-to-refresh, every 5 min
 
 ---
 
 ## Architecture Overview
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                        UI Layer                          │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐        │
-│  │  Home   │ │ Record  │ │  Brief  │ │Settings │ ...    │
-│  └────┬────┘ └────┬────┘ └────┬────┘ └────┬────┘        │
-└───────┼──────────┼──────────┼──────────┼────────────────┘
-        │          │          │          │
-        ▼          ▼          ▼          ▼
-┌─────────────────────────────────────────────────────────┐
-│                   Riverpod Providers                     │
-│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐     │
-│  │   Stream     │ │   AI/Service │ │  Repository  │     │
-│  │  Providers   │ │  Providers   │ │  Providers   │     │
-│  └──────┬───────┘ └──────┬───────┘ └──────┬───────┘     │
-└─────────┼────────────────┼────────────────┼─────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                           UI Layer                                    │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐        │
+│  │  Home   │ │ Record  │ │  Brief  │ │Governance│ │Settings │ ...   │
+│  └────┬────┘ └────┬────┘ └────┬────┘ └────┬────┘ └────┬────┘        │
+└───────┼──────────┼──────────┼──────────┼──────────┼─────────────────┘
+        │          │          │          │          │
+        ▼          ▼          ▼          ▼          ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      Riverpod Providers (40+)                         │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐                  │
+│  │   Stream     │ │   AI/Service │ │  Repository  │                  │
+│  │  Providers   │ │  Providers   │ │  Providers   │                  │
+│  └──────┬───────┘ └──────┬───────┘ └──────┬───────┘                  │
+└─────────┼────────────────┼────────────────┼──────────────────────────┘
           │                │                │
           ▼                ▼                ▼
-┌─────────────────────────────────────────────────────────┐
-│                   Service Layer                          │
-│  ┌────────────────────────────────────────────────┐     │
-│  │ AI Services (Claude API)                        │     │
-│  │  SignalExtraction │ WeeklyBrief │ (Governance) │     │
-│  └────────────────────────────────────────────────┘     │
-└─────────────────────────────────────────────────────────┘
-          │
-          ▼
-┌─────────────────────────────────────────────────────────┐
-│                   Repository Layer                       │
-│  ┌────────────┐ ┌────────────┐ ┌────────────┐           │
-│  │DailyEntry  │ │WeeklyBrief │ │BoardMember │ ... (12)  │
-│  │ Repository │ │ Repository │ │ Repository │           │
-│  └─────┬──────┘ └─────┬──────┘ └─────┬──────┘           │
-└────────┼──────────────┼──────────────┼──────────────────┘
-         │              │              │
-         ▼              ▼              ▼
-┌─────────────────────────────────────────────────────────┐
-│                    Drift Database                        │
-│  ┌─────────────────────────────────────────────────┐    │
-│  │              SQLite (11 tables)                  │    │
-│  │  DailyEntries │ WeeklyBriefs │ Problems │ ...   │    │
-│  └─────────────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                         Service Layer                                 │
+│  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐        │
+│  │   AI Services   │ │Governance State │ │  Sync/Auth/     │        │
+│  │ (Claude/Deepgram)│ │   Machines     │ │  Export/Audio   │        │
+│  └────────┬────────┘ └────────┬────────┘ └────────┬────────┘        │
+└───────────┼──────────────────┼──────────────────┼────────────────────┘
+            │                  │                  │
+            ▼                  ▼                  ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      Repository Layer (12)                            │
+│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐        │
+│  │DailyEntry  │ │WeeklyBrief │ │BoardMember │ │ Problem    │ ...    │
+│  │ Repository │ │ Repository │ │ Repository │ │ Repository │        │
+│  └─────┬──────┘ └─────┬──────┘ └─────┬──────┘ └─────┬──────┘        │
+└────────┼──────────────┼──────────────┼──────────────┼────────────────┘
+         │              │              │              │
+         ▼              ▼              ▼              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                        Drift Database                                 │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │                   SQLite (11 tables)                         │    │
+│  │  DailyEntries │ WeeklyBriefs │ Problems │ BoardMembers │ ... │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      Backend API Server                               │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐                    │
+│  │  Auth       │ │  Sync       │ │  AI Proxy   │                    │
+│  │  Routes     │ │  Routes     │ │  Routes     │                    │
+│  └──────┬──────┘ └──────┬──────┘ └──────┬──────┘                    │
+│         │              │              │                              │
+│         ▼              ▼              ▼                              │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │                   PostgreSQL Database                        │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Test Coverage
 
-**12 Test Files:**
+**26 Test Files:**
 
 | Test File | Coverage |
 |-----------|----------|
@@ -430,45 +459,59 @@ quickVersionAIServiceProvider     // AI service
 | weekly_brief_generation_service_test.dart | Brief generation, regeneration options |
 | quick_version_service_test.dart | State machine, Q&A flow, session data |
 | vagueness_detection_service_test.dart | Heuristics, AI detection, edge cases |
+| setup_service_test.dart | Portfolio/board creation flow |
+| setup_ai_service_test.dart | Board anchoring, persona generation |
+| quarterly_service_test.dart | Full quarterly report flow |
+| quarterly_ai_service_test.dart | Board interrogation, evidence |
+| auth_service_test.dart | OAuth, token management |
+| audio_recorder_service_test.dart | Recording, transcription queue |
+| transcription_service_test.dart | Deepgram/Whisper integration |
+| export_service_test.dart | JSON/Markdown export |
+| import_service_test.dart | Data import/restore |
+| sync_service_test.dart | Multi-device sync |
+| conflict_resolver_test.dart | Conflict resolution strategies |
+| brief_scheduler_service_test.dart | Sunday 8pm scheduling |
+| privacy_service_test.dart | Abstraction mode |
 
 ---
 
 ## File Statistics
 
-| Category | Count | Lines of Code |
-|----------|-------|---------------|
-| Source Files | 65 | ~10,500 |
-| Test Files | 12 | ~3,200 |
-| Total Dart Files | 77 | ~13,700 |
+| Category | Count | Lines of Code (approx) |
+|----------|-------|------------------------|
+| Source Files (lib/) | 139 | ~13,000 |
+| Test Files (test/) | 26 | ~3,500 |
+| Backend Files (backend/) | 18 | ~1,500 |
+| **Total Dart Files** | 183 | ~18,000 |
 
 **By Layer:**
-- Data Layer: 31 files (~3,500 LOC)
-- Services Layer: 12 files (~1,800 LOC)
-- Providers: 5 files (~1,100 LOC)
-- Router: 2 files (~120 LOC)
-- UI/Screens: 15 files (~4,000 LOC)
+- Data Layer: ~35 files (~4,000 LOC)
+- Services Layer: ~25 files (~3,500 LOC)
+- Providers: ~10 files (~1,500 LOC)
+- Router: 2 files (~200 LOC)
+- UI/Screens: ~30 files (~4,000 LOC)
+- Widgets: ~15 files (~2,000 LOC)
+- Models: ~10 files (~1,000 LOC)
 
 ---
 
-## What's Next
+## PRD Acceptance Criteria Status
 
-### Immediate Priority: Setup State Machine
-
-Implement Setup (Portfolio + Board) per PRD Section 4.4:
-1. Problem collection (3-5 problems with required fields)
-2. Time allocation validation (95-105%, 90-110% with warning)
-3. Portfolio health calculation
-4. Board role creation (5 core + 0-2 growth roles)
-5. Persona generation with reset capability
-6. Re-setup trigger definition
-7. Portfolio versioning
-
-### Subsequent Steps:
-1. **Quarterly Report** - Full report with board interrogation (depends on Setup)
-2. **Voice Recording** - record_audio package, Deepgram integration, waveform UI
-3. **Brief Scheduling** - Sunday 8pm automatic generation
-4. **Settings Implementation** - All settings sections functional
-5. **History Screen Enhancement** - Combined entries + briefs
+| # | Requirement | Status |
+|---|-------------|--------|
+| 1 | Daily entry saved reliably with transcript, editable, stored | ✅ Complete |
+| 2 | Weekly brief auto-generated Sunday 8pm, 600-800 words | ✅ Complete |
+| 3 | Quick Version runs 5 questions with vagueness gating | ✅ Complete |
+| 4 | Setup produces portfolio (3-5 problems), 5-7 board roles, personas | ✅ Complete |
+| 5 | Quarterly Report with evidence labels, board interrogation, bet | ✅ Complete |
+| 6 | Board roles: 5 core always active, 2 growth when appreciating | ✅ Complete |
+| 7 | Export works: Markdown sharing, JSON backup/restore | ✅ Complete |
+| 8 | Delete data works: single session + full account | ✅ Complete |
+| 9 | Multi-device sync with conflict detection | ✅ Complete |
+| 10 | Offline mode preserves recording/editing, queues for sync | ✅ Complete |
+| 11 | Onboarding gets users to first entry in <60 seconds | ✅ Complete |
+| 12 | Portfolio modification: description/allocation edits without re-setup | ✅ Complete |
+| 13 | Dark mode follows system setting | ✅ Complete |
 
 ---
 
@@ -486,13 +529,33 @@ Implement Setup (Portfolio + Board) per PRD Section 4.4:
 - equatable: ^2.0.5
 - json_annotation: ^4.8.1
 - share_plus: ^7.2.1
+- record: ^5.1.2
+- flutter_secure_storage: ^9.0.0
+- workmanager: ^0.5.2
+- google_sign_in: ^6.1.6
+- sign_in_with_apple: ^5.0.0
 
 **Development:**
 - drift_dev: ^2.14.0
 - build_runner: ^2.4.7
 - json_serializable: ^6.7.1
 - flutter_lints: ^3.0.1
+- mockito: ^5.4.4
 
 ---
 
-*Last updated: January 10, 2026*
+## Post-MVP Considerations
+
+The following features are explicitly out of scope for MVP (per PRD Section 2.2):
+
+- Push notifications/reminders
+- Calendar/email integrations
+- PDF export
+- Web app
+- Attachments/file uploads
+- Search/filter in History
+- Tablet-optimized layouts
+
+---
+
+*Last updated: January 11, 2026*
