@@ -717,7 +717,7 @@ Per PRD Section 10:
 - Bet status transitions ✅ enums_test (all 16 transition pairs)
 - Conflict resolution ✅ conflict_resolver_test
 
-**Test Files:** 49 total (see PROGRESS.md for full list)
+**Test Files:** 50 total (see PROGRESS.md for full list)
 
 ---
 
