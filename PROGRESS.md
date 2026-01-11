@@ -443,7 +443,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 
 ## Test Coverage
 
-**48 Test Files:**
+**49 Test Files:**
 
 | Test File | Coverage |
 |-----------|----------|
@@ -494,6 +494,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | **signal_list_widget_test.dart** | Signal display, grouping, re-extraction UI |
 | **settings_screens_test.dart** | PersonaEditor, PortfolioEditor, VersionHistory screens |
 | **auth_providers_test.dart** | OAuth flows, token management, auth state |
+| **quick_version_ai_service_test.dart** | Direction evaluation, output generation, error handling |
 
 ---
 
@@ -502,7 +503,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | Category | Count | Lines of Code (approx) |
 |----------|-------|------------------------|
 | Source Files (lib/) | 138 | ~12,900 |
-| Test Files (test/) | 48 | ~8,900 |
+| Test Files (test/) | 49 | ~9,200 |
 | Backend Files (backend/) | 18 | ~1,500 |
 | **Total Dart Files** | 202 | ~22,900 |
 
