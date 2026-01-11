@@ -574,4 +574,14 @@ The following features are explicitly out of scope for MVP (per PRD Section 2.2)
 
 ---
 
+## Recent Fixes
+
+- **Import Path Correction (Jan 11, 2026):** Fixed incorrect `package:board_journal` imports to `package:boardroom_journal` in 4 test files:
+  - `test/services/setup_service_test.dart`
+  - `test/services/quarterly_service_test.dart`
+  - `test/services/ai/setup_ai_service_test.dart`
+  - `test/services/ai/quarterly_ai_service_test.dart`
+
+---
+
 *Last updated: January 11, 2026*
