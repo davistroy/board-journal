@@ -1,6 +1,6 @@
-# PRD v5 — Boardroom Journal (MVP)
+# PRD v6 — Boardroom Journal (MVP)
 
-**Date:** Jan 10, 2026
+**Date:** Jan 11, 2026
 **Platforms:** Mobile (iOS + Android)
 **Exports:** Markdown + JSON (MVP)
 
@@ -1260,7 +1260,83 @@ If triggered, ask exactly:
 - Implement three-tier error handling: auto-retry → queue & notify → user action required.
 - Store original generated personas permanently for reset functionality.
 
-### 8.1 Companion Documents
+### 8.1 Visual Design Guidelines
+
+The app's visual identity must be distinctive and professional, avoiding generic Material 3 defaults. The following design principles are mandatory.
+
+#### 8.1.1 Typography Requirements
+
+**Font Pairing Strategy:**
+- **Display/Headlines:** Serif or display font for editorial feel (e.g., Fraunces, Playfair Display, Newsreader)
+- **Body Text:** Professional sans-serif for readability (e.g., Inter, Plus Jakarta Sans, Manrope)
+- **Data/Monospace:** Monospace font for signals, statistics, and code elements (e.g., JetBrains Mono)
+
+**Text Hierarchy:**
+| Level | Use Case | Characteristics |
+|-------|----------|-----------------|
+| Headline Large | Screen titles, hero text | Display font, 32px, weight 700 |
+| Headline Small | Section headers | Display font, 24px, weight 600 |
+| Body Large | Main content, descriptions | Sans-serif, 16px, line-height 1.6 |
+| Body Medium | Secondary content | Sans-serif, 14px |
+| Label Small | Signal tags, metadata | Monospace, 11px, weight 500 |
+
+#### 8.1.2 Color Palette Requirements
+
+**Do NOT use:** `ColorScheme.fromSeed()` or default Material palettes.
+
+**Required Custom Palette:**
+- Primary color: Deep, distinctive brand color (not generic blue/purple)
+- Secondary/Accent: Contrasting warm accent for emphasis
+- Surface colors: Warm off-whites or tinted neutrals (not pure gray)
+- Signal-specific semantic colors for all 7 signal types
+
+**Signal Color System:**
+| Signal Type | Color Family | Purpose |
+|-------------|--------------|---------|
+| Wins | Forest Green | Positive accomplishments |
+| Blockers | Burnt Orange | Current obstacles |
+| Risks | Deep Red | Future concerns |
+| Avoided Decisions | Purple | Deferred choices |
+| Comfort Work | Amber | Low-value activity |
+| Actions | Blue | Forward commitments |
+| Learnings | Teal | Insights and growth |
+
+#### 8.1.3 Motion Design Requirements
+
+**Required Animations:**
+- **Page transitions:** Custom route transitions (not default fade)
+- **List loading:** Staggered reveal animations for item lists
+- **Micro-interactions:** Button press feedback (scale + haptic)
+- **Recording UI:** Pulsing/glowing effects that respond to audio amplitude
+- **Save actions:** Success confirmation animation
+
+**Animation Principles:**
+- Duration: 200-400ms for micro-interactions, 300-500ms for page transitions
+- Curves: easeOutCubic for entries, easeInOut for reversible animations
+- Haptic feedback: Required for recording start/stop, save actions, mode switches
+
+#### 8.1.4 Visual Atmosphere
+
+**Required Elements:**
+- Subtle gradients on backgrounds (not flat solid colors)
+- Colored shadows for depth (tinted with primary/secondary colors)
+- Optional paper/grain texture overlay for journaling screens
+
+**Signal Visualization:**
+- Each signal type must have distinctive visual treatment (not plain bullet lists)
+- Color-coded left border or background gradient
+- Custom iconography per signal type
+
+#### 8.1.5 Recording Experience
+
+The recording experience is the hero feature and must feel immersive:
+- Full-screen or near-full-screen recording mode
+- Large, prominent waveform visualization
+- Ambient visual effects responding to audio levels
+- Duration displayed prominently (large typography)
+- Clear visual distinction from text entry mode
+
+### 8.2 Companion Documents
 
 The following documents are maintained separately from this PRD:
 
@@ -1269,6 +1345,7 @@ The following documents are maintained separately from this PRD:
 | **Prompt Templates** | Actual LLM prompts for all workflows | Create during development, version controlled |
 | **Brand Guide** | App icon, color palette, typography | Create during design phase |
 | **App Store Listing** | Marketing copy, screenshots, keywords | Create at launch prep |
+| **Frontend Recommendations** | Detailed UI assessment and implementation guide | Complete (frontend-recommendations.md) |
 
 These are linked from this PRD but maintained as separate files for easier iteration.
 
@@ -1504,6 +1581,18 @@ Don't rely on color alone to convey information. Test with contrast checker tool
 ---
 
 ## 13) Document History
+
+### v6 (Jan 11, 2026)
+Added visual design guidelines based on frontend UI assessment. Key updates:
+
+**Visual design section (8.1):**
+- Added typography requirements with font pairing strategy
+- Added custom color palette requirements (no default Material palettes)
+- Added signal-specific semantic color system
+- Added motion design requirements (animations, haptics)
+- Added visual atmosphere guidelines (gradients, shadows, textures)
+- Added recording experience requirements as hero feature
+- Added Frontend Recommendations to companion documents
 
 ### v5 (Jan 10, 2026)
 Addressed 27 remaining questions from assessment. Key updates:
