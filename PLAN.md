@@ -1,15 +1,15 @@
 # Boardroom Journal - Implementation Plan
 
 **Created:** January 10, 2026
-**PRD Version:** v5
-**Current Status:** ✅ ALL PHASES COMPLETE (Phase 12b Complete)
-**Last Updated:** January 10, 2026
+**PRD Version:** v6
+**Current Status:** Phase 13 Planned (Frontend Visual Overhaul)
+**Last Updated:** January 11, 2026
 
 ---
 
 ## Executive Summary
 
-Boardroom Journal is a Flutter mobile app for voice-first career journaling with AI-powered governance. **All implementation phases are now complete.** The application includes:
+Boardroom Journal is a Flutter mobile app for voice-first career journaling with AI-powered governance. **All core functionality phases are complete (Phases 5-12b).** The application includes:
 
 - Full data layer with 11 tables and sync support
 - Three governance state machines (Quick Version, Setup, Quarterly Report)
@@ -20,7 +20,7 @@ Boardroom Journal is a Flutter mobile app for voice-first career journaling with
 - Backend API server with PostgreSQL
 - Full multi-device sync with conflict resolution
 
-This plan divided the work into 9 phases (with Phase 12 split into 12a/12b), all independently testable and deployable.
+This plan divided the work into 10 phases (with Phase 12 split into 12a/12b), all independently testable and deployable. **Phase 13 (Frontend Visual Overhaul)** addresses the visual design assessment to create a distinctive, premium UI.
 
 ---
 
@@ -37,6 +37,7 @@ This plan divided the work into 9 phases (with Phase 12 split into 12a/12b), all
 | 11 | Onboarding & Auth | OAuth sign-in, onboarding flow | ✅ Complete | Medium |
 | 12a | Backend API Server | Docker, database, REST endpoints | ✅ Complete | Medium |
 | 12b | Client Sync Integration | Sync service, conflict resolution, queue | ✅ Complete | Medium |
+| 13 | Frontend Visual Overhaul | Distinctive UI with custom theme, animations, signal cards | 🔲 Planned | Medium-High |
 
 ---
 
@@ -106,6 +107,12 @@ Phase 10: Brief Scheduling (independent)
 Phase 11: Onboarding & Auth (independent, but needed for Phase 12a)
     └── Phase 12a: Backend API Server
         └── Phase 12b: Client Sync Integration
+
+Phase 13: Frontend Visual Overhaul (independent, can run anytime)
+    ├── Sub-Phase 13a: Design System Foundation (no dependencies)
+    ├── Sub-Phase 13b: Motion Design System (requires 13a)
+    ├── Sub-Phase 13c: Component Redesign (requires 13a)
+    └── Sub-Phase 13d: Screen Updates (requires 13a, 13b, 13c)
 ```
 
 ---
@@ -699,6 +706,99 @@ Welcome → Privacy → OAuth → First Entry
 
 ---
 
+### Phase 13: Frontend Visual Overhaul
+
+**Objective:** Transform the generic Material 3 UI into a distinctive, premium visual experience per PRD Section 8.1 guidelines.
+
+**Prerequisites:** None (can run in parallel with any maintenance work)
+
+**Reference Document:** `frontend-recommendations.md` - Full assessment and implementation details
+
+**Deliverables:**
+
+**Sub-Phase 13a: Design System Foundation**
+- `lib/ui/theme/app_theme.dart` - Main theme configuration with custom fonts
+- `lib/ui/theme/app_colors.dart` - Custom color palette definitions
+- `lib/ui/theme/app_typography.dart` - Text theme with Google Fonts
+- `lib/ui/theme/app_spacing.dart` - Consistent spacing values
+- `lib/ui/theme/app_shadows.dart` - Custom shadow definitions with colored shadows
+- `lib/ui/theme/signal_colors.dart` - Semantic colors for 7 signal types
+- Updated `lib/main.dart` - Integrate new theme
+
+**Sub-Phase 13b: Motion Design System**
+- `lib/ui/animations/page_transitions.dart` - Custom route transitions
+- `lib/ui/animations/stagger_animation.dart` - Staggered list reveal animations
+- `lib/ui/animations/micro_interactions.dart` - Button press, toggle, save effects
+- `lib/ui/animations/haptic_service.dart` - Centralized haptic feedback
+- Updated navigation with custom transitions
+
+**Sub-Phase 13c: Component Redesign**
+- `lib/ui/components/buttons/hero_record_button.dart` - Prominent recording button
+- `lib/ui/components/buttons/animated_button.dart` - Press feedback button
+- `lib/ui/components/cards/signal_card.dart` - Type-specific signal visualization
+- `lib/ui/components/cards/brief_preview_card.dart` - Editorial brief display
+- `lib/ui/widgets/circular_waveform.dart` - Alternative waveform visualization
+- `lib/ui/widgets/ambient_glow.dart` - Audio-responsive background effects
+- Updated `lib/ui/widgets/waveform_widget.dart` - Enhanced visualization
+
+**Sub-Phase 13d: Screen Updates**
+- Updated `lib/ui/screens/onboarding/welcome_screen.dart` - Immersive onboarding
+- Updated `lib/ui/screens/home/home_screen.dart` - Hero record button layout
+- Updated `lib/ui/screens/record_entry/record_entry_screen.dart` - Immersive recording
+- Updated `lib/ui/screens/entry_review/entry_review_screen.dart` - Signal card styling
+- Updated `lib/ui/screens/governance/governance_hub_screen.dart` - Visual cards
+- Updated board member avatars with geometric designs
+
+**Package Dependencies:**
+```yaml
+# pubspec.yaml additions
+dependencies:
+  google_fonts: ^6.1.0         # Custom typography
+  flutter_animate: ^4.3.0       # Declarative animations
+  animations: ^2.0.8            # Material motion presets
+```
+
+**Visual Design Requirements (per PRD 8.1):**
+
+| Category | Requirement | Implementation |
+|----------|-------------|----------------|
+| Typography | Custom font pairing | Fraunces/Playfair + Inter |
+| Colors | No fromSeed() | Custom ColorScheme |
+| Signals | 7 distinct colors | Signal-specific palette |
+| Motion | Page transitions | Custom route animations |
+| Motion | Micro-interactions | Button scale + haptic |
+| Recording | Immersive mode | Full-screen with effects |
+| Atmosphere | Gradients/shadows | Colored shadows, subtle gradients |
+
+**Sub-Phase Schedule:**
+
+| Sub-Phase | Deliverable | Dependencies |
+|-----------|-------------|--------------|
+| 13a | Design system foundation | None |
+| 13b | Motion design system | 13a |
+| 13c | Component redesign | 13a |
+| 13d | Screen updates | 13a, 13b, 13c |
+
+**Acceptance Criteria:**
+- [ ] Custom fonts loaded and applied (display + body + monospace)
+- [ ] Custom color palette replaces fromSeed()
+- [ ] Each signal type has distinctive visual treatment
+- [ ] Page transitions are custom (not default fade)
+- [ ] Staggered list animations on Home, History screens
+- [ ] Button press effects with haptic feedback
+- [ ] Recording screen feels immersive with visual effects
+- [ ] Home screen has prominent record hero button
+- [ ] Signal cards have type-specific styling with icons
+- [ ] Board member avatars use geometric shapes per role
+- [ ] All animations use appropriate durations and curves
+- [ ] Dark mode maintains design quality
+- [ ] All existing tests still pass
+- [ ] Visual regression testing performed
+
+**Estimated Complexity:** Medium-High (15-20 source files, visual design decisions required)
+
+---
+
 ## Test Coverage Targets
 
 Per PRD Section 10:
@@ -774,10 +874,11 @@ Each phase targets ~100K tokens of working context:
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 2.0 | 2026-01-10 | ✅ ALL PHASES COMPLETE - Phases 5-12b implemented |
+| 2.1 | 2026-01-11 | Added Phase 13 (Frontend Visual Overhaul) based on UI assessment |
+| 2.0 | 2026-01-10 | ✅ ALL CORE PHASES COMPLETE - Phases 5-12b implemented |
 | 1.1 | 2026-01-10 | Split Phase 12 into 12a (Backend) and 12b (Client Sync) to fit 100K token constraint |
 | 1.0 | 2026-01-10 | Initial plan created from PRD v5 analysis |
 
 ---
 
-*Implementation complete. This document serves as a reference for what was built.*
+*Core functionality complete. Phase 13 addresses visual design improvements.*
