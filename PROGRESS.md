@@ -443,7 +443,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 
 ## Test Coverage
 
-**50 Test Files:**
+**51 Test Files:**
 
 | Test File | Coverage |
 |-----------|----------|
@@ -496,6 +496,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | **auth_providers_test.dart** | OAuth flows, token management, auth state |
 | **quick_version_ai_service_test.dart** | Direction evaluation, output generation, error handling |
 | **sync_providers_test.dart** | Sync state, conflict detection, pending count |
+| **audio_providers_test.dart** | Recording state, transcription config, phase transitions |
 
 ---
 
@@ -504,7 +505,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | Category | Count | Lines of Code (approx) |
 |----------|-------|------------------------|
 | Source Files (lib/) | 138 | ~12,900 |
-| Test Files (test/) | 50 | ~9,400 |
+| Test Files (test/) | 51 | ~9,600 |
 | Backend Files (backend/) | 18 | ~1,500 |
 | **Total Dart Files** | 202 | ~22,900 |
 
