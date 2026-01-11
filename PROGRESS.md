@@ -443,7 +443,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 
 ## Test Coverage
 
-**73 Test Files:**
+**74 Test Files:**
 
 | Test File | Coverage |
 |-----------|----------|
@@ -495,6 +495,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | **signal_list_widget_test.dart** | Signal display, grouping, re-extraction UI |
 | **sync_indicator_test.dart** | SyncIndicator icons/badge, EntrySyncBadge, OfflineBanner, ConflictNotification |
 | **waveform_widget_test.dart** | WaveformWidget bars/colors, RecordingWaveformWidget, WaveformIndicator |
+| **silence_countdown_widget_test.dart** | SilenceCountdownWidget, SilenceCountdownOverlay, SilenceIndicator |
 | **settings_screens_test.dart** | PersonaEditor, PortfolioEditor, VersionHistory screens |
 | **auth_providers_test.dart** | OAuth flows, token management, auth state |
 | **quick_version_ai_service_test.dart** | Direction evaluation, output generation, error handling |
@@ -527,9 +528,9 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | Category | Count | Lines of Code (approx) |
 |----------|-------|------------------------|
 | Source Files (lib/) | 138 | ~12,900 |
-| Test Files (test/) | 73 | ~14,900 |
+| Test Files (test/) | 74 | ~15,100 |
 | Backend Files (backend/) | 18 | ~1,500 |
-| **Total Dart Files** | 229 | ~29,300 |
+| **Total Dart Files** | 230 | ~29,500 |
 
 **By Layer:**
 - Data Layer: ~35 files (~4,000 LOC)
@@ -639,6 +640,9 @@ The following features are explicitly out of scope for MVP (per PRD Section 2.2)
 
 - **Waveform Widget Tests (Jan 11, 2026):** Added widget tests for audio visualization:
   - `test/ui/widgets/waveform_widget_test.dart` - WaveformWidget, RecordingWaveformWidget, WaveformIndicator
+
+- **Silence Countdown Widget Tests (Jan 11, 2026):** Added widget tests for silence detection UI:
+  - `test/ui/widgets/silence_countdown_widget_test.dart` - SilenceCountdownWidget, SilenceCountdownOverlay, SilenceIndicator
 
 ---
 
