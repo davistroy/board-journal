@@ -33,12 +33,13 @@ void main() {
       when(mockAuthService.initialize())
           .thenAnswer((_) async => AuthState.initial());
       when(mockAuthService.signInWithApple()).thenAnswer(
-        (_) async => AuthResult(
-          success: true,
+        (_) async => AuthResult.success(
           user: AppUser(
             id: 'user-123',
             email: 'test@example.com',
-            displayName: 'Test User',
+            name: 'Test User',
+            provider: AuthProvider.apple,
+            createdAt: DateTime.now(),
           ),
         ),
       );
@@ -56,10 +57,7 @@ void main() {
       when(mockAuthService.initialize())
           .thenAnswer((_) async => AuthState.initial());
       when(mockAuthService.signInWithApple()).thenAnswer(
-        (_) async => AuthResult(
-          success: false,
-          error: 'Sign in cancelled',
-        ),
+        (_) async => AuthResult.failure('Sign in cancelled'),
       );
 
       authNotifier = AuthNotifier(mockAuthService);
@@ -75,12 +73,13 @@ void main() {
       when(mockAuthService.initialize())
           .thenAnswer((_) async => AuthState.initial());
       when(mockAuthService.signInWithGoogle()).thenAnswer(
-        (_) async => AuthResult(
-          success: true,
+        (_) async => AuthResult.success(
           user: AppUser(
             id: 'user-456',
             email: 'google@example.com',
-            displayName: 'Google User',
+            name: 'Google User',
+            provider: AuthProvider.google,
+            createdAt: DateTime.now(),
           ),
         ),
       );
@@ -100,6 +99,9 @@ void main() {
           user: AppUser(
             id: 'user-123',
             email: 'test@example.com',
+            name: 'Test User',
+            provider: AuthProvider.apple,
+            createdAt: DateTime.now(),
           ),
           onboardingCompleted: true,
         ),
@@ -122,9 +124,8 @@ void main() {
       authNotifier = AuthNotifier(mockAuthService);
       await Future.delayed(Duration.zero);
 
-      final result = await authNotifier.refreshToken();
+      await authNotifier.refreshToken();
 
-      expect(result, isTrue);
       verify(mockAuthService.refreshToken()).called(1);
     });
   });
@@ -151,10 +152,16 @@ void main() {
     test('isAuthenticatedProvider returns auth status', () {
       final container = ProviderContainer(
         overrides: [
-          authProvider.overrideWith(
+          authNotifierProvider.overrideWith(
             (ref) => MockAuthNotifier(
               AuthState.authenticated(
-                user: AppUser(id: 'test', email: 'test@test.com'),
+                user: AppUser(
+                  id: 'test',
+                  email: 'test@test.com',
+                  name: 'Test',
+                  provider: AuthProvider.google,
+                  createdAt: DateTime.now(),
+                ),
                 onboardingCompleted: true,
               ),
             ),
@@ -172,12 +179,14 @@ void main() {
       final testUser = AppUser(
         id: 'user-123',
         email: 'test@example.com',
-        displayName: 'Test',
+        name: 'Test',
+        provider: AuthProvider.apple,
+        createdAt: DateTime.now(),
       );
 
       final container = ProviderContainer(
         overrides: [
-          authProvider.overrideWith(
+          authNotifierProvider.overrideWith(
             (ref) => MockAuthNotifier(
               AuthState.authenticated(
                 user: testUser,
@@ -198,7 +207,7 @@ void main() {
     test('currentUserProvider returns null when unauthenticated', () {
       final container = ProviderContainer(
         overrides: [
-          authProvider.overrideWith(
+          authNotifierProvider.overrideWith(
             (ref) => MockAuthNotifier(AuthState.initial()),
           ),
         ],
@@ -217,20 +226,23 @@ class MockAuthNotifier extends StateNotifier<AuthState> implements AuthNotifier 
   MockAuthNotifier(super.state);
 
   @override
-  Future<AuthResult> signInWithApple() async => AuthResult(success: false);
+  Future<AuthResult> signInWithApple() async => AuthResult.failure('Mock');
 
   @override
-  Future<AuthResult> signInWithGoogle() async => AuthResult(success: false);
+  Future<AuthResult> signInWithGoogle() async => AuthResult.failure('Mock');
 
   @override
-  Future<AuthResult> signInWithMicrosoft() async => AuthResult(success: false);
+  Future<AuthResult> signInWithMicrosoft() async => AuthResult.failure('Mock');
+
+  @override
+  Future<AuthResult> skipSignIn() async => AuthResult.failure('Mock');
 
   @override
   Future<void> signOut() async {}
 
   @override
-  Future<bool> refreshToken() async => false;
+  Future<void> refreshToken() async {}
 
   @override
-  Future<void> setOnboardingCompleted() async {}
+  Future<void> completeOnboarding() async {}
 }

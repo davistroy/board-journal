@@ -1,15 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:boardroom_journal/providers/sync_providers.dart';
 import 'package:boardroom_journal/services/api/api.dart';
 import 'package:boardroom_journal/services/sync/sync.dart';
-
-@GenerateMocks([SharedPreferences])
-import 'sync_providers_test.mocks.dart';
 
 void main() {
   group('Sync Providers', () {
@@ -58,23 +52,14 @@ void main() {
       });
     });
 
-    group('connectivityProvider', () {
-      test('provides connectivity stream', () {
-        final container = ProviderContainer();
-        addTearDown(container.dispose);
-
-        final connectivity = container.read(connectivityProvider);
-
-        expect(connectivity, isA<Stream>());
-      });
-    });
-
     group('isSyncingProvider', () {
       test('returns false initially', () {
         final container = ProviderContainer(
           overrides: [
             syncNotifierProvider.overrideWith(
-              (ref) => MockSyncNotifier(SyncState.idle()),
+              (ref) => _MockSyncNotifier(
+                const SyncStatus(state: SyncState.idle, isSyncing: false),
+              ),
             ),
           ],
         );
@@ -89,7 +74,9 @@ void main() {
         final container = ProviderContainer(
           overrides: [
             syncNotifierProvider.overrideWith(
-              (ref) => MockSyncNotifier(SyncState.syncing()),
+              (ref) => _MockSyncNotifier(
+                const SyncStatus(state: SyncState.syncing, isSyncing: true),
+              ),
             ),
           ],
         );
@@ -101,18 +88,20 @@ void main() {
       });
     });
 
-    group('pendingSyncCountProvider', () {
+    group('pendingChangesCountProvider', () {
       test('returns 0 when no pending items', () {
         final container = ProviderContainer(
           overrides: [
             syncNotifierProvider.overrideWith(
-              (ref) => MockSyncNotifier(SyncState.idle(pendingCount: 0)),
+              (ref) => _MockSyncNotifier(
+                const SyncStatus(state: SyncState.idle, pendingCount: 0),
+              ),
             ),
           ],
         );
         addTearDown(container.dispose);
 
-        final count = container.read(pendingSyncCountProvider);
+        final count = container.read(pendingChangesCountProvider);
 
         expect(count, 0);
       });
@@ -121,13 +110,15 @@ void main() {
         final container = ProviderContainer(
           overrides: [
             syncNotifierProvider.overrideWith(
-              (ref) => MockSyncNotifier(SyncState.idle(pendingCount: 5)),
+              (ref) => _MockSyncNotifier(
+                const SyncStatus(state: SyncState.idle, pendingCount: 5),
+              ),
             ),
           ],
         );
         addTearDown(container.dispose);
 
-        final count = container.read(pendingSyncCountProvider);
+        final count = container.read(pendingChangesCountProvider);
 
         expect(count, 5);
       });
@@ -138,7 +129,9 @@ void main() {
         final container = ProviderContainer(
           overrides: [
             syncNotifierProvider.overrideWith(
-              (ref) => MockSyncNotifier(SyncState.idle()),
+              (ref) => _MockSyncNotifier(
+                const SyncStatus(state: SyncState.idle),
+              ),
             ),
           ],
         );
@@ -153,7 +146,12 @@ void main() {
         final container = ProviderContainer(
           overrides: [
             syncNotifierProvider.overrideWith(
-              (ref) => MockSyncNotifier(SyncState.error('Network failed')),
+              (ref) => _MockSyncNotifier(
+                const SyncStatus(
+                  state: SyncState.error,
+                  errorMessage: 'Network failed',
+                ),
+              ),
             ),
           ],
         );
@@ -165,85 +163,131 @@ void main() {
       });
     });
 
-    group('hasConflictsProvider', () {
-      test('returns false when no conflicts', () {
+    group('isOfflineProvider', () {
+      test('returns false when not offline', () {
         final container = ProviderContainer(
           overrides: [
             syncNotifierProvider.overrideWith(
-              (ref) => MockSyncNotifier(SyncState.idle(hasConflicts: false)),
+              (ref) => _MockSyncNotifier(
+                const SyncStatus(state: SyncState.idle),
+              ),
             ),
           ],
         );
         addTearDown(container.dispose);
 
-        final hasConflicts = container.read(hasConflictsProvider);
+        final isOffline = container.read(isOfflineProvider);
 
-        expect(hasConflicts, isFalse);
+        expect(isOffline, isFalse);
       });
 
-      test('returns true when conflicts exist', () {
+      test('returns true when offline', () {
         final container = ProviderContainer(
           overrides: [
             syncNotifierProvider.overrideWith(
-              (ref) => MockSyncNotifier(SyncState.idle(hasConflicts: true)),
+              (ref) => _MockSyncNotifier(
+                const SyncStatus(state: SyncState.offline),
+              ),
             ),
           ],
         );
         addTearDown(container.dispose);
 
-        final hasConflicts = container.read(hasConflictsProvider);
+        final isOffline = container.read(isOfflineProvider);
 
-        expect(hasConflicts, isTrue);
+        expect(isOffline, isTrue);
+      });
+    });
+
+    group('hasPendingChangesProvider', () {
+      test('returns false when no pending changes', () {
+        final container = ProviderContainer(
+          overrides: [
+            syncNotifierProvider.overrideWith(
+              (ref) => _MockSyncNotifier(
+                const SyncStatus(state: SyncState.idle, pendingCount: 0),
+              ),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        final hasPending = container.read(hasPendingChangesProvider);
+
+        expect(hasPending, isFalse);
+      });
+
+      test('returns true when pending changes exist', () {
+        final container = ProviderContainer(
+          overrides: [
+            syncNotifierProvider.overrideWith(
+              (ref) => _MockSyncNotifier(
+                const SyncStatus(state: SyncState.pendingChanges, pendingCount: 3),
+              ),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        final hasPending = container.read(hasPendingChangesProvider);
+
+        expect(hasPending, isTrue);
       });
     });
   });
 
-  group('SyncState', () {
-    test('idle state has correct defaults', () {
-      final state = SyncState.idle();
+  group('SyncStatus', () {
+    test('initial state has correct defaults', () {
+      final status = SyncStatus.initial();
 
-      expect(state.status, SyncStatus.idle);
-      expect(state.pendingCount, 0);
-      expect(state.hasConflicts, false);
-      expect(state.error, isNull);
-    });
-
-    test('syncing state has correct status', () {
-      final state = SyncState.syncing();
-
-      expect(state.status, SyncStatus.syncing);
-    });
-
-    test('error state contains message', () {
-      final state = SyncState.error('Test error');
-
-      expect(state.status, SyncStatus.error);
-      expect(state.error, 'Test error');
+      expect(status.state, SyncState.idle);
+      expect(status.pendingCount, 0);
+      expect(status.isSyncing, false);
+      expect(status.errorMessage, isNull);
+      expect(status.lastSyncTime, isNull);
     });
 
     test('copyWith preserves values', () {
-      final original = SyncState.idle(pendingCount: 5, hasConflicts: true);
+      const original = SyncStatus(
+        state: SyncState.idle,
+        pendingCount: 5,
+        isSyncing: false,
+      );
       final copied = original.copyWith(pendingCount: 10);
 
       expect(copied.pendingCount, 10);
-      expect(copied.hasConflicts, true);
+      expect(copied.state, SyncState.idle);
+    });
+
+    test('copyWith can change state', () {
+      const original = SyncStatus(state: SyncState.idle);
+      final copied = original.copyWith(state: SyncState.syncing, isSyncing: true);
+
+      expect(copied.state, SyncState.syncing);
+      expect(copied.isSyncing, true);
     });
   });
 }
 
 /// Mock sync notifier for testing derived providers.
-class MockSyncNotifier extends StateNotifier<SyncState> implements SyncNotifier {
-  MockSyncNotifier(super.state);
+class _MockSyncNotifier extends StateNotifier<SyncStatus> implements SyncNotifier {
+  _MockSyncNotifier(SyncStatus status) : super(status);
 
   @override
-  Future<void> syncNow() async {}
+  Future<void> syncAll() async {}
 
   @override
-  Future<void> cancelSync() async {}
+  Future<void> syncChanges() async {}
 
   @override
-  Future<void> resolveConflict(String entityId, ConflictResolution resolution) async {}
+  Future<void> fullDownload() async {}
 
   @override
-  void clearError() {}
+  void notifyLocalChange() {}
+
+  @override
+  void onAppResumed() {}
+
+  @override
+  void onAppPaused() {}
 }
