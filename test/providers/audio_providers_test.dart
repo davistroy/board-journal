@@ -46,7 +46,7 @@ void main() {
       });
     });
 
-    group('isTranscriptionAvailableProvider', () {
+    group('isTranscriptionConfiguredProvider', () {
       test('returns false when service is null', () {
         final container = ProviderContainer(
           overrides: [
@@ -55,7 +55,7 @@ void main() {
         );
         addTearDown(container.dispose);
 
-        final available = container.read(isTranscriptionAvailableProvider);
+        final available = container.read(isTranscriptionConfiguredProvider);
 
         expect(available, isFalse);
       });
