@@ -443,7 +443,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 
 ## Test Coverage
 
-**29 Test Files:**
+**34 Test Files:**
 
 | Test File | Coverage |
 |-----------|----------|
@@ -454,6 +454,11 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | governance_session_repository_test.dart | State machine, transcripts |
 | bet_repository_test.dart | Status transitions, expiration |
 | user_preferences_repository_test.dart | Settings, onboarding |
+| **weekly_brief_repository_test.dart** | CRUD, regeneration limits, streams |
+| **evidence_item_repository_test.dart** | CRUD, strength filtering, session queries |
+| **portfolio_health_repository_test.dart** | Upsert, trend detection, growth role checks |
+| **portfolio_version_repository_test.dart** | Snapshots, versioning, comparisons |
+| **resetup_trigger_repository_test.dart** | Triggers, approaching/past due, annual |
 | extracted_signal_test.dart | Signal models, JSON serialization |
 | signal_extraction_service_test.dart | Claude client, extraction service |
 | weekly_brief_generation_service_test.dart | Brief generation, regeneration options |
@@ -483,9 +488,9 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | Category | Count | Lines of Code (approx) |
 |----------|-------|------------------------|
 | Source Files (lib/) | 139 | ~13,000 |
-| Test Files (test/) | 29 | ~4,100 |
+| Test Files (test/) | 34 | ~6,000 |
 | Backend Files (backend/) | 18 | ~1,500 |
-| **Total Dart Files** | 186 | ~18,600 |
+| **Total Dart Files** | 191 | ~20,500 |
 
 **By Layer:**
 - Data Layer: ~35 files (~4,000 LOC)
@@ -495,7 +500,10 @@ SensitivityGate → Gate 0 (Require Portfolio)
 - UI/Screens: ~30 files (~4,000 LOC)
 - Widgets: ~15 files (~2,000 LOC)
 - Models: ~10 files (~1,000 LOC)
+- Repository Tests: 12 files (~2,500 LOC)
+- Service Tests: 16 files (~2,500 LOC)
 - UI Tests: 3 files (~600 LOC)
+- Other Tests: 3 files (~400 LOC)
 
 ---
 
