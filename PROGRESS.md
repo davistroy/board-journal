@@ -443,7 +443,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 
 ## Test Coverage
 
-**35 Test Files:**
+**37 Test Files:**
 
 | Test File | Coverage |
 |-----------|----------|
@@ -481,6 +481,8 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | **home_screen_test.dart** | HomeScreen widget tests, navigation, UI elements |
 | **record_entry_screen_test.dart** | Text entry, word limits, save flow |
 | **governance_hub_screen_test.dart** | Tabs, navigation, portfolio gating |
+| **settings_screen_test.dart** | Settings sections, privacy toggle, navigation |
+| **history_screen_test.dart** | History list, export, pull-to-refresh |
 
 ---
 
@@ -489,9 +491,9 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | Category | Count | Lines of Code (approx) |
 |----------|-------|------------------------|
 | Source Files (lib/) | 139 | ~13,000 |
-| Test Files (test/) | 35 | ~6,300 |
+| Test Files (test/) | 37 | ~6,600 |
 | Backend Files (backend/) | 18 | ~1,500 |
-| **Total Dart Files** | 192 | ~20,800 |
+| **Total Dart Files** | 194 | ~21,100 |
 
 **By Layer:**
 - Data Layer: ~35 files (~4,000 LOC)
@@ -503,7 +505,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 - Models: ~10 files (~1,000 LOC)
 - Repository Tests: 12 files (~2,500 LOC)
 - Service Tests: 16 files (~2,500 LOC)
-- UI Tests: 3 files (~600 LOC)
+- UI Tests: 5 files (~900 LOC) - **~45% UI coverage**
 - Enum Tests: 1 file (~400 LOC) - **100% coverage on BetStatus transitions**
 - Other Tests: 3 files (~300 LOC)
 
