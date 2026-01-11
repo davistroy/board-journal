@@ -443,7 +443,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 
 ## Test Coverage
 
-**34 Test Files:**
+**35 Test Files:**
 
 | Test File | Coverage |
 |-----------|----------|
@@ -459,6 +459,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | **portfolio_health_repository_test.dart** | Upsert, trend detection, growth role checks |
 | **portfolio_version_repository_test.dart** | Snapshots, versioning, comparisons |
 | **resetup_trigger_repository_test.dart** | Triggers, approaching/past due, annual |
+| **enums_test.dart** | BetStatus transitions (100%), BoardRoleType, SignalType, ProblemDirection |
 | extracted_signal_test.dart | Signal models, JSON serialization |
 | signal_extraction_service_test.dart | Claude client, extraction service |
 | weekly_brief_generation_service_test.dart | Brief generation, regeneration options |
@@ -488,9 +489,9 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | Category | Count | Lines of Code (approx) |
 |----------|-------|------------------------|
 | Source Files (lib/) | 139 | ~13,000 |
-| Test Files (test/) | 34 | ~6,000 |
+| Test Files (test/) | 35 | ~6,300 |
 | Backend Files (backend/) | 18 | ~1,500 |
-| **Total Dart Files** | 191 | ~20,500 |
+| **Total Dart Files** | 192 | ~20,800 |
 
 **By Layer:**
 - Data Layer: ~35 files (~4,000 LOC)
@@ -503,7 +504,8 @@ SensitivityGate → Gate 0 (Require Portfolio)
 - Repository Tests: 12 files (~2,500 LOC)
 - Service Tests: 16 files (~2,500 LOC)
 - UI Tests: 3 files (~600 LOC)
-- Other Tests: 3 files (~400 LOC)
+- Enum Tests: 1 file (~400 LOC) - **100% coverage on BetStatus transitions**
+- Other Tests: 3 files (~300 LOC)
 
 ---
 
