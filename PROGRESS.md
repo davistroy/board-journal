@@ -443,7 +443,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 
 ## Test Coverage
 
-**67 Test Files:**
+**70 Test Files:**
 
 | Test File | Coverage |
 |-----------|----------|
@@ -513,6 +513,9 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | **quick_version_state_test.dart** | QuickVersionState enum, extensions, QuickVersionQA, IdentifiedProblem, session data |
 | **setup_state_test.dart** | SetupState enum, TimeAllocationStatus, SetupProblem, SetupBoardMember, session data |
 | **quarterly_state_test.dart** | QuarterlyState enum, BetEvaluation, QuarterlyEvidence, BoardInterrogationResponse, session data |
+| **ai_config_test.dart** | AIConfig constructor, isValid, withKey/mock factories, fromEnvironment |
+| **claude_client_test.dart** | ClaudeConfig defaults/factories, ClaudeResponse parsing, ClaudeError isRetryable, ClaudeClient |
+| **waveform_data_test.dart** | WaveformData rolling buffer, getSamplesForRendering, WaveformConfig totalWidth |
 
 ---
 
@@ -521,9 +524,9 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | Category | Count | Lines of Code (approx) |
 |----------|-------|------------------------|
 | Source Files (lib/) | 138 | ~12,900 |
-| Test Files (test/) | 67 | ~13,600 |
+| Test Files (test/) | 70 | ~14,200 |
 | Backend Files (backend/) | 18 | ~1,500 |
-| **Total Dart Files** | 223 | ~28,000 |
+| **Total Dart Files** | 226 | ~28,600 |
 
 **By Layer:**
 - Data Layer: ~35 files (~4,000 LOC)
@@ -619,6 +622,11 @@ The following features are explicitly out of scope for MVP (per PRD Section 2.2)
   - `test/services/quarterly_service_test.dart`
   - `test/services/ai/setup_ai_service_test.dart`
   - `test/services/ai/quarterly_ai_service_test.dart`
+
+- **Additional Test Coverage (Jan 11, 2026):** Added 3 more service tests for utility files:
+  - `test/services/ai/ai_config_test.dart` - AIConfig constructor, factories, and validation
+  - `test/services/ai/claude_client_test.dart` - ClaudeConfig, ClaudeResponse, ClaudeError, ClaudeClient
+  - `test/services/audio/waveform_data_test.dart` - WaveformData rolling buffer and WaveformConfig
 
 ---
 
