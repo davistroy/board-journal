@@ -443,7 +443,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 
 ## Test Coverage
 
-**26 Test Files:**
+**29 Test Files:**
 
 | Test File | Coverage |
 |-----------|----------|
@@ -472,6 +472,9 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | conflict_resolver_test.dart | Conflict resolution strategies |
 | brief_scheduler_service_test.dart | Sunday 8pm scheduling |
 | privacy_service_test.dart | Abstraction mode |
+| **home_screen_test.dart** | HomeScreen widget tests, navigation, UI elements |
+| **record_entry_screen_test.dart** | Text entry, word limits, save flow |
+| **governance_hub_screen_test.dart** | Tabs, navigation, portfolio gating |
 
 ---
 
@@ -480,9 +483,9 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | Category | Count | Lines of Code (approx) |
 |----------|-------|------------------------|
 | Source Files (lib/) | 139 | ~13,000 |
-| Test Files (test/) | 26 | ~3,500 |
+| Test Files (test/) | 29 | ~4,100 |
 | Backend Files (backend/) | 18 | ~1,500 |
-| **Total Dart Files** | 183 | ~18,000 |
+| **Total Dart Files** | 186 | ~18,600 |
 
 **By Layer:**
 - Data Layer: ~35 files (~4,000 LOC)
@@ -492,6 +495,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 - UI/Screens: ~30 files (~4,000 LOC)
 - Widgets: ~15 files (~2,000 LOC)
 - Models: ~10 files (~1,000 LOC)
+- UI Tests: 3 files (~600 LOC)
 
 ---
 
