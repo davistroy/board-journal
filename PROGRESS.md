@@ -443,7 +443,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 
 ## Test Coverage
 
-**71 Test Files:**
+**72 Test Files:**
 
 | Test File | Coverage |
 |-----------|----------|
@@ -493,6 +493,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | **token_storage_test.dart** | Secure token storage, expiry checks, user persistence |
 | **sync_queue_test.dart** | Offline queue, priority ordering, persistence |
 | **signal_list_widget_test.dart** | Signal display, grouping, re-extraction UI |
+| **sync_indicator_test.dart** | SyncIndicator icons/badge, EntrySyncBadge, OfflineBanner, ConflictNotification |
 | **settings_screens_test.dart** | PersonaEditor, PortfolioEditor, VersionHistory screens |
 | **auth_providers_test.dart** | OAuth flows, token management, auth state |
 | **quick_version_ai_service_test.dart** | Direction evaluation, output generation, error handling |
@@ -525,9 +526,9 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | Category | Count | Lines of Code (approx) |
 |----------|-------|------------------------|
 | Source Files (lib/) | 138 | ~12,900 |
-| Test Files (test/) | 71 | ~14,400 |
+| Test Files (test/) | 72 | ~14,600 |
 | Backend Files (backend/) | 18 | ~1,500 |
-| **Total Dart Files** | 227 | ~28,800 |
+| **Total Dart Files** | 228 | ~29,000 |
 
 **By Layer:**
 - Data Layer: ~35 files (~4,000 LOC)
@@ -631,6 +632,9 @@ The following features are explicitly out of scope for MVP (per PRD Section 2.2)
 
 - **Base Repository Tests (Jan 11, 2026):** Added tests for foundational data layer utilities:
   - `test/data/repositories/base_repository_test.dart` - SyncStatus enum/extension, PaginatedResult, DateRange
+
+- **Sync Indicator Widget Tests (Jan 11, 2026):** Added widget tests for sync UI components:
+  - `test/ui/widgets/sync_indicator_test.dart` - SyncIndicator, EntrySyncBadge, OfflineBanner, ConflictNotification
 
 ---
 
