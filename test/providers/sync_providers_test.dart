@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:boardroom_journal/providers/scheduling_providers.dart';
 import 'package:boardroom_journal/providers/sync_providers.dart';
 import 'package:boardroom_journal/services/api/api.dart';
 import 'package:boardroom_journal/services/sync/sync.dart';
@@ -41,14 +43,20 @@ void main() {
     });
 
     group('syncQueueProvider', () {
-      test('returns null when SharedPreferences not loaded', () {
-        final container = ProviderContainer();
+      test('creates SyncQueue with SharedPreferences', () async {
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+          ],
+        );
         addTearDown(container.dispose);
 
-        // SharedPreferences is async, so initially null
         final queue = container.read(syncQueueProvider);
 
-        expect(queue, isNull);
+        expect(queue, isA<SyncQueue>());
       });
     });
 
