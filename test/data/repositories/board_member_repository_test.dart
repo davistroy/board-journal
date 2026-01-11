@@ -321,5 +321,137 @@ void main() {
         expect(members.length, 1);
       });
     });
+
+    group('getAll', () {
+      test('returns all non-deleted members', () async {
+        await createMember(roleType: BoardRoleType.accountability);
+        await createMember(roleType: BoardRoleType.marketReality);
+        await createMember(roleType: BoardRoleType.avoidance);
+
+        final members = await repository.getAll();
+        expect(members.length, 3);
+      });
+
+      test('excludes soft-deleted members', () async {
+        final id = await createMember(roleType: BoardRoleType.accountability);
+        await createMember(roleType: BoardRoleType.marketReality);
+
+        await repository.softDelete(id);
+
+        final members = await repository.getAll();
+        expect(members.length, 1);
+      });
+    });
+
+    group('getPendingSync', () {
+      test('returns members with pending sync status', () async {
+        await createMember(roleType: BoardRoleType.accountability);
+
+        final pending = await repository.getPendingSync();
+        expect(pending.length, 1);
+        expect(pending[0].syncStatus, 'pending');
+      });
+
+      test('excludes synced members', () async {
+        final id = await createMember(roleType: BoardRoleType.accountability);
+
+        await repository.updateSyncStatus(id, SyncStatus.synced, serverVersion: 1);
+
+        final pending = await repository.getPendingSync();
+        expect(pending, isEmpty);
+      });
+    });
+
+    group('updateSyncStatus', () {
+      test('updates sync status and server version', () async {
+        final id = await createMember(roleType: BoardRoleType.accountability);
+
+        await repository.updateSyncStatus(id, SyncStatus.synced, serverVersion: 5);
+
+        final member = await (database.select(database.boardMembers)
+              ..where((m) => m.id.equals(id)))
+            .getSingle();
+
+        expect(member.syncStatus, 'synced');
+        expect(member.serverVersion, 5);
+      });
+
+      test('can set conflict status', () async {
+        final id = await createMember(roleType: BoardRoleType.accountability);
+
+        await repository.updateSyncStatus(id, SyncStatus.conflict);
+
+        final member = await (database.select(database.boardMembers)
+              ..where((m) => m.id.equals(id)))
+            .getSingle();
+
+        expect(member.syncStatus, 'conflict');
+      });
+    });
+
+    group('watchAll', () {
+      test('emits updates when members change', () async {
+        final stream = repository.watchAll();
+
+        expect(await stream.first, isEmpty);
+
+        await createMember(roleType: BoardRoleType.accountability);
+
+        final members = await stream.first;
+        expect(members.length, 1);
+      });
+
+      test('excludes soft-deleted members', () async {
+        final id = await createMember(roleType: BoardRoleType.accountability);
+
+        final stream = repository.watchAll();
+
+        var members = await stream.first;
+        expect(members.length, 1);
+
+        await repository.softDelete(id);
+
+        members = await stream.first;
+        expect(members, isEmpty);
+      });
+    });
+
+    group('watchById', () {
+      test('emits updates for specific member', () async {
+        final id = await createMember(name: 'Watched Member');
+
+        final stream = repository.watchById(id);
+
+        var member = await stream.first;
+        expect(member, isNotNull);
+        expect(member!.personaName, 'Watched Member');
+
+        await repository.updatePersona(id, name: 'Updated Name');
+
+        member = await stream.first;
+        expect(member!.personaName, 'Updated Name');
+      });
+
+      test('emits null for deleted member', () async {
+        final id = await createMember(name: 'To Delete');
+
+        final stream = repository.watchById(id);
+
+        var member = await stream.first;
+        expect(member, isNotNull);
+
+        await repository.softDelete(id);
+
+        member = await stream.first;
+        expect(member, isNull);
+      });
+
+      test('emits null for non-existent id', () async {
+        final stream = repository.watchById('non-existent-id');
+
+        final member = await stream.first;
+        expect(member, isNull);
+      });
+    });
   });
 }

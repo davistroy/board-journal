@@ -335,5 +335,193 @@ void main() {
         expect(entries.length, 1);
       });
     });
+
+    group('getEntriesForWeek', () {
+      test('returns entries for the week containing the given date', () async {
+        final now = DateTime.now().toUtc();
+
+        await repository.create(
+          transcriptRaw: 'Entry this week',
+          transcriptEdited: 'Entry this week',
+          entryType: EntryType.text,
+          timezone: 'UTC',
+        );
+
+        final entries = await repository.getEntriesForWeek(now);
+        expect(entries.length, 1);
+        expect(entries[0].transcriptRaw, 'Entry this week');
+      });
+
+      test('returns empty list for week with no entries', () async {
+        // Create entry for this week
+        await repository.create(
+          transcriptRaw: 'Entry this week',
+          transcriptEdited: 'Entry this week',
+          entryType: EntryType.text,
+          timezone: 'UTC',
+        );
+
+        // Query for a past week
+        final pastDate = DateTime.now().toUtc().subtract(const Duration(days: 30));
+        final entries = await repository.getEntriesForWeek(pastDate);
+        expect(entries, isEmpty);
+      });
+    });
+
+    group('getTotalEntryCount', () {
+      test('returns total number of non-deleted entries', () async {
+        await repository.create(
+          transcriptRaw: 'Entry 1',
+          transcriptEdited: 'Entry 1',
+          entryType: EntryType.text,
+          timezone: 'UTC',
+        );
+
+        await repository.create(
+          transcriptRaw: 'Entry 2',
+          transcriptEdited: 'Entry 2',
+          entryType: EntryType.text,
+          timezone: 'UTC',
+        );
+
+        final count = await repository.getTotalEntryCount();
+        expect(count, 2);
+      });
+
+      test('excludes soft-deleted entries', () async {
+        await repository.create(
+          transcriptRaw: 'Entry 1',
+          transcriptEdited: 'Entry 1',
+          entryType: EntryType.text,
+          timezone: 'UTC',
+        );
+
+        final id2 = await repository.create(
+          transcriptRaw: 'Entry 2',
+          transcriptEdited: 'Entry 2',
+          entryType: EntryType.text,
+          timezone: 'UTC',
+        );
+
+        await repository.softDelete(id2);
+
+        final count = await repository.getTotalEntryCount();
+        expect(count, 1);
+      });
+
+      test('returns zero for empty database', () async {
+        final count = await repository.getTotalEntryCount();
+        expect(count, 0);
+      });
+    });
+
+    group('purgeOldDeletedEntries', () {
+      test('removes entries soft-deleted more than 30 days ago', () async {
+        // Create and soft-delete an entry
+        final id = await repository.create(
+          transcriptRaw: 'Old deleted entry',
+          transcriptEdited: 'Old deleted entry',
+          entryType: EntryType.text,
+          timezone: 'UTC',
+        );
+
+        // Manually set deletedAtUtc to 31 days ago
+        final cutoff = DateTime.now().toUtc().subtract(const Duration(days: 31));
+        await (database.update(database.dailyEntries)
+              ..where((e) => e.id.equals(id)))
+            .write(DailyEntriesCompanion(
+          deletedAtUtc: Value(cutoff),
+        ));
+
+        // Purge old deleted entries
+        final purgedCount = await repository.purgeOldDeletedEntries();
+        expect(purgedCount, 1);
+
+        // Verify entry is hard-deleted
+        final allEntries = await database.select(database.dailyEntries).get();
+        expect(allEntries, isEmpty);
+      });
+
+      test('does not remove recently soft-deleted entries', () async {
+        final id = await repository.create(
+          transcriptRaw: 'Recently deleted entry',
+          transcriptEdited: 'Recently deleted entry',
+          entryType: EntryType.text,
+          timezone: 'UTC',
+        );
+
+        await repository.softDelete(id);
+
+        final purgedCount = await repository.purgeOldDeletedEntries();
+        expect(purgedCount, 0);
+
+        // Entry should still exist
+        final allEntries = await database.select(database.dailyEntries).get();
+        expect(allEntries.length, 1);
+      });
+
+      test('does not affect non-deleted entries', () async {
+        await repository.create(
+          transcriptRaw: 'Active entry',
+          transcriptEdited: 'Active entry',
+          entryType: EntryType.text,
+          timezone: 'UTC',
+        );
+
+        final purgedCount = await repository.purgeOldDeletedEntries();
+        expect(purgedCount, 0);
+
+        final count = await repository.getTotalEntryCount();
+        expect(count, 1);
+      });
+    });
+
+    group('watchByDateRange', () {
+      test('emits entries within the specified date range', () async {
+        final now = DateTime.now().toUtc();
+        final range = DateRange(
+          start: now.subtract(const Duration(hours: 1)),
+          end: now.add(const Duration(hours: 1)),
+        );
+
+        final stream = repository.watchByDateRange(range);
+
+        // Initial state
+        expect(await stream.first, isEmpty);
+
+        // Add entry in range
+        await repository.create(
+          transcriptRaw: 'Entry in range',
+          transcriptEdited: 'Entry in range',
+          entryType: EntryType.text,
+          timezone: 'UTC',
+        );
+
+        final entries = await stream.first;
+        expect(entries.length, 1);
+        expect(entries[0].transcriptRaw, 'Entry in range');
+      });
+
+      test('excludes entries outside date range', () async {
+        final now = DateTime.now().toUtc();
+
+        // Create entry
+        await repository.create(
+          transcriptRaw: 'Entry',
+          transcriptEdited: 'Entry',
+          entryType: EntryType.text,
+          timezone: 'UTC',
+        );
+
+        // Watch a past range (shouldn't include the entry)
+        final pastRange = DateRange(
+          start: now.subtract(const Duration(days: 30)),
+          end: now.subtract(const Duration(days: 29)),
+        );
+
+        final entries = await repository.watchByDateRange(pastRange).first;
+        expect(entries, isEmpty);
+      });
+    });
   });
 }
