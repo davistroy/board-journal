@@ -22,7 +22,7 @@ export 'weekly_brief/weekly_brief_viewer_screen.dart';
 export 'governance/governance_hub_screen.dart';
 export 'governance/quick_version_screen.dart';
 export 'governance/setup_screen.dart';
-export 'governance/quarterly_screen.dart';
+export 'governance/quarterly/quarterly_screen.dart';
 
 // Settings
 export 'settings/settings_screen.dart';

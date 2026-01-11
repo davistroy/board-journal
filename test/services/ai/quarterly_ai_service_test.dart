@@ -2,11 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
-import 'package:board_journal/data/enums/board_role_type.dart';
-import 'package:board_journal/data/enums/evidence_type.dart';
-import 'package:board_journal/services/ai/claude_client.dart';
-import 'package:board_journal/services/ai/quarterly_ai_service.dart';
-import 'package:board_journal/services/governance/quarterly_state.dart';
+import 'package:boardroom_journal/data/enums/board_role_type.dart';
+import 'package:boardroom_journal/data/enums/evidence_type.dart';
+import 'package:boardroom_journal/services/ai/claude_client.dart';
+import 'package:boardroom_journal/services/ai/quarterly_ai_service.dart';
+import 'package:boardroom_journal/services/governance/quarterly_state.dart';
 
 @GenerateMocks([ClaudeClient])
 import 'quarterly_ai_service_test.mocks.dart';

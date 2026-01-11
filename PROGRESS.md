@@ -443,7 +443,7 @@ SensitivityGate → Gate 0 (Require Portfolio)
 
 ## Test Coverage
 
-**26 Test Files:**
+**74 Test Files:**
 
 | Test File | Coverage |
 |-----------|----------|
@@ -454,6 +454,13 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | governance_session_repository_test.dart | State machine, transcripts |
 | bet_repository_test.dart | Status transitions, expiration |
 | user_preferences_repository_test.dart | Settings, onboarding |
+| **weekly_brief_repository_test.dart** | CRUD, regeneration limits, streams |
+| **evidence_item_repository_test.dart** | CRUD, strength filtering, session queries |
+| **portfolio_health_repository_test.dart** | Upsert, trend detection, growth role checks |
+| **portfolio_version_repository_test.dart** | Snapshots, versioning, comparisons |
+| **resetup_trigger_repository_test.dart** | Triggers, approaching/past due, annual |
+| **base_repository_test.dart** | SyncStatus enum/extension, PaginatedResult, DateRange factories |
+| **enums_test.dart** | BetStatus transitions (100%), BoardRoleType, SignalType, ProblemDirection |
 | extracted_signal_test.dart | Signal models, JSON serialization |
 | signal_extraction_service_test.dart | Claude client, extraction service |
 | weekly_brief_generation_service_test.dart | Brief generation, regeneration options |
@@ -472,6 +479,47 @@ SensitivityGate → Gate 0 (Require Portfolio)
 | conflict_resolver_test.dart | Conflict resolution strategies |
 | brief_scheduler_service_test.dart | Sunday 8pm scheduling |
 | privacy_service_test.dart | Abstraction mode |
+| **home_screen_test.dart** | HomeScreen widget tests, navigation, UI elements |
+| **record_entry_screen_test.dart** | Text entry, word limits, save flow |
+| **governance_hub_screen_test.dart** | Tabs, navigation, portfolio gating |
+| **settings_screen_test.dart** | Settings sections, privacy toggle, navigation |
+| **history_screen_test.dart** | History list, export, pull-to-refresh |
+| **entry_review_screen_test.dart** | Entry viewing, edit mode, delete flow |
+| **weekly_brief_viewer_screen_test.dart** | Brief display, regeneration, board review |
+| **onboarding_test.dart** | Welcome, Privacy, SignIn screens, navigation flow |
+| **quick_version_screen_test.dart** | 15-min audit UI, sensitivity gate, abandon flow |
+| **setup_screen_test.dart** | Portfolio setup UI, problem collection, exit flow |
+| **quarterly_screen_test.dart** | Quarterly report UI, board interrogation, bet eval |
+| **token_storage_test.dart** | Secure token storage, expiry checks, user persistence |
+| **sync_queue_test.dart** | Offline queue, priority ordering, persistence |
+| **signal_list_widget_test.dart** | Signal display, grouping, re-extraction UI |
+| **sync_indicator_test.dart** | SyncIndicator icons/badge, EntrySyncBadge, OfflineBanner, ConflictNotification |
+| **waveform_widget_test.dart** | WaveformWidget bars/colors, RecordingWaveformWidget, WaveformIndicator |
+| **silence_countdown_widget_test.dart** | SilenceCountdownWidget, SilenceCountdownOverlay, SilenceIndicator |
+| **settings_screens_test.dart** | PersonaEditor, PortfolioEditor, VersionHistory screens |
+| **auth_providers_test.dart** | OAuth flows, token management, auth state |
+| **quick_version_ai_service_test.dart** | Direction evaluation, output generation, error handling |
+| **sync_providers_test.dart** | Sync state, conflict detection, pending count |
+| **audio_providers_test.dart** | Recording state, transcription config, phase transitions |
+| **ai_providers_test.dart** | Extraction state, brief generation state, client providers |
+| **scheduling_providers_test.dart** | Scheduler actions, missed brief detection, state management |
+| **history_providers_test.dart** | HistoryItem types, pagination, export/import providers |
+| **quick_version_providers_test.dart** | Session state, question tracking, progress computation |
+| **repository_providers_test.dart** | Repository providers, stream providers, future providers |
+| **setup_providers_test.dart** | Setup session state, portfolio creation, persona management |
+| **quarterly_providers_test.dart** | Quarterly session state, board interrogation, eligibility checks |
+| **api_client_test.dart** | ApiResult success/failure factories, HTTP status handling |
+| **background_task_handler_test.dart** | Background task state, retry count, scheduling persistence |
+| **auth_models_test.dart** | AuthStatus, AuthProvider, AppUser, AuthState, AuthTokens classes |
+| **export_format_test.dart** | ExportData, ExportSummary, ImportResult, HistoryItem, ConflictStrategy |
+| **router_test.dart** | AppRoutes constants, GoRouter creation, route configuration |
+| **api_config_test.dart** | ApiConfig factories, computed properties, retryDelay, ApiEndpoints paths |
+| **quick_version_state_test.dart** | QuickVersionState enum, extensions, QuickVersionQA, IdentifiedProblem, session data |
+| **setup_state_test.dart** | SetupState enum, TimeAllocationStatus, SetupProblem, SetupBoardMember, session data |
+| **quarterly_state_test.dart** | QuarterlyState enum, BetEvaluation, QuarterlyEvidence, BoardInterrogationResponse, session data |
+| **ai_config_test.dart** | AIConfig constructor, isValid, withKey/mock factories, fromEnvironment |
+| **claude_client_test.dart** | ClaudeConfig defaults/factories, ClaudeResponse parsing, ClaudeError isRetryable, ClaudeClient |
+| **waveform_data_test.dart** | WaveformData rolling buffer, getSamplesForRendering, WaveformConfig totalWidth |
 
 ---
 
@@ -479,19 +527,25 @@ SensitivityGate → Gate 0 (Require Portfolio)
 
 | Category | Count | Lines of Code (approx) |
 |----------|-------|------------------------|
-| Source Files (lib/) | 139 | ~13,000 |
-| Test Files (test/) | 26 | ~3,500 |
+| Source Files (lib/) | 138 | ~12,900 |
+| Test Files (test/) | 74 | ~15,100 |
 | Backend Files (backend/) | 18 | ~1,500 |
-| **Total Dart Files** | 183 | ~18,000 |
+| **Total Dart Files** | 230 | ~29,500 |
 
 **By Layer:**
 - Data Layer: ~35 files (~4,000 LOC)
 - Services Layer: ~25 files (~3,500 LOC)
 - Providers: ~10 files (~1,500 LOC)
 - Router: 2 files (~200 LOC)
-- UI/Screens: ~30 files (~4,000 LOC)
+- UI/Screens: ~29 files (~3,900 LOC)
 - Widgets: ~15 files (~2,000 LOC)
 - Models: ~10 files (~1,000 LOC)
+- Repository Tests: 12 files (~2,500 LOC)
+- Service Tests: 23 files (~4,000 LOC)
+- UI Tests: 12 files (~2,500 LOC) - **~80% UI coverage**
+- Enum Tests: 1 file (~400 LOC) - **100% coverage on BetStatus transitions**
+- Widget Tests: 1 file (~200 LOC)
+- Other Tests: 2 files (~200 LOC)
 
 ---
 
@@ -555,6 +609,40 @@ The following features are explicitly out of scope for MVP (per PRD Section 2.2)
 - Attachments/file uploads
 - Search/filter in History
 - Tablet-optimized layouts
+
+---
+
+## Recent Fixes
+
+- **Duplicate File Removal (Jan 11, 2026):** Removed legacy stub file `lib/ui/screens/governance/quarterly_screen.dart` and updated barrel file to export the correct implementation from `quarterly/quarterly_screen.dart`.
+
+- **New Test Files (Jan 11, 2026):** Added 3 new test files to improve coverage:
+  - `test/services/auth/token_storage_test.dart` - Secure token storage tests
+  - `test/services/sync/sync_queue_test.dart` - Offline sync queue tests
+  - `test/ui/widgets/signal_list_widget_test.dart` - Signal display widget tests
+
+- **Import Path Correction (Jan 11, 2026):** Fixed incorrect `package:board_journal` imports to `package:boardroom_journal` in 4 test files:
+  - `test/services/setup_service_test.dart`
+  - `test/services/quarterly_service_test.dart`
+  - `test/services/ai/setup_ai_service_test.dart`
+  - `test/services/ai/quarterly_ai_service_test.dart`
+
+- **Additional Test Coverage (Jan 11, 2026):** Added 3 more service tests for utility files:
+  - `test/services/ai/ai_config_test.dart` - AIConfig constructor, factories, and validation
+  - `test/services/ai/claude_client_test.dart` - ClaudeConfig, ClaudeResponse, ClaudeError, ClaudeClient
+  - `test/services/audio/waveform_data_test.dart` - WaveformData rolling buffer and WaveformConfig
+
+- **Base Repository Tests (Jan 11, 2026):** Added tests for foundational data layer utilities:
+  - `test/data/repositories/base_repository_test.dart` - SyncStatus enum/extension, PaginatedResult, DateRange
+
+- **Sync Indicator Widget Tests (Jan 11, 2026):** Added widget tests for sync UI components:
+  - `test/ui/widgets/sync_indicator_test.dart` - SyncIndicator, EntrySyncBadge, OfflineBanner, ConflictNotification
+
+- **Waveform Widget Tests (Jan 11, 2026):** Added widget tests for audio visualization:
+  - `test/ui/widgets/waveform_widget_test.dart` - WaveformWidget, RecordingWaveformWidget, WaveformIndicator
+
+- **Silence Countdown Widget Tests (Jan 11, 2026):** Added widget tests for silence detection UI:
+  - `test/ui/widgets/silence_countdown_widget_test.dart` - SilenceCountdownWidget, SilenceCountdownOverlay, SilenceIndicator
 
 ---
 

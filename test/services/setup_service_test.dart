@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
-import 'package:board_journal/data/data.dart';
-import 'package:board_journal/services/services.dart';
+import 'package:boardroom_journal/data/data.dart';
+import 'package:boardroom_journal/services/services.dart';
 
 @GenerateMocks([
   GovernanceSessionRepository,
