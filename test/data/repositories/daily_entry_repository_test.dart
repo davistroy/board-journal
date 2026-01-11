@@ -96,7 +96,7 @@ void main() {
           timezone: 'UTC',
         );
 
-        await Future.delayed(const Duration(milliseconds: 10));
+        await Future.delayed(const Duration(seconds: 1));
 
         await repository.create(
           transcriptRaw: 'Second',
@@ -141,7 +141,7 @@ void main() {
             entryType: EntryType.text,
             timezone: 'UTC',
           );
-          await Future.delayed(const Duration(milliseconds: 5));
+          await Future.delayed(const Duration(seconds: 1));
         }
 
         final page1 = await repository.getAll(limit: 2, offset: 0);

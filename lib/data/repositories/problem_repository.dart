@@ -136,7 +136,7 @@ class ProblemRepository {
   /// Calculates the total time allocation percentage.
   Future<int> getTotalAllocation() async {
     final problems = await getAll();
-    return problems.fold(0, (sum, p) => sum + p.timeAllocationPercent);
+    return problems.fold<int>(0, (sum, p) => sum + p.timeAllocationPercent);
   }
 
   /// Validates time allocation is within acceptable range.

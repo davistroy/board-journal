@@ -92,7 +92,10 @@ class GovernanceSessionRepository {
       ..where(
         (s) => s.deletedAtUtc.isNull() & s.isCompleted.equals(true) & s.sessionType.equals(type.name),
       )
-      ..orderBy([(s) => OrderingTerm.desc(s.completedAtUtc)])
+      ..orderBy([
+        (s) => OrderingTerm.desc(s.completedAtUtc),
+        (s) => OrderingTerm.desc(s.startedAtUtc),
+      ])
       ..limit(1);
 
     return query.getSingleOrNull();

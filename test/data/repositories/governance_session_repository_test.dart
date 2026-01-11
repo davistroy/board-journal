@@ -89,7 +89,7 @@ void main() {
         );
         await repository.complete(id1, outputMarkdown: 'Output 1');
 
-        await Future.delayed(const Duration(milliseconds: 10));
+        await Future.delayed(const Duration(seconds: 1));
 
         final id2 = await repository.create(
           sessionType: GovernanceSessionType.quick,
