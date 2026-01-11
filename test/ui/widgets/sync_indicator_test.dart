@@ -350,6 +350,8 @@ void main() {
 }
 
 /// Mock sync notifier for testing.
-class _MockSyncNotifier extends StateNotifier<SyncStatus> {
-  _MockSyncNotifier(SyncStatus status) : super(status);
+class _MockSyncNotifier extends SyncNotifier {
+  _MockSyncNotifier(SyncStatus status) : super(null) {
+    state = status;
+  }
 }
