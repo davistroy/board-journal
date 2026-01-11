@@ -295,5 +295,112 @@ void main() {
         expect(problems[0].name, 'New Problem');
       });
     });
+
+    group('getPendingSync', () {
+      test('returns problems with pending sync status', () async {
+        await createProblem(name: 'Pending problem');
+
+        final pending = await repository.getPendingSync();
+        expect(pending.length, 1);
+        expect(pending[0].syncStatus, 'pending');
+      });
+
+      test('excludes synced problems', () async {
+        final id = await createProblem(name: 'Test');
+
+        await repository.updateSyncStatus(id, SyncStatus.synced, serverVersion: 1);
+
+        final pending = await repository.getPendingSync();
+        expect(pending, isEmpty);
+      });
+    });
+
+    group('updateSyncStatus', () {
+      test('updates sync status and server version', () async {
+        final id = await createProblem(name: 'Test');
+
+        await repository.updateSyncStatus(id, SyncStatus.synced, serverVersion: 5);
+
+        final problem = await (database.select(database.problems)
+              ..where((p) => p.id.equals(id)))
+            .getSingle();
+
+        expect(problem.syncStatus, 'synced');
+        expect(problem.serverVersion, 5);
+      });
+
+      test('can set conflict status', () async {
+        final id = await createProblem(name: 'Test');
+
+        await repository.updateSyncStatus(id, SyncStatus.conflict);
+
+        final problem = await (database.select(database.problems)
+              ..where((p) => p.id.equals(id)))
+            .getSingle();
+
+        expect(problem.syncStatus, 'conflict');
+      });
+    });
+
+    group('watchById', () {
+      test('emits updates for specific problem', () async {
+        final id = await createProblem(name: 'Watched problem');
+
+        final stream = repository.watchById(id);
+
+        var problem = await stream.first;
+        expect(problem, isNotNull);
+        expect(problem!.name, 'Watched problem');
+
+        // Update it
+        await repository.update(id, name: 'Updated name');
+
+        problem = await stream.first;
+        expect(problem!.name, 'Updated name');
+      });
+
+      test('emits null for non-existent id', () async {
+        final stream = repository.watchById('non-existent-id');
+
+        final problem = await stream.first;
+        expect(problem, isNull);
+      });
+    });
+
+    group('getCount', () {
+      test('returns count of active problems', () async {
+        await createProblem(name: 'Problem 1');
+        await createProblem(name: 'Problem 2');
+        await createProblem(name: 'Problem 3');
+
+        final count = await repository.getCount();
+        expect(count, 3);
+      });
+
+      test('returns zero for empty database', () async {
+        final count = await repository.getCount();
+        expect(count, 0);
+      });
+    });
+
+    group('getAppreciating', () {
+      test('returns only appreciating problems', () async {
+        await createProblem(name: 'Appreciating 1', direction: ProblemDirection.appreciating);
+        await createProblem(name: 'Stable', direction: ProblemDirection.stable);
+        await createProblem(name: 'Appreciating 2', direction: ProblemDirection.appreciating);
+
+        final appreciating = await repository.getAppreciating();
+        expect(appreciating.length, 2);
+        expect(appreciating.every((p) => p.direction == 'appreciating'), isTrue);
+      });
+
+      test('returns empty list when no appreciating problems', () async {
+        await createProblem(name: 'Stable', direction: ProblemDirection.stable);
+        await createProblem(name: 'Depreciating', direction: ProblemDirection.depreciating);
+
+        final appreciating = await repository.getAppreciating();
+        expect(appreciating, isEmpty);
+      });
+    });
   });
 }
