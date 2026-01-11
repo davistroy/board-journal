@@ -132,13 +132,11 @@ class _SetupPromptCard extends ConsumerWidget {
                     ),
                     const SizedBox(width: 8),
                     TextButton(
-                      onPressed: () {
-                        // TODO: Dismiss prompt, re-show weekly
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Dismiss functionality coming soon'),
-                          ),
-                        );
+                      onPressed: () async {
+                        // Dismiss prompt, will re-show after a week per PRD Section 5.0
+                        await ref.read(userPreferencesRepositoryProvider).dismissSetupPrompt();
+                        // Refresh the provider to update UI
+                        ref.invalidate(shouldShowSetupPromptProvider);
                       },
                       child: const Text('Later'),
                     ),

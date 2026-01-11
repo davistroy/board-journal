@@ -1,11 +1,16 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart' as http;
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../models/models.dart';
 import 'token_storage.dart';
+
+/// Default API base URL for auth operations.
+const String _defaultApiBaseUrl = 'https://api.boardroomjournal.app';
 
 /// Result of an authentication operation.
 class AuthResult {
@@ -71,6 +76,8 @@ class AuthResult {
 class AuthService {
   final TokenStorage _tokenStorage;
   final GoogleSignIn _googleSignIn;
+  final String _apiBaseUrl;
+  final http.Client _httpClient;
 
   /// Timer for proactive token refresh.
   Timer? _refreshTimer;
@@ -81,11 +88,15 @@ class AuthService {
   AuthService({
     TokenStorage? tokenStorage,
     GoogleSignIn? googleSignIn,
+    String? apiBaseUrl,
+    http.Client? httpClient,
   })  : _tokenStorage = tokenStorage ?? TokenStorage(),
         _googleSignIn = googleSignIn ??
             GoogleSignIn(
               scopes: ['email', 'profile'],
-            );
+            ),
+        _apiBaseUrl = apiBaseUrl ?? _defaultApiBaseUrl,
+        _httpClient = httpClient ?? http.Client();
 
   /// Signs in with Apple.
   ///
@@ -192,24 +203,21 @@ class AuthService {
 
   /// Signs in with Microsoft.
   ///
-  /// Note: This would typically use MSAL (Microsoft Authentication Library).
-  /// For now, provides structure that can be completed with real implementation.
+  /// Note: Microsoft Sign-In requires MSAL (Microsoft Authentication Library).
+  /// To enable Microsoft Sign-In:
+  /// 1. Add msal_flutter package to pubspec.yaml
+  /// 2. Configure Azure AD app registration in Azure Portal
+  /// 3. Set up redirect URIs for iOS and Android
+  /// 4. Add client ID to app configuration
+  ///
+  /// See: https://learn.microsoft.com/en-us/azure/active-directory/develop/mobile-app-quickstart
   Future<AuthResult> signInWithMicrosoft() async {
-    try {
-      // TODO: Implement Microsoft Sign-In using MSAL
-      // This would require:
-      // 1. Adding msal_flutter package
-      // 2. Configuring Azure AD app registration
-      // 3. Setting up redirect URIs
-
-      // For now, return a placeholder that indicates work is needed
-      return AuthResult.failure(
-        'Microsoft Sign-In requires additional configuration. '
-        'Please set up Azure AD app registration and MSAL integration.',
-      );
-    } catch (e) {
-      return AuthResult.failure('Microsoft Sign-In failed: $e');
-    }
+    // Microsoft Sign-In is not yet configured for this app.
+    // Users can sign in with Apple or Google as alternatives.
+    return AuthResult.failure(
+      'Microsoft Sign-In is not available yet. '
+      'Please use Apple or Google sign-in instead.',
+    );
   }
 
   /// Skips sign-in for local-only mode.
@@ -251,7 +259,8 @@ class AuthService {
 
   /// Refreshes the access token using the refresh token.
   ///
-  /// Per PRD: Access token has 15-minute expiry.
+  /// Per PRD Section 3A.2: Access token has 15-minute expiry, refresh token 30-day.
+  /// Makes a POST request to /auth/refresh with the refresh token.
   Future<AuthResult> refreshToken() async {
     try {
       final tokens = await _tokenStorage.getTokens();
@@ -264,13 +273,32 @@ class AuthService {
         return AuthResult.failure('Refresh token expired, please sign in again');
       }
 
-      // TODO: In production, exchange refresh token with your backend
-      // For now, create new tokens (simulating server exchange)
+      // Exchange refresh token with backend
+      final response = await _httpClient.post(
+        Uri.parse('$_apiBaseUrl/auth/refresh'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'refresh_token': tokens.refreshToken}),
+      ).timeout(const Duration(seconds: 30));
+
+      if (response.statusCode == 401) {
+        // Refresh token is invalid or revoked
+        return AuthResult.failure('Session expired, please sign in again');
+      }
+
+      if (response.statusCode != 200) {
+        return AuthResult.failure('Token refresh failed with status ${response.statusCode}');
+      }
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      // Parse new tokens from response
       final newTokens = AuthTokens(
-        accessToken: 'refreshed-${DateTime.now().millisecondsSinceEpoch}',
-        refreshToken: tokens.refreshToken, // Usually unchanged
-        accessTokenExpiry: DateTime.now().add(const Duration(minutes: 15)),
-        refreshTokenExpiry: tokens.refreshTokenExpiry, // Usually unchanged
+        accessToken: data['access_token'] as String,
+        refreshToken: data['refresh_token'] as String,
+        accessTokenExpiry: DateTime.now().add(
+          Duration(seconds: data['expires_in'] as int? ?? 900),
+        ),
+        refreshTokenExpiry: DateTime.now().add(const Duration(days: 30)),
       );
 
       await _tokenStorage.saveTokens(newTokens);
@@ -284,6 +312,10 @@ class AuthService {
       _startRefreshTimer();
 
       return AuthResult.success(user: user, tokens: newTokens);
+    } on TimeoutException {
+      return AuthResult.failure('Token refresh timed out, please check your connection');
+    } on SocketException catch (e) {
+      return AuthResult.failure('Network error during token refresh: ${e.message}');
     } catch (e) {
       return AuthResult.failure('Token refresh failed: $e');
     }
