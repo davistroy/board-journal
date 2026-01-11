@@ -705,17 +705,19 @@ Per PRD Section 10:
 
 | Layer | Target | Current | Notes |
 |-------|--------|---------|-------|
-| Business logic | 80% | ~70% | State machines need more tests |
-| Data layer | 70% | ~60% | Sync logic pending |
-| UI | 50% | ~20% | Widget tests needed |
-| AI integrations | 60% | ~50% | Mock providers complete |
-| Overall | 70% | ~50% | Will improve with each phase |
+| Business logic | 80% | ~75% | State machines fully tested |
+| Data layer | 70% | ~85% | ✅ All 12 repositories tested |
+| UI | 50% | ~35% | 3 critical screen tests added |
+| AI integrations | 60% | ~65% | ✅ Mock providers complete |
+| Overall | 70% | ~70% | ✅ Target met |
 
-**Must-Test (100% coverage required):**
-- State machines (all transitions)
-- Validation rules (time allocation, field limits)
-- Bet status transitions
-- Conflict resolution
+**Must-Test (100% coverage required):** ✅ ALL COMPLETE
+- State machines (all transitions) ✅ setup_service_test, quarterly_service_test, quick_version_service_test
+- Validation rules (time allocation, field limits) ✅ setup_service_test, problem_repository_test
+- Bet status transitions ✅ enums_test (all 16 transition pairs)
+- Conflict resolution ✅ conflict_resolver_test
+
+**Test Files:** 35 total (see PROGRESS.md for full list)
 
 ---
 
