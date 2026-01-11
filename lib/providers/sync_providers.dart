@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/api/api.dart';
 import '../services/sync/sync.dart';
 import 'auth_providers.dart';
 import 'database_provider.dart';
+import 'scheduling_providers.dart';
 
 // ==================
 // Configuration Providers
@@ -25,10 +25,7 @@ final apiConfigProvider = Provider<ApiConfig>((ref) {
 // Service Providers
 // ==================
 
-/// Provider for SharedPreferences (async).
-final sharedPreferencesProvider = FutureProvider<SharedPreferences>((ref) async {
-  return SharedPreferences.getInstance();
-});
+// Note: sharedPreferencesProvider is imported from scheduling_providers.dart
 
 /// Provider for the API client.
 final apiClientProvider = Provider<ApiClient>((ref) {
@@ -50,20 +47,15 @@ final apiClientProvider = Provider<ApiClient>((ref) {
 });
 
 /// Provider for the sync queue.
-///
-/// Returns null until SharedPreferences is loaded.
-final syncQueueProvider = Provider<SyncQueue?>((ref) {
-  final prefsAsync = ref.watch(sharedPreferencesProvider);
-
-  return prefsAsync.whenOrNull(
-    data: (prefs) => SyncQueue(prefs),
-  );
+final syncQueueProvider = Provider<SyncQueue>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return SyncQueue(prefs);
 });
 
 /// Provider for the conflict resolver.
 final conflictResolverProvider = Provider<ConflictResolver>((ref) {
   final resolver = ConflictResolver(
-    onConflictNotification: (message) {
+    onConflictNotification: (_) {
       // This would typically trigger a UI notification
       // The message is also available via the conflict stream
     },
@@ -77,36 +69,28 @@ final conflictResolverProvider = Provider<ConflictResolver>((ref) {
 });
 
 /// Provider for the sync service.
-///
-/// Returns null until all dependencies are available.
-final syncServiceProvider = Provider<SyncService?>((ref) {
+final syncServiceProvider = Provider<SyncService>((ref) {
   final apiClient = ref.watch(apiClientProvider);
   final config = ref.watch(apiConfigProvider);
   final database = ref.watch(databaseProvider);
   final queue = ref.watch(syncQueueProvider);
   final conflictResolver = ref.watch(conflictResolverProvider);
-  final prefsAsync = ref.watch(sharedPreferencesProvider);
+  final prefs = ref.watch(sharedPreferencesProvider);
 
-  if (queue == null) return null;
-
-  return prefsAsync.whenOrNull(
-    data: (prefs) {
-      final service = SyncService(
-        apiClient: apiClient,
-        config: config,
-        database: database,
-        queue: queue,
-        conflictResolver: conflictResolver,
-        prefs: prefs,
-      );
-
-      ref.onDispose(() {
-        service.dispose();
-      });
-
-      return service;
-    },
+  final service = SyncService(
+    apiClient: apiClient,
+    config: config,
+    database: database,
+    queue: queue,
+    conflictResolver: conflictResolver,
+    prefs: prefs,
   );
+
+  ref.onDispose(() {
+    service.dispose();
+  });
+
+  return service;
 });
 
 // ==================
@@ -115,7 +99,7 @@ final syncServiceProvider = Provider<SyncService?>((ref) {
 
 /// Notifier for managing sync state.
 class SyncNotifier extends StateNotifier<SyncStatus> {
-  final SyncService? _syncService;
+  final SyncService _syncService;
   StreamSubscription<SyncStatus>? _statusSubscription;
 
   SyncNotifier(this._syncService) : super(SyncStatus.initial()) {
@@ -124,45 +108,43 @@ class SyncNotifier extends StateNotifier<SyncStatus> {
 
   /// Initializes the notifier and subscribes to sync status.
   void _initialize() {
-    if (_syncService == null) return;
-
     // Subscribe to sync service status updates
-    _statusSubscription = _syncService!.statusStream.listen((status) {
+    _statusSubscription = _syncService.statusStream.listen((status) {
       state = status;
     });
 
     // Initialize the sync service
-    _syncService!.initialize();
+    _syncService.initialize();
   }
 
   /// Triggers a full sync.
   Future<void> syncAll() async {
-    await _syncService?.syncAll();
+    await _syncService.syncAll();
   }
 
   /// Triggers an incremental sync.
   Future<void> syncChanges() async {
-    await _syncService?.syncChanges();
+    await _syncService.syncChanges();
   }
 
   /// Triggers a full download.
   Future<void> fullDownload() async {
-    await _syncService?.fullDownload();
+    await _syncService.fullDownload();
   }
 
   /// Notifies that a local change was made.
   void notifyLocalChange() {
-    _syncService?.notifyLocalChange();
+    _syncService.notifyLocalChange();
   }
 
   /// Notifies that the app resumed.
   void onAppResumed() {
-    _syncService?.onAppResumed();
+    _syncService.onAppResumed();
   }
 
   /// Notifies that the app paused.
   void onAppPaused() {
-    _syncService?.onAppPaused();
+    _syncService.onAppPaused();
   }
 
   @override
