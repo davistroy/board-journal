@@ -1,796 +1,1014 @@
-# Boardroom Journal - Complete Setup & Deployment Guide
+# Boardroom Journal - Complete Deployment Guide
 
-This guide assumes you're reasonably smart but new to mobile app development. Every step is explained in detail, and I've marked what Claude can do for you vs. what you need to do yourself.
+This guide covers local development, staging, and production deployment for both the backend API and mobile apps.
 
 ---
 
 ## Table of Contents
-1. [Understanding the Big Picture](#1-understanding-the-big-picture)
-2. [Installing Required Software](#2-installing-required-software)
-3. [Setting Up the Flutter App](#3-setting-up-the-flutter-app)
-4. [Setting Up the Backend Server](#4-setting-up-the-backend-server)
-5. [Getting API Keys for AI Features](#5-getting-api-keys-for-ai-features)
-6. [Running the App on Your Phone](#6-running-the-app-on-your-phone)
-7. [Running Tests](#7-running-tests)
-8. [Publishing to App Stores](#8-publishing-to-app-stores)
+
+1. [Quick Start (Local Development)](#1-quick-start-local-development)
+2. [Environment Configuration](#2-environment-configuration)
+3. [Backend Deployment](#3-backend-deployment)
+4. [Database Setup](#4-database-setup)
+5. [OAuth Configuration](#5-oauth-configuration)
+6. [Mobile App Deployment](#6-mobile-app-deployment)
+7. [CI/CD Pipeline](#7-cicd-pipeline)
+8. [Monitoring & Observability](#8-monitoring--observability)
+9. [Security Checklist](#9-security-checklist)
+10. [Troubleshooting](#10-troubleshooting)
 
 ---
 
-## 1. Understanding the Big Picture
+## 1. Quick Start (Local Development)
 
-### What is this app made of?
+### Prerequisites
 
-Boardroom Journal has two main parts:
+| Tool | Version | Installation |
+|------|---------|--------------|
+| Flutter | 3.24+ | `brew install --cask flutter` |
+| Dart | 3.2+ | Included with Flutter |
+| Docker | Latest | [docker.com](https://docker.com) |
+| Xcode | Latest | Mac App Store |
+| CocoaPods | Latest | `brew install cocoapods` |
+| Android Studio | Latest | [developer.android.com](https://developer.android.com/studio) (optional) |
 
-1. **The Mobile App (Frontend)** - This is what users see and interact with on their iPhone or Android phone. It's built with Flutter, a framework that lets you write one codebase and run it on both iOS and Android.
-
-2. **The Server (Backend)** - This runs on a computer somewhere (your laptop for testing, or a cloud server for production) and handles:
-   - Storing data that syncs across devices
-   - Processing AI requests (voice transcription, generating briefs)
-   - User authentication (login/logout)
-
-### What is Docker?
-
-Docker is a tool that packages software into "containers" - think of it like a shipping container that has everything the software needs to run. Instead of manually installing a database, configuring it, setting passwords, etc., Docker does all of this automatically.
-
-**Why use it?** Without Docker, you'd need to:
-1. Download and install PostgreSQL (a database)
-2. Create a database user
-3. Set a password
-4. Create the database tables
-5. Hope you didn't make any typos
-
-With Docker, you just run one command and it does all of this for you.
-
-### What files matter?
-
-| File/Folder | What it is |
-|-------------|------------|
-| `lib/` | The main app code (Dart/Flutter) |
-| `backend/` | The server code |
-| `pubspec.yaml` | Lists all the packages the app needs (like a shopping list) |
-| `backend/docker-compose.yml` | Instructions for Docker to set up the server |
-| `android/` | Android-specific project files (doesn't exist yet - we'll create it) |
-| `ios/` | iOS-specific project files (doesn't exist yet - we'll create it) |
-
----
-
-## 2. Installing Required Software
-
-### 2.1 Install Xcode (Required for iOS)
-
-**What is it?** Xcode is Apple's official tool for building iOS apps. You need it even if you're just testing.
-
-**Steps:**
-1. Open the **App Store** on your Mac (the blue icon with an "A")
-2. Search for "Xcode"
-3. Click **Get** (it's free but large - about 12GB)
-4. Wait for it to download and install (can take 30-60 minutes)
-5. Open Xcode once after installing - it will ask to install "additional components" - click **Install**
-6. Open Terminal (press Cmd+Space, type "Terminal", press Enter) and run:
-   ```bash
-   sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
-   sudo xcodebuild -runFirstLaunch
-   ```
-   It will ask for your Mac password. Type it and press Enter (you won't see the characters - that's normal).
-
-**How to verify it worked:**
-```bash
-xcode-select -p
-```
-Should show: `/Applications/Xcode.app/Contents/Developer`
-
----
-
-### 2.2 Install Homebrew (Package Manager)
-
-**What is it?** Homebrew is like an app store for developer tools, but you use it from the Terminal. It makes installing things much easier.
-
-**Steps:**
-1. Open Terminal
-2. Paste this command and press Enter:
-   ```bash
-   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-   ```
-3. Follow the prompts (press Enter when asked, enter your password when asked)
-4. **Important:** After it finishes, it will show you two commands to run (starting with `echo` and `eval`). Copy and run both of them.
-
-**How to verify it worked:**
-```bash
-brew --version
-```
-Should show something like: `Homebrew 4.x.x`
-
----
-
-### 2.3 Install Flutter
-
-**What is it?** Flutter is Google's toolkit for building mobile apps. It includes the Dart programming language.
-
-**Steps:**
-1. Open Terminal and run:
-   ```bash
-   brew install --cask flutter
-   ```
-2. After it finishes, run:
-   ```bash
-   flutter doctor
-   ```
-
-This command checks if everything is set up correctly. You'll see a list with checkmarks (✓) and X marks (✗). Don't worry about all the X marks yet - we'll fix the important ones.
-
-**What you need to see (at minimum):**
-- ✓ Flutter (Channel stable, version 3.x.x)
-- ✓ Xcode (or partially configured - we'll fix this)
-
----
-
-### 2.4 Install CocoaPods (Required for iOS)
-
-**What is it?** CocoaPods manages iOS library dependencies. Flutter needs it to build iOS apps.
-
-**Steps:**
-```bash
-brew install cocoapods
-```
-
-**Verify:**
-```bash
-pod --version
-```
-
----
-
-### 2.5 Install Docker Desktop
-
-**What is it?** Docker Desktop is the app that runs Docker on your Mac. It puts a little whale icon in your menu bar.
-
-**Steps:**
-1. Go to: https://www.docker.com/products/docker-desktop/
-2. Click **Download for Mac**
-3. Choose **Apple Chip** if you have an M1/M2/M3 Mac, or **Intel Chip** for older Macs
-   - Not sure which? Click the Apple menu (top-left) → **About This Mac** → Look for "Chip" or "Processor"
-4. Open the downloaded `.dmg` file
-5. Drag Docker to your Applications folder
-6. Open Docker from Applications
-7. It will ask for permission to install components - click **OK** and enter your password
-8. Wait for Docker to start (the whale icon in the menu bar will stop animating when it's ready)
-
-**Verify:**
-```bash
-docker --version
-docker compose version
-```
-
----
-
-### 2.6 Install Android Studio (Optional - only if you want to test on Android)
-
-**Steps:**
-1. Go to: https://developer.android.com/studio
-2. Download and install
-3. Open Android Studio
-4. Go through the setup wizard - accept all defaults
-5. When it finishes, go to **More Actions** → **SDK Manager**
-6. Make sure "Android SDK" is installed
-
----
-
-### 2.7 Check Everything with Flutter Doctor
-
-Run this command to see your setup status:
-```bash
-flutter doctor -v
-```
-
-**What matters for iOS testing:**
-- ✓ Flutter
-- ✓ Xcode (needs to show full path and version)
-- ✓ CocoaPods
-
-Don't worry about Android or VS Code warnings if you're only testing on iOS.
-
----
-
-## 3. Setting Up the Flutter App
-
-### 3.1 Navigate to the Project
-
-Open Terminal and go to the project folder:
-```bash
-cd /path/to/board-journal
-```
-
-Replace `/path/to/` with where you actually cloned the repository. For example, if it's on your Desktop:
-```bash
-cd ~/Desktop/board-journal
-```
-
----
-
-### 3.2 Install Flutter Dependencies
-
-**What this does:** Downloads all the packages listed in `pubspec.yaml` that the app needs.
+### Step 1: Clone and Setup Flutter
 
 ```bash
+# Clone the repository
+git clone https://github.com/your-org/board-journal.git
+cd board-journal
+
+# Install Flutter dependencies
 flutter pub get
-```
 
-You should see messages about resolving dependencies and then "Got dependencies!"
-
----
-
-### 3.3 Generate Database Code
-
-**What this does:** The app uses a database library called Drift. Drift uses code generation - you write simple table definitions, and it generates the complex database code automatically. This step runs that generation.
-
-```bash
+# Generate database code (required)
 dart run build_runner build --delete-conflicting-outputs
-```
 
-This takes 30-60 seconds. You'll see messages about generating files. When it's done, you'll see "Succeeded after" with a time.
-
-**If you see errors:**
-> **Ask Claude:** "Run the build_runner for me and fix any errors"
-
----
-
-### 3.4 Create iOS and Android Project Files
-
-**What this does:** Flutter needs platform-specific folders to build for iOS and Android. These aren't in the repository (they're auto-generated and contain machine-specific paths), so we create them.
-
-```bash
+# Create platform folders (if not present)
 flutter create --platforms=ios,android .
+
+# Install iOS dependencies
+cd ios && pod install && cd ..
 ```
 
-Note the `.` at the end - that's important! It means "in the current directory."
-
-You should see messages about creating files in `ios/` and `android/` folders.
-
----
-
-### 3.5 Install iOS Dependencies (CocoaPods)
-
-**What this does:** iOS uses CocoaPods to manage native libraries. This command downloads and links them.
-
-```bash
-cd ios
-pod install
-cd ..
-```
-
-This can take 2-5 minutes the first time. You'll see messages about installing pods.
-
-**If you see errors about versions:**
-```bash
-cd ios
-pod repo update
-pod install
-cd ..
-```
-
----
-
-## 4. Setting Up the Backend Server
-
-### 4.1 Start Docker Desktop
-
-Make sure Docker is running (you should see the whale icon in your menu bar at the top of the screen). If it's not running, open Docker from your Applications folder.
-
----
-
-### 4.2 Create the Environment File
-
-The backend needs a configuration file with settings.
-
-> **Ask Claude:** "Create the backend .env file for local development"
-
-Or do it manually:
-```bash
-cd backend
-cp .env.example .env
-```
-
-Then open `.env` in a text editor and fill in values (the example file has comments explaining each one).
-
----
-
-### 4.3 Start the Backend
-
-This one command starts both the database and the API server:
+### Step 2: Start Backend Services
 
 ```bash
 cd backend
+
+# Start PostgreSQL + API server
 docker compose up -d
-```
 
-**What this does:**
-- Downloads PostgreSQL (database) if you don't have it
-- Starts PostgreSQL in a container
-- Creates the database and tables
-- Starts the API server
-- The `-d` means "detached" - it runs in the background
-
-**First time:** This downloads images, which can take 5-10 minutes.
-
-**Verify it's running:**
-```bash
+# Verify services are running
 docker compose ps
-```
 
-You should see two containers with "running" status.
-
-**Test the API:**
-```bash
+# Test health endpoint
 curl http://localhost:8080/health
+# Should return: {"status":"healthy"}
 ```
 
-Should return: `{"status":"healthy"}`
+### Step 3: Run the App
 
----
-
-### 4.4 Useful Docker Commands
-
-| Command | What it does |
-|---------|--------------|
-| `docker compose up -d` | Start the backend |
-| `docker compose down` | Stop the backend |
-| `docker compose logs -f` | Watch the logs (Ctrl+C to stop) |
-| `docker compose logs api` | See just the API server logs |
-| `docker compose ps` | See what's running |
-| `docker compose restart` | Restart everything |
-
----
-
-## 5. Getting API Keys for AI Features
-
-The app uses external AI services that require API keys. Without these, the app works but AI features (voice transcription, signal extraction, weekly briefs) won't function.
-
-### 5.1 Anthropic Claude API Key (For AI features)
-
-**What it's for:** Analyzing journal entries, extracting signals, generating weekly briefs, running governance sessions.
-
-**Steps:**
-1. Go to: https://console.anthropic.com/
-2. Create an account or sign in
-3. Go to **API Keys** in the left sidebar
-4. Click **Create Key**
-5. Give it a name like "Boardroom Journal Dev"
-6. Copy the key (starts with `sk-ant-`)
-
-**Important:** You'll only see the key once. Save it somewhere safe (like a password manager).
-
-**Add to your environment:**
 ```bash
-export ANTHROPIC_API_KEY="sk-ant-your-key-here"
+# List available devices
+flutter devices
+
+# Run on iOS Simulator
+flutter run -d "iPhone"
+
+# Run on Android Emulator
+flutter run -d "emulator"
+
+# Run on physical device
+flutter run -d "Your Device Name"
 ```
 
-Or add it to the backend's `.env` file as `CLAUDE_API_KEY=sk-ant-your-key-here`
+### Useful Commands
 
-**Cost:** You get $5 free credit. After that, it costs roughly $15 per million input tokens (about 750,000 words). For testing, you'll spend pennies.
-
----
-
-### 5.2 Deepgram API Key (For voice-to-text)
-
-**What it's for:** Converting voice recordings to text.
-
-**Steps:**
-1. Go to: https://console.deepgram.com/
-2. Create an account
-3. Go to **API Keys**
-4. Create a new key
-5. Copy it
-
-**Add to backend .env:**
-```
-DEEPGRAM_API_KEY=your-key-here
-```
-
-**Cost:** $200 free credit for new accounts. Voice transcription costs about $0.0043 per minute.
+| Command | Description |
+|---------|-------------|
+| `flutter pub get` | Install dependencies |
+| `dart run build_runner build` | Generate code |
+| `dart run build_runner watch` | Continuous code generation |
+| `flutter test` | Run all tests |
+| `flutter run` | Run the app |
+| `docker compose up -d` | Start backend |
+| `docker compose down` | Stop backend |
+| `docker compose logs -f` | View logs |
 
 ---
 
-### 5.3 Apple Developer Account (For Sign in with Apple)
+## 2. Environment Configuration
 
-**What it's for:** Letting users log in with their Apple ID.
+### Backend Environment Variables
 
-**Do you need this for testing?** No - you can skip this for local testing. The app will work without authentication for basic testing.
+Create `backend/.env` from the example:
 
-**For production:** $99/year from https://developer.apple.com/programs/
-
----
-
-## 6. Running the App on Your Phone
-
-### Option A: Run on iPhone Simulator (Easiest)
-
-The simulator is a virtual iPhone that runs on your Mac. No physical device needed.
-
-**Steps:**
-1. Open Terminal and navigate to the project:
-   ```bash
-   cd /path/to/board-journal
-   ```
-
-2. See available simulators:
-   ```bash
-   flutter devices
-   ```
-   You should see something like "iPhone 15 Pro (simulator)"
-
-3. Run the app:
-   ```bash
-   flutter run
-   ```
-   If you have multiple devices, it will ask you to choose. Pick the iOS simulator.
-
-4. Wait for it to build (first time takes 2-5 minutes)
-
-5. The simulator should open automatically with the app running
-
-**Useful controls while running:**
-- Press `r` in Terminal → Hot reload (updates UI without restarting)
-- Press `R` in Terminal → Hot restart (restarts the app)
-- Press `q` in Terminal → Quit
-
----
-
-### Option B: Run on Physical iPhone
-
-This is more complex because Apple requires code signing.
-
-**Prerequisites:**
-- iPhone connected via USB cable (or same WiFi network after initial setup)
-- Apple ID (free one is fine for testing)
-
-**Step 1: Open the project in Xcode**
 ```bash
+cp backend/.env.example backend/.env
+```
+
+#### Required Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_PASSWORD` | PostgreSQL password | `secure_password_here` |
+| `JWT_SECRET` | JWT signing secret (64+ bytes) | `openssl rand -base64 64` |
+
+#### Server Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `HOST` | `0.0.0.0` | Server bind address |
+| `PORT` | `8080` | Server port |
+| `ENVIRONMENT` | `development` | `development`, `staging`, `production` |
+
+#### Database Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DATABASE_HOST` | `localhost` | PostgreSQL host |
+| `DATABASE_PORT` | `5432` | PostgreSQL port |
+| `DATABASE_NAME` | `boardroom_journal` | Database name |
+| `DATABASE_USER` | `postgres` | Database user |
+| `DATABASE_PASSWORD` | **required** | Database password |
+| `DATABASE_POOL_SIZE` | `10` | Connection pool size |
+
+#### JWT Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `JWT_SECRET` | **required** | Secret for signing (64+ bytes recommended) |
+| `JWT_ACCESS_TOKEN_EXPIRY_MINUTES` | `15` | Access token lifetime |
+| `JWT_REFRESH_TOKEN_EXPIRY_DAYS` | `30` | Refresh token lifetime |
+
+#### OAuth Configuration (Optional for Local Dev)
+
+| Variable | Description |
+|----------|-------------|
+| `APPLE_CLIENT_ID` | Apple Service ID (e.g., `com.boardroomjournal.app`) |
+| `APPLE_TEAM_ID` | Apple Developer Team ID |
+| `APPLE_KEY_ID` | Key ID from Apple Developer Console |
+| `APPLE_PRIVATE_KEY` | Base64-encoded .p8 key file |
+| `GOOGLE_CLIENT_ID` | Google OAuth Client ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret |
+
+#### AI Services (Optional for Local Dev)
+
+| Variable | Description |
+|----------|-------------|
+| `CLAUDE_API_KEY` | Anthropic API key (`sk-ant-...`) |
+| `DEEPGRAM_API_KEY` | Deepgram API key for transcription |
+
+#### Rate Limiting
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `RATE_LIMIT_ACCOUNT_CREATION_PER_HOUR` | `3` | Max new accounts per IP per hour |
+| `RATE_LIMIT_AUTH_ATTEMPTS_BEFORE_LOCKOUT` | `5` | Failed attempts before lockout |
+| `RATE_LIMIT_AUTH_LOCKOUT_MINUTES` | `15` | Lockout duration |
+| `MAX_REQUEST_BODY_SIZE` | `10485760` | Max request size (10MB) |
+
+### Flutter App Configuration
+
+The app uses `ApiConfig` to determine the backend URL:
+
+```dart
+// lib/services/api/api_config.dart
+
+// Development (default when running locally)
+ApiConfig.development()  // http://localhost:8080
+
+// Staging
+ApiConfig.staging()      // https://staging-api.boardroomjournal.app
+
+// Production
+ApiConfig.production()   // https://api.boardroomjournal.app
+```
+
+To switch environments, update the provider or use build flavors (see Mobile App Deployment section).
+
+---
+
+## 3. Backend Deployment
+
+### Option A: Railway (Recommended for Simplicity)
+
+Railway provides one-click deployments with automatic SSL and PostgreSQL.
+
+#### Step 1: Connect Repository
+
+1. Go to [railway.app](https://railway.app)
+2. Click "New Project" → "Deploy from GitHub repo"
+3. Select your repository
+4. Set the root directory to `backend`
+
+#### Step 2: Add PostgreSQL
+
+1. Click "New Service" → "PostgreSQL"
+2. Railway automatically sets `DATABASE_URL`
+
+#### Step 3: Configure Environment
+
+Add these environment variables in Railway dashboard:
+
+```bash
+# Server
+HOST=0.0.0.0
+PORT=$PORT  # Railway provides this automatically
+ENVIRONMENT=production
+
+# Database (Railway provides these automatically when you add PostgreSQL)
+DATABASE_HOST=$PGHOST
+DATABASE_PORT=$PGPORT
+DATABASE_NAME=$PGDATABASE
+DATABASE_USER=$PGUSER
+DATABASE_PASSWORD=$PGPASSWORD
+DATABASE_POOL_SIZE=20
+
+# JWT (generate secure secret)
+JWT_SECRET=<generate-with-openssl-rand-base64-64>
+
+# OAuth
+APPLE_CLIENT_ID=com.boardroomjournal.app
+APPLE_TEAM_ID=YOUR_TEAM_ID
+APPLE_KEY_ID=YOUR_KEY_ID
+APPLE_PRIVATE_KEY=<base64-encoded-p8-key>
+GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=<client-secret>
+
+# AI Services
+CLAUDE_API_KEY=sk-ant-...
+DEEPGRAM_API_KEY=<deepgram-key>
+```
+
+#### Step 4: Run Database Migrations
+
+```bash
+# Connect to Railway database and run schema
+railway run psql < backend/lib/db/schema.sql
+```
+
+#### Step 5: Configure Custom Domain
+
+1. Go to Settings → Domains
+2. Add custom domain: `api.boardroomjournal.app`
+3. Update DNS CNAME record to Railway's provided domain
+
+### Option B: Render
+
+#### Step 1: Create Web Service
+
+1. Go to [render.com](https://render.com)
+2. Click "New" → "Web Service"
+3. Connect GitHub repository
+4. Configure:
+   - **Root Directory:** `backend`
+   - **Environment:** Docker
+   - **Instance Type:** Starter or higher
+
+#### Step 2: Add PostgreSQL
+
+1. Click "New" → "PostgreSQL"
+2. Note the internal connection string
+
+#### Step 3: Configure Environment
+
+Add environment variables in Render dashboard (same as Railway above, but use Render's database credentials).
+
+### Option C: Google Cloud Run
+
+#### Step 1: Build and Push Docker Image
+
+```bash
+cd backend
+
+# Build image
+docker build -t gcr.io/YOUR_PROJECT/boardroom-journal-api:latest .
+
+# Push to Google Container Registry
+gcloud auth configure-docker
+docker push gcr.io/YOUR_PROJECT/boardroom-journal-api:latest
+```
+
+#### Step 2: Deploy to Cloud Run
+
+```bash
+gcloud run deploy boardroom-journal-api \
+  --image gcr.io/YOUR_PROJECT/boardroom-journal-api:latest \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --set-env-vars "ENVIRONMENT=production,DATABASE_HOST=..." \
+  --set-secrets "JWT_SECRET=jwt-secret:latest,DATABASE_PASSWORD=db-password:latest"
+```
+
+#### Step 3: Set Up Cloud SQL
+
+1. Create PostgreSQL instance in Cloud SQL
+2. Enable Cloud SQL Admin API
+3. Configure Cloud Run to connect via Cloud SQL connector
+
+### Option D: Self-Hosted Docker
+
+#### Step 1: Build Docker Image
+
+```bash
+cd backend
+docker build -t boardroom-journal-backend:latest .
+```
+
+#### Step 2: Create Production docker-compose.yml
+
+```yaml
+version: '3.8'
+
+services:
+  api:
+    image: boardroom-journal-backend:latest
+    ports:
+      - "8080:8080"
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "8080"
+      ENVIRONMENT: "production"
+      DATABASE_HOST: postgres
+      DATABASE_PORT: "5432"
+      DATABASE_NAME: boardroom_journal
+      DATABASE_USER: boardroom_app
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_POOL_SIZE: "20"
+      JWT_SECRET: ${JWT_SECRET}
+      # ... other env vars
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: boardroom_app
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: boardroom_journal
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./lib/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U boardroom_app -d boardroom_journal"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+```
+
+#### Step 3: Set Up Reverse Proxy (nginx)
+
+```nginx
+upstream boardroom_api {
+    server 127.0.0.1:8080;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name api.boardroomjournal.app;
+
+    ssl_certificate /etc/letsencrypt/live/api.boardroomjournal.app/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api.boardroomjournal.app/privkey.pem;
+
+    # Security headers
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+
+    # Pass real IP to backend
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Host $host;
+
+    client_max_body_size 10M;
+
+    location / {
+        proxy_pass http://boardroom_api;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+---
+
+## 4. Database Setup
+
+### PostgreSQL Schema
+
+The schema file is at `backend/lib/db/schema.sql`. It includes:
+
+- 11 tables (users, daily_entries, weekly_briefs, problems, etc.)
+- Sync triggers for change tracking
+- Maintenance functions (expire_overdue_bets, cleanup_soft_deletes)
+
+### Initial Setup
+
+```bash
+# Connect to your database
+psql -h <host> -U <user> -d <database>
+
+# Run schema migration
+\i backend/lib/db/schema.sql
+```
+
+### Scheduled Maintenance Jobs
+
+Set up cron jobs or cloud scheduler for these maintenance tasks:
+
+```bash
+# Expire overdue bets (run daily at midnight UTC)
+0 0 * * * psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "SELECT expire_overdue_bets();"
+
+# Process scheduled account deletions (run daily at 1am UTC)
+0 1 * * * psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "SELECT process_scheduled_deletions();"
+
+# Clean up soft deletes older than 30 days (run weekly on Sunday at 2am UTC)
+0 2 * * 0 psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "SELECT cleanup_soft_deletes();"
+```
+
+### Backup Strategy
+
+**Recommended:**
+- Daily automated backups with 30-day retention
+- Enable point-in-time recovery (PITR)
+- Test restore procedure monthly
+- Store backups in a different region
+
+**For managed databases (Railway, Render, Cloud SQL):**
+- Backups are typically handled automatically
+- Configure retention period in dashboard
+- Test restore through provider's interface
+
+---
+
+## 5. OAuth Configuration
+
+### Apple Sign In
+
+#### Step 1: Apple Developer Console Setup
+
+1. Go to [developer.apple.com](https://developer.apple.com)
+2. Navigate to Certificates, Identifiers & Profiles
+
+#### Step 2: Create App ID
+
+1. Identifiers → + → App IDs
+2. Enable "Sign In with Apple" capability
+3. Bundle ID: `com.boardroomjournal.app`
+
+#### Step 3: Create Service ID (for backend verification)
+
+1. Identifiers → + → Services IDs
+2. Identifier: `com.boardroomjournal.app.service`
+3. Enable "Sign In with Apple"
+4. Configure domains and return URLs:
+   - **Domains:** `api.boardroomjournal.app`
+   - **Return URL:** `https://api.boardroomjournal.app/auth/oauth/apple/callback`
+
+#### Step 4: Create Key
+
+1. Keys → + → Keys
+2. Enable "Sign In with Apple"
+3. Download the .p8 file (you can only download once!)
+4. Note the Key ID
+
+#### Step 5: Set Environment Variables
+
+```bash
+APPLE_CLIENT_ID=com.boardroomjournal.app  # Or service ID for web
+APPLE_TEAM_ID=YOUR_TEAM_ID                 # Found in Membership details
+APPLE_KEY_ID=YOUR_KEY_ID                   # From the key you created
+APPLE_PRIVATE_KEY=<base64-encoded-p8-file> # cat key.p8 | base64
+```
+
+### Google Sign In
+
+#### Step 1: Google Cloud Console Setup
+
+1. Go to [console.cloud.google.com](https://console.cloud.google.com)
+2. Create or select a project
+
+#### Step 2: Configure OAuth Consent Screen
+
+1. APIs & Services → OAuth consent screen
+2. User Type: External
+3. Fill in app information
+4. Add scopes: `email`, `profile`, `openid`
+
+#### Step 3: Create OAuth 2.0 Credentials
+
+1. APIs & Services → Credentials
+2. Create Credentials → OAuth client ID
+3. Application type: iOS (for mobile app)
+4. Create another for Web (for backend verification)
+
+#### Step 4: Set Environment Variables
+
+```bash
+GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=<client-secret>
+```
+
+#### iOS Configuration
+
+Add to `ios/Runner/Info.plist`:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>com.googleusercontent.apps.YOUR_CLIENT_ID</string>
+    </array>
+  </dict>
+</array>
+```
+
+---
+
+## 6. Mobile App Deployment
+
+### iOS App Store
+
+#### Prerequisites
+
+- Apple Developer Program membership ($99/year)
+- App Store Connect account
+- Xcode with valid signing certificates
+
+#### Step 1: Configure Signing
+
+```bash
+# Open project in Xcode
 open ios/Runner.xcworkspace
 ```
 
-**Important:** Open `.xcworkspace`, not `.xcodeproj`. The workspace includes the CocoaPods dependencies.
+1. Select Runner target → Signing & Capabilities
+2. Team: Select your Apple Developer account
+3. Bundle Identifier: `com.boardroomjournal.app`
+4. Enable "Sign in with Apple" capability
 
-**Step 2: Configure signing**
-1. In Xcode, click on **Runner** in the left sidebar (the top item with the blue app icon)
-2. Click on the **Runner** target in the middle panel
-3. Go to the **Signing & Capabilities** tab
-4. Check **Automatically manage signing**
-5. For **Team**, click the dropdown:
-   - If you see your name, select it
-   - If you see "Add an Account...", click it and sign in with your Apple ID
-6. Xcode will generate certificates automatically
+#### Step 2: Create App Record
 
-**Step 3: Trust your computer on iPhone**
-1. Connect your iPhone via USB
-2. On your iPhone, tap **Trust** when prompted
-3. Enter your iPhone passcode
-
-**Step 4: Trust the developer on iPhone**
-(First time only)
-1. On your iPhone, go to **Settings** → **General** → **VPN & Device Management**
-2. Tap on your Apple ID under "Developer App"
-3. Tap **Trust**
-
-**Step 5: Run the app**
-
-Either:
-- In Xcode: Select your iPhone from the device dropdown (top of window), click the Play button
-- Or in Terminal:
-  ```bash
-  flutter run -d "Your iPhone Name"
-  ```
-
-**Troubleshooting:**
-- "Unable to install app" → Make sure you trusted the developer on your iPhone
-- "Device is locked" → Unlock your iPhone
-- "No provisioning profile" → Xcode signing isn't configured correctly
-
----
-
-### Option C: Run on Android Emulator
-
-**Step 1: Create an emulator in Android Studio**
-1. Open Android Studio
-2. Click **More Actions** → **Virtual Device Manager**
-3. Click **Create Device**
-4. Choose a phone (e.g., Pixel 7)
-5. Download a system image (choose the latest)
-6. Finish the wizard
-
-**Step 2: Start the emulator**
-In Virtual Device Manager, click the Play button next to your device.
-
-**Step 3: Run the app**
-```bash
-flutter run -d "emulator-name"
-```
-
-Or just `flutter run` and select the Android option when prompted.
-
----
-
-### Option D: Run on Physical Android Phone
-
-1. On your Android phone:
-   - Go to **Settings** → **About Phone**
-   - Tap **Build Number** 7 times to enable Developer Mode
-   - Go back to **Settings** → **Developer Options**
-   - Enable **USB Debugging**
-
-2. Connect via USB and accept the debugging prompt
-
-3. Run:
-   ```bash
-   flutter devices  # Should show your phone
-   flutter run -d "your-phone-name"
-   ```
-
----
-
-## 7. Running Tests
-
-Tests verify that the code works correctly. You should run them before making changes.
-
-### Run All Tests
-```bash
-flutter test
-```
-
-This runs all tests in the `test/` folder and shows pass/fail results.
-
-### Run Specific Test File
-```bash
-flutter test test/data/database/database_test.dart
-```
-
-### Run Tests with Details
-```bash
-flutter test --reporter expanded
-```
-
-Shows each individual test as it runs.
-
-### Run Backend Tests
-```bash
-cd backend
-dart test
-```
-
-> **Ask Claude:** "Run the tests and fix any failures"
-
----
-
-## 8. Publishing to App Stores
-
-This section is for when you're ready to release the app publicly. Skip this for testing.
-
-### 8.1 iOS App Store
-
-**Prerequisites:**
-- Apple Developer account ($99/year)
-- App Store Connect account (included with developer account)
-- App icons and screenshots
-- Privacy policy URL
-
-**Overview of the process:**
-1. Create app record in App Store Connect
-2. Configure signing for distribution (different from development)
-3. Build the app for release
-4. Upload to App Store Connect
-5. Fill in metadata (description, screenshots, etc.)
-6. Submit for review (takes 1-3 days)
-
-**Step 1: Create App Record**
-1. Go to https://appstoreconnect.apple.com/
-2. Click **My Apps** → **+** → **New App**
+1. Go to [appstoreconnect.apple.com](https://appstoreconnect.apple.com)
+2. My Apps → + → New App
 3. Fill in:
    - Platform: iOS
    - Name: Boardroom Journal
-   - Primary language: English
-   - Bundle ID: (you'll create this in Xcode)
-   - SKU: boardroom-journal-001 (any unique identifier)
+   - Primary Language: English
+   - Bundle ID: `com.boardroomjournal.app`
+   - SKU: `boardroom-journal-1`
 
-**Step 2: Configure Distribution Signing**
-
-In Xcode:
-1. Open `ios/Runner.xcworkspace`
-2. Select **Runner** → **Signing & Capabilities**
-3. Uncheck "Automatically manage signing"
-4. For Release configuration, select your Distribution provisioning profile
-
-Or keep automatic signing (simpler for first release).
-
-**Step 3: Build for Release**
-```bash
-flutter build ipa
-```
-
-This creates `build/ios/ipa/boardroom_journal.ipa`
-
-**Step 4: Upload to App Store Connect**
-
-You have two options:
-
-**Option A: Transporter App (Simpler)**
-1. Download **Transporter** from the Mac App Store (free app from Apple)
-2. Open Transporter
-3. Sign in with your Apple ID (the one with developer account)
-4. Drag the `.ipa` file into Transporter
-5. Click **Deliver**
-6. Wait for upload and processing
-
-**Option B: Xcode Upload**
-1. In Xcode, go to **Product** → **Archive**
-2. Wait for the archive to build
-3. Click **Distribute App**
-4. Choose **App Store Connect**
-5. Follow the prompts
-
-**Step 5: Complete App Store Listing**
-1. In App Store Connect, go to your app
-2. Fill in all required fields:
-   - Description
-   - Keywords
-   - Support URL
-   - Marketing URL (optional)
-   - Screenshots (required for each screen size)
-   - App icon
-   - Age rating
-   - Privacy policy URL
-3. Click **Submit for Review**
-
----
-
-### 8.2 Google Play Store
-
-**Prerequisites:**
-- Google Play Developer account ($25 one-time fee)
-- App icons and screenshots
-- Privacy policy URL
-
-**Step 1: Create Developer Account**
-1. Go to: https://play.google.com/console/
-2. Pay $25 registration fee
-3. Complete identity verification (takes 1-2 days)
-
-**Step 2: Create Signing Key**
-
-You need a keystore file to sign your app. **Keep this safe - you need the same key for all future updates!**
+#### Step 3: Build for Release
 
 ```bash
-keytool -genkey -v -keystore ~/boardroom-journal-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias boardroom
+# Build IPA
+flutter build ipa --release
+
+# Output: build/ios/ipa/boardroom_journal.ipa
 ```
 
-You'll be prompted for:
-- Keystore password (remember this!)
-- Your name, organization, location
-- Key password (can be same as keystore password)
+#### Step 4: Upload to App Store Connect
 
-**Step 3: Configure Signing**
+**Option A: Transporter (Recommended)**
+1. Download Transporter from Mac App Store
+2. Sign in with Apple ID
+3. Drag IPA file to upload
+4. Click Deliver
+
+**Option B: Xcode**
+1. Open Xcode
+2. Product → Archive
+3. Distribute App → App Store Connect
+
+#### Step 5: Complete App Store Listing
+
+Required assets:
+- App Icon (1024x1024)
+- Screenshots (iPhone 6.5", 5.5", iPad if supported)
+- Description (max 4000 characters)
+- Keywords (max 100 characters)
+- Privacy Policy URL
+- Support URL
+
+Submit for review (typically 1-3 days).
+
+### Google Play Store
+
+#### Prerequisites
+
+- Google Play Developer account ($25 one-time)
+- App signing key (keystore)
+
+#### Step 1: Create Signing Key
+
+```bash
+keytool -genkey -v \
+  -keystore ~/boardroom-journal-key.jks \
+  -keyalg RSA \
+  -keysize 2048 \
+  -validity 10000 \
+  -alias boardroom
+```
+
+**Store this key securely! You need it for all future updates.**
+
+#### Step 2: Configure Signing
 
 Create `android/key.properties`:
+
 ```properties
-storePassword=your-keystore-password
-keyPassword=your-key-password
+storePassword=your_keystore_password
+keyPassword=your_key_password
 keyAlias=boardroom
-storeFile=/Users/YOUR_USERNAME/boardroom-journal-key.jks
+storeFile=/path/to/boardroom-journal-key.jks
 ```
 
-**IMPORTANT:** Add `key.properties` to `.gitignore` so you don't commit passwords!
+Add to `.gitignore`:
+```
+android/key.properties
+*.jks
+```
 
-**Step 4: Build for Release**
+Update `android/app/build.gradle`:
+
+```groovy
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+android {
+    signingConfigs {
+        release {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+            storePassword keystoreProperties['storePassword']
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+        }
+    }
+}
+```
+
+#### Step 3: Build for Release
+
 ```bash
-flutter build appbundle
+# Build App Bundle (recommended)
+flutter build appbundle --release
+
+# Output: build/app/outputs/bundle/release/app-release.aab
 ```
 
-This creates `build/app/outputs/bundle/release/app-release.aab`
+#### Step 4: Create App in Play Console
 
-**Step 5: Upload to Play Console**
-1. Go to https://play.google.com/console/
-2. Click **Create app**
+1. Go to [play.google.com/console](https://play.google.com/console)
+2. Create app
 3. Fill in app details
-4. Go to **Production** → **Create new release**
-5. Upload the `.aab` file
-6. Fill in release notes
-7. Complete all the required sections (content rating, data safety, etc.)
-8. Submit for review
+
+#### Step 5: Upload and Release
+
+1. Production → Create new release
+2. Upload the `.aab` file
+3. Complete all required sections:
+   - Store listing
+   - Content rating
+   - Target audience
+   - Data safety
+
+Submit for review (typically 1-3 days for new apps).
+
+### Build Flavors (Optional)
+
+For different environments, create build flavors:
+
+```dart
+// lib/main_dev.dart
+void main() {
+  runApp(const MyApp(config: ApiConfig.development()));
+}
+
+// lib/main_staging.dart
+void main() {
+  runApp(const MyApp(config: ApiConfig.staging()));
+}
+
+// lib/main_prod.dart
+void main() {
+  runApp(const MyApp(config: ApiConfig.production()));
+}
+```
+
+Build with:
+```bash
+flutter run -t lib/main_dev.dart
+flutter build apk -t lib/main_prod.dart
+```
 
 ---
 
-## Quick Reference: Claude Prompts
+## 7. CI/CD Pipeline
 
-Here are prompts you can give Claude to help with specific tasks:
+### GitHub Actions
 
-| Task | Prompt |
-|------|--------|
-| Set up backend environment | "Create the backend .env file for local development" |
-| Fix build errors | "Run the build_runner and fix any errors" |
-| Run and fix tests | "Run the tests and fix any failures" |
-| iOS signing issues | "Help me fix Xcode signing errors for device: [paste error]" |
-| Configure API keys | "Help me add the API keys to the project" |
-| Debug app crash | "The app crashes with this error: [paste error]" |
-| Prepare for release | "Help me prepare the app for App Store release" |
+The project includes CI workflow at `.github/workflows/ci.yml`:
+
+```yaml
+# Triggered on push to main/master/claude/** and PRs
+# Runs:
+#   1. Backend tests (Dart analyze + tests)
+#   2. Flutter tests (analyze + test with coverage)
+#   3. Build check (APK + iOS no-codesign)
+```
+
+### Pre-commit Hooks (Lefthook)
+
+Install and enable:
+
+```bash
+# Install
+npm install -g @evilmartians/lefthook
+# or: brew install lefthook
+
+# Enable in repo
+lefthook install
+```
+
+Hooks run automatically:
+- **pre-commit:** Format check, Flutter analyze, Backend analyze
+- **pre-push:** Flutter tests, Backend tests
+
+### Adding App Store Deployment
+
+For automated releases, add deployment jobs:
+
+```yaml
+# .github/workflows/deploy-ios.yml
+name: Deploy iOS
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  deploy:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+      - run: flutter pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
+      - run: flutter build ipa --release
+      - uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: build/ios/ipa/boardroom_journal.ipa
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+```
 
 ---
 
-## Troubleshooting Common Issues
+## 8. Monitoring & Observability
 
-### "Command not found: flutter"
+### Health Endpoint
 
-Homebrew installed Flutter but your terminal doesn't know where it is.
+The backend exposes `/health`:
 
-**Fix:**
-```bash
-echo 'export PATH="$PATH:/opt/homebrew/bin"' >> ~/.zshrc
-source ~/.zshrc
+```json
+{
+  "status": "healthy",
+  "timestamp": "2026-01-12T10:30:00Z"
+}
 ```
 
-### "CocoaPods not installed"
+### Recommended Monitoring Setup
 
-```bash
-brew install cocoapods
+#### Sentry (Error Tracking)
+
+```dart
+// Add to pubspec.yaml
+dependencies:
+  sentry_flutter: ^7.x.x
+
+// Initialize in main.dart
+await SentryFlutter.init(
+  (options) {
+    options.dsn = 'https://xxx@sentry.io/xxx';
+    options.environment = 'production';
+  },
+  appRunner: () => runApp(const MyApp()),
+);
 ```
 
-### iOS build fails with "Signing" error
+#### Analytics (Mixpanel/Amplitude)
 
-1. Open Xcode: `open ios/Runner.xcworkspace`
-2. Click Runner in sidebar
-3. Go to Signing & Capabilities
-4. Make sure a Team is selected
-5. Let Xcode fix any issues it detects
+Key events to track:
+- `entry_created` - Daily entry recorded
+- `brief_generated` - Weekly brief created
+- `governance_started` - Session started
+- `governance_completed` - Session completed
+- `bet_created` - Bet made
+- `bet_evaluated` - Bet resolved
 
-### "Unable to find bundled Java version"
+#### Uptime Monitoring
 
-Android Studio's Java is needed:
-```bash
-flutter config --android-studio-dir="/Applications/Android Studio.app"
-```
+Set up alerts on:
+- `/health` endpoint availability
+- Response time thresholds (P95 < 500ms)
+- Error rate spikes
 
-### Docker "Cannot connect to Docker daemon"
+### Log Aggregation
 
-Docker Desktop isn't running. Open it from Applications.
-
-### Backend won't start
-
-Check the logs:
-```bash
-cd backend
-docker compose logs
-```
-
-Then ask Claude: "The backend shows this error: [paste error]"
-
-### Simulator is slow
-
-The iOS Simulator uses a lot of CPU. Some tips:
-- Close other apps
-- Use a simpler device (iPhone SE instead of iPhone 15 Pro Max)
-- Use a physical device instead
+For production, send logs to:
+- CloudWatch (AWS)
+- Cloud Logging (GCP)
+- Logtail/Papertrail (platform-agnostic)
 
 ---
 
-## Summary: The Minimum Steps to Test
+## 9. Security Checklist
 
-Here's the absolute minimum to get the app running on an iOS simulator:
+### Pre-Launch
+
+- [ ] HTTPS only (no HTTP endpoints)
+- [ ] JWT secret is cryptographically random (64+ bytes)
+- [ ] Database credentials in secrets manager (not env files in git)
+- [ ] Rate limiting enabled and tested
+- [ ] CORS restricted to production domains
+- [ ] Request body size limits configured
+- [ ] Security headers enabled (HSTS, X-Content-Type-Options, X-Frame-Options)
+- [ ] Database connections use SSL
+- [ ] OAuth redirect URIs restricted to known domains
+- [ ] Logs don't contain sensitive data (passwords, tokens, PII)
+
+### API Security
+
+- [ ] All endpoints require authentication (except /health, /auth/*)
+- [ ] Input validation on all endpoints
+- [ ] SQL injection prevention (parameterized queries)
+- [ ] Rate limiting on auth endpoints
+
+### Mobile App Security
+
+- [ ] API keys not hardcoded in app (use build configs)
+- [ ] Secure storage for tokens (flutter_secure_storage)
+- [ ] Certificate pinning (optional, for high-security)
+- [ ] No sensitive data in logs
+
+### Data Protection
+
+- [ ] GDPR compliance (export, delete account)
+- [ ] Privacy policy published
+- [ ] Terms of service published
+- [ ] Data retention policies documented
+- [ ] Soft delete with 30-day retention
+
+---
+
+## 10. Troubleshooting
+
+### Backend Issues
+
+#### Database Connection Failed
 
 ```bash
-# 1. Install software (one-time)
-# - Install Xcode from App Store
-# - Install Homebrew, then: brew install --cask flutter && brew install cocoapods
+# Check database is running
+docker compose ps
 
-# 2. Set up the project
-cd /path/to/board-journal
+# Test connection
+psql -h localhost -U boardroom -d boardroom_journal -c "SELECT 1;"
+
+# Check logs
+docker compose logs postgres
+```
+
+#### JWT Errors
+
+```bash
+# Verify secret is set
+echo $JWT_SECRET | wc -c  # Should be 64+ characters
+
+# Check token format
+# Tokens should be: header.payload.signature
+```
+
+#### OAuth Failures
+
+- Verify redirect URIs match exactly (including trailing slashes)
+- Check client IDs and secrets are correct
+- For Apple: verify team ID and key ID
+- Check token expiry hasn't passed
+
+### Flutter Issues
+
+#### Build Failed
+
+```bash
+# Clean and rebuild
+flutter clean
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs
-flutter create --platforms=ios .
-cd ios && pod install && cd ..
-
-# 3. Run the app
-flutter run
 ```
 
-For full functionality with AI features, also:
-1. Start the backend: `cd backend && docker compose up -d`
-2. Get an Anthropic API key and add it to `.env`
-3. Get a Deepgram API key and add it to `.env`
+#### iOS Signing Errors
+
+1. Open `ios/Runner.xcworkspace` in Xcode
+2. Select Runner → Signing & Capabilities
+3. Ensure Team is selected
+4. Let Xcode resolve signing issues
+
+#### CocoaPods Issues
+
+```bash
+cd ios
+pod deintegrate
+pod cache clean --all
+pod install
+cd ..
+```
+
+### Docker Issues
+
+#### Cannot Connect to Docker Daemon
+
+Docker Desktop isn't running. Start it from Applications.
+
+#### Port Already in Use
+
+```bash
+# Find process using port
+lsof -i :8080
+
+# Kill it or change port
+docker compose down
+PORT=8081 docker compose up -d
+```
+
+#### Out of Disk Space
+
+```bash
+# Clean up Docker
+docker system prune -a
+docker volume prune
+```
+
+### Common Errors
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `ConfigurationError: JWT_SECRET is not set` | Missing env var | Set JWT_SECRET in environment |
+| `Connection refused localhost:5432` | PostgreSQL not running | `docker compose up postgres` |
+| `Invalid token` | Expired or malformed JWT | Re-authenticate |
+| `Rate limit exceeded` | Too many requests | Wait for lockout to expire |
+| `CORS error` | Wrong origin | Check CORS configuration |
+
+---
+
+## API Endpoints Reference
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/health` | Health check | No |
+| GET | `/version` | API version | No |
+| POST | `/auth/oauth/{provider}` | OAuth login (apple/google) | No |
+| POST | `/auth/refresh` | Refresh access token | Refresh token |
+| GET | `/auth/session` | Validate session | Yes |
+| GET | `/sync?since={timestamp}` | Pull changes | Yes |
+| POST | `/sync` | Push changes | Yes |
+| GET | `/sync/full` | Full data pull | Yes |
+| GET | `/account` | Get account info | Yes |
+| DELETE | `/account` | Schedule account deletion | Yes |
+| GET | `/account/export` | Export all data (GDPR) | Yes |
+| POST | `/ai/transcribe` | Voice to text | Yes |
+| POST | `/ai/extract` | Extract signals | Yes |
+| POST | `/ai/generate` | Generate brief | Yes |
+
+---
+
+## Support
+
+- **Issues:** [github.com/your-org/board-journal/issues](https://github.com/your-org/board-journal/issues)
+- **Documentation:** See `docs/` folder
+- **Architecture:** See `docs/adr/` for decision records
