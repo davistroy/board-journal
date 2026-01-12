@@ -8,6 +8,33 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Backend tests (Phase 14d: H4 fix)
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: '3.2.0'
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: dart pub get
+
+      - name: Analyze backend code
+        working-directory: backend
+        run: dart analyze --fatal-infos
+
+      - name: Run backend tests
+        working-directory: backend
+        run: dart test
+
+  # Flutter tests
   test:
     name: Run Tests
     runs-on: ubuntu-latest
@@ -32,18 +59,39 @@ jobs:
       - name: Analyze code
         run: flutter analyze --no-fatal-infos
 
-      - name: Run tests
+      - name: Run tests with coverage
         run: flutter test --coverage
 
-      - name: Check test coverage
+      - name: Check coverage threshold
         run: |
-          echo "=== Test Results Summary ==="
-          flutter test --reporter expanded 2>&1 | tail -20
+          if [ -f coverage/lcov.info ]; then
+            # Install lcov for coverage analysis
+            sudo apt-get update && sudo apt-get install -y lcov
+
+            # Get coverage percentage
+            COVERAGE=$(lcov --summary coverage/lcov.info 2>&1 | grep "lines" | awk '{print $2}' | tr -d '%')
+
+            echo "=== Coverage Summary ==="
+            lcov --summary coverage/lcov.info
+
+            # Check against 70% threshold (configurable)
+            if [ ! -z "$COVERAGE" ]; then
+              if (( $(echo "$COVERAGE < 70" | bc -l) )); then
+                echo "::warning::Coverage $COVERAGE% is below 70% threshold"
+                # Note: Using warning instead of error to not block PRs during transition
+                # Change to 'exit 1' when ready to enforce strictly
+              else
+                echo "Coverage $COVERAGE% meets 70% threshold"
+              fi
+            fi
+          else
+            echo "::warning::No coverage data found"
+          fi
 
   build:
     name: Build Check
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, backend-tests]
 
     steps:
       - name: Checkout code

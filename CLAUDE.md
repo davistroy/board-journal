@@ -28,7 +28,27 @@ flutter test test/data/database/database_test.dart
 
 # Run the app
 flutter run
+
+# Run backend tests
+cd backend && dart test
 ```
+
+## Pre-commit Hooks (Optional)
+
+This project uses [Lefthook](https://github.com/evilmartians/lefthook) for pre-commit hooks:
+
+```bash
+# Install lefthook (choose one)
+npm install -g @evilmartians/lefthook
+# or: brew install lefthook
+
+# Enable hooks in this repo
+lefthook install
+```
+
+Hooks run automatically on commit/push:
+- **pre-commit:** Format check, Flutter analyze, Backend analyze
+- **pre-push:** Flutter tests, Backend tests
 
 ## Architecture
 

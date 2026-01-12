@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
@@ -8,6 +9,7 @@ import '../config/config.dart';
 import '../db/queries.dart';
 import '../middleware/auth_middleware.dart';
 import '../models/api_models.dart';
+import '../services/apple_auth_service.dart';
 import '../services/jwt_service.dart';
 
 /// Authentication routes.
@@ -20,8 +22,11 @@ class AuthRoutes {
   final Config _config;
   final JwtService _jwtService;
   final Queries _queries;
+  final AppleAuthService _appleAuthService;
+  final Logger _logger = Logger('AuthRoutes');
 
-  AuthRoutes(this._config, this._jwtService, this._queries);
+  AuthRoutes(this._config, this._jwtService, this._queries)
+      : _appleAuthService = AppleAuthService(_config);
 
   Router get router {
     final router = Router();
@@ -249,17 +254,24 @@ class AuthRoutes {
 
   /// Verify OAuth code with the provider.
   ///
-  /// In production, this would make real calls to Apple/Google.
-  /// For now, returns mock data for development.
+  /// Makes real OAuth calls to Apple/Google in production.
+  /// Uses mock data only in development/test environments.
   Future<OAuthUserInfo?> _verifyOAuthCode(
     String provider,
     OAuthTokenRequest request,
   ) async {
+    // CRITICAL SECURITY: Only allow mock auth in non-production environments
     if (_config.isDevelopment || _config.isTest) {
-      // Mock response for development/testing
-      // In real implementation, decode the code to get mock user info
+      // Double-check environment to prevent misconfiguration
+      if (_config.isProduction) {
+        throw StateError(
+          'SECURITY VIOLATION: Mock OAuth attempted in production environment. '
+          'This indicates a misconfigured environment. Aborting.',
+        );
+      }
+      // Mock response for development/testing only
       return OAuthUserInfo(
-        providerUserId: 'mock_${provider}_${request.code}',
+        providerUserId: 'mock_${provider}_${request.code.hashCode.abs()}',
         email: 'test@example.com',
         name: 'Test User',
       );
@@ -275,39 +287,55 @@ class AuthRoutes {
   }
 
   /// Verify Apple OAuth code.
+  ///
+  /// Security hardening (C1, C3):
+  /// - Generates proper client secret using Apple private key
+  /// - Verifies ID token against Apple's JWKS public keys
   Future<OAuthUserInfo?> _verifyAppleCode(OAuthTokenRequest request) async {
     if (_config.appleClientId == null) {
       throw StateError('Apple OAuth not configured');
     }
 
-    // Exchange authorization code for tokens
-    final response = await http.post(
-      Uri.parse('https://appleid.apple.com/auth/token'),
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: {
-        'client_id': _config.appleClientId,
-        'client_secret': _generateAppleClientSecret(),
-        'code': request.code,
-        'grant_type': 'authorization_code',
-        if (request.redirectUri != null) 'redirect_uri': request.redirectUri,
-      },
-    );
+    try {
+      // Generate client secret using AppleAuthService (C3 fix)
+      final clientSecret = _appleAuthService.generateClientSecret();
 
-    if (response.statusCode != 200) {
+      // Exchange authorization code for tokens
+      final response = await http.post(
+        Uri.parse('https://appleid.apple.com/auth/token'),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
+          'client_id': _config.appleClientId,
+          'client_secret': clientSecret,
+          'code': request.code,
+          'grant_type': 'authorization_code',
+          if (request.redirectUri != null) 'redirect_uri': request.redirectUri,
+        },
+      );
+
+      if (response.statusCode != 200) {
+        _logger.warning('Apple token exchange failed: ${response.statusCode}');
+        return null;
+      }
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final idToken = data['id_token'] as String;
+
+      // Verify ID token using JWKS (C1 fix)
+      final claims = await _appleAuthService.verifyIdToken(idToken);
+
+      return OAuthUserInfo(
+        providerUserId: claims.subject,
+        email: claims.email ?? '',
+        name: null, // Apple may not provide name
+      );
+    } on AppleAuthError catch (e) {
+      _logger.warning('Apple authentication failed: ${e.message}');
+      return null;
+    } catch (e) {
+      _logger.severe('Unexpected error in Apple auth: $e');
       return null;
     }
-
-    final data = jsonDecode(response.body) as Map<String, dynamic>;
-    final idToken = data['id_token'] as String;
-
-    // Decode and verify ID token (in production, verify signature with Apple's public keys)
-    final claims = _decodeJwtPayload(idToken);
-
-    return OAuthUserInfo(
-      providerUserId: claims['sub'] as String,
-      email: claims['email'] as String,
-      name: null, // Apple may not provide name
-    );
   }
 
   /// Verify Google OAuth code.
@@ -355,29 +383,9 @@ class AuthRoutes {
     );
   }
 
-  /// Generate Apple client secret (JWT).
-  String _generateAppleClientSecret() {
-    // In production, generate a JWT signed with Apple's private key
-    // This requires:
-    // - Team ID
-    // - Key ID
-    // - Private key
-    // For now, return empty (would be implemented with proper key handling)
-    return '';
-  }
-
-  /// Decode JWT payload without verification (for token inspection).
-  Map<String, dynamic> _decodeJwtPayload(String jwt) {
-    final parts = jwt.split('.');
-    if (parts.length != 3) {
-      throw FormatException('Invalid JWT format');
-    }
-
-    final payload = parts[1];
-    final normalized = base64Url.normalize(payload);
-    final decoded = utf8.decode(base64Url.decode(normalized));
-    return jsonDecode(decoded) as Map<String, dynamic>;
-  }
+  // Note: _generateAppleClientSecret and _decodeJwtPayload removed.
+  // Apple authentication now uses AppleAuthService for proper JWKS verification
+  // and client secret generation (C1 and C3 security fixes).
 
   Response _jsonResponse(int statusCode, Map<String, dynamic> body) {
     return Response(

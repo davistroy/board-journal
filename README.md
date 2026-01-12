@@ -282,7 +282,7 @@ dart run build_runner watch
 
 ## Testing
 
-The project has comprehensive test coverage with **78 test files** and **1718 passing tests**:
+The project has comprehensive test coverage with **87+ test files** and **1761 passing tests**:
 
 ```bash
 # Run all Flutter tests
@@ -296,6 +296,9 @@ flutter test test/data/repositories/daily_entry_repository_test.dart
 
 # Run backend tests
 cd backend && dart test
+
+# Run integration (E2E) tests (requires device/emulator)
+flutter test integration_test/
 ```
 
 ### Test Status
@@ -315,7 +318,7 @@ cd backend && dart test
 | Providers | 11 | All provider categories tested |
 | Screens | 12 | All screens with widget tests |
 | Widgets | 4 | Signals, waveform, sync indicator, silence countdown |
-| Integration | 4 | End-to-end flows (portfolio setup, bet lifecycle) |
+| Integration | 5 | End-to-end flows (portfolio setup, bet lifecycle, app E2E) |
 | Backend | 3 | Auth, sync, middleware routes |
 | Other | 10+ | Models, router, enums, utilities |
 
@@ -332,8 +335,27 @@ See [`.github/workflows/ci.yml`](.github/workflows/ci.yml) for the full CI confi
 ## Documentation
 
 - **[PROGRESS.md](PROGRESS.md)** — Development progress and completed milestones
-- **[PRD.md](PRD.md)** — Full product requirements (v5)
+- **[PRD.md](PRD.md)** — Full product requirements (v6)
+- **[PLAN.md](PLAN.md)** — Implementation plan with phase breakdowns
+- **[ARCHITECTURE-REVIEW.md](ARCHITECTURE-REVIEW.md)** — Technical architecture assessment
 - **[CLAUDE.md](CLAUDE.md)** — Development guidelines for Claude Code
+- **[docs/adr/](docs/adr/)** — Architecture Decision Records:
+  - ADR-001: Sync Conflict Resolution Strategy
+  - ADR-002: FSM for Governance Sessions
+  - ADR-003: Token Refresh Strategy
+  - ADR-004: Local-First Architecture
+
+## Security
+
+The backend implements security best practices:
+
+- **OAuth verification:** Apple ID tokens verified against Apple's JWKS public keys
+- **Client secret generation:** Apple client secrets properly signed with ES256
+- **Environment isolation:** Mock authentication blocked in production
+- **Structured logging:** All authentication errors logged for debugging
+- **Rate limiting:** Account creation and auth attempt limits enforced
+
+See [ARCHITECTURE-REVIEW.md](ARCHITECTURE-REVIEW.md) for the full security assessment.
 
 ---
 

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:boardroom_journal/providers/providers.dart';
 import 'package:boardroom_journal/ui/screens/screens.dart';
+import 'package:boardroom_journal/ui/screens/record_entry/widgets/text_entry_state.dart';
 
 /// Creates a test router with the RecordEntryScreen.
 GoRouter _createTestRouter() {

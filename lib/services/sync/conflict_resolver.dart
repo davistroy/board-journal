@@ -1,6 +1,11 @@
 import 'dart:async';
 
+import 'package:uuid/uuid.dart';
+
 import 'sync_queue.dart';
+
+/// UUID generator for conflict log entry IDs.
+const _uuid = Uuid();
 
 /// Represents a sync conflict between local and server versions.
 class SyncConflict {
@@ -232,7 +237,7 @@ class ConflictResolver {
     required bool localWon,
   }) {
     final entry = ConflictLogEntry(
-      id: '${conflict.entityId}_${DateTime.now().millisecondsSinceEpoch}',
+      id: '${conflict.entityId}_${_uuid.v4()}',
       entityId: conflict.entityId,
       entityType: conflict.entityType,
       overwrittenData: losingData,

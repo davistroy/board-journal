@@ -438,10 +438,47 @@ class SyncService {
 
     final changes = result.data!['changes'] as List<dynamic>? ?? [];
 
+    // Performance optimization (Phase 14c/H3): Batch changes by entity type
+    // to reduce database round-trips
+    await _applyServerChangesBatched(changes);
+  }
+
+  /// Applies server changes in batches, grouped by entity type.
+  ///
+  /// This optimization reduces N database operations to fewer batched operations,
+  /// improving sync performance for large change sets (100+ changes).
+  Future<void> _applyServerChangesBatched(List<dynamic> changes) async {
+    if (changes.isEmpty) return;
+
+    // Group changes by entity type for batch processing
+    final groupedChanges = <SyncEntityType, List<Map<String, dynamic>>>{};
+
     for (final change in changes) {
-      if (change is Map<String, dynamic>) {
-        await _applyServerChange(change);
-      }
+      if (change is! Map<String, dynamic>) continue;
+
+      final entityType = _parseEntityType(change['entityType'] as String?);
+      if (entityType == null) continue;
+
+      groupedChanges.putIfAbsent(entityType, () => []).add(change);
+    }
+
+    // Apply each group within a transaction
+    for (final entry in groupedChanges.entries) {
+      final entityType = entry.key;
+      final entityChanges = entry.value;
+
+      // Use database transaction for atomicity and performance
+      await _database.transaction(() async {
+        for (final change in entityChanges) {
+          final entityId = change['entityId'] as String?;
+          if (entityId == null) continue;
+
+          final data = change['data'] as Map<String, dynamic>?;
+          if (data == null) continue;
+
+          await _applyServerDataLocally(entityType, entityId, data);
+        }
+      });
     }
   }
 

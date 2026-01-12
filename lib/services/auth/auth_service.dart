@@ -1,16 +1,14 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../models/models.dart';
+import '../api/api_config.dart';
+import 'oauth_service.dart';
+import 'session_manager.dart';
+import 'token_refresh_service.dart';
 import 'token_storage.dart';
-
-/// Default API base URL for auth operations.
-const String _defaultApiBaseUrl = 'https://api.boardroomjournal.app';
 
 /// Result of an authentication operation.
 class AuthResult {
@@ -62,7 +60,7 @@ class AuthResult {
   }
 }
 
-/// Authentication service handling OAuth sign-in flows.
+/// Authentication service facade coordinating OAuth, tokens, and sessions.
 ///
 /// Supports:
 /// - Apple Sign-In (required for iOS App Store)
@@ -74,13 +72,9 @@ class AuthResult {
 /// - Target: first entry in <60 seconds
 /// - Onboarding: Welcome -> Privacy -> OAuth -> First Entry (Home)
 class AuthService {
-  final TokenStorage _tokenStorage;
-  final GoogleSignIn _googleSignIn;
-  final String _apiBaseUrl;
-  final http.Client _httpClient;
-
-  /// Timer for proactive token refresh.
-  Timer? _refreshTimer;
+  final OAuthService _oauthService;
+  final TokenRefreshService _tokenRefreshService;
+  final SessionManager _sessionManager;
 
   /// Creates an AuthService instance.
   ///
@@ -88,383 +82,165 @@ class AuthService {
   AuthService({
     TokenStorage? tokenStorage,
     GoogleSignIn? googleSignIn,
-    String? apiBaseUrl,
+    ApiConfig? apiConfig,
     http.Client? httpClient,
-  })  : _tokenStorage = tokenStorage ?? TokenStorage(),
-        _googleSignIn = googleSignIn ??
-            GoogleSignIn(
-              scopes: ['email', 'profile'],
+    OAuthService? oauthService,
+    TokenRefreshService? tokenRefreshService,
+    SessionManager? sessionManager,
+  })  : _oauthService = oauthService ??
+            OAuthService(
+              googleSignIn: googleSignIn,
             ),
-        _apiBaseUrl = apiBaseUrl ?? _defaultApiBaseUrl,
-        _httpClient = httpClient ?? http.Client();
+        _tokenRefreshService = tokenRefreshService ??
+            TokenRefreshService(
+              tokenStorage: tokenStorage,
+              apiConfig: apiConfig,
+              httpClient: httpClient,
+            ),
+        _sessionManager = sessionManager ??
+            SessionManager(
+              tokenStorage: tokenStorage,
+            );
 
   /// Signs in with Apple.
   ///
   /// Required for iOS App Store compliance.
-  /// Uses Sign in with Apple SDK for native integration.
   Future<AuthResult> signInWithApple() async {
-    try {
-      // Check if Apple Sign-In is available
-      final isAvailable = await SignInWithApple.isAvailable();
-      if (!isAvailable) {
-        return AuthResult.failure('Apple Sign-In is not available on this device');
-      }
-
-      // Request credentials
-      final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-      );
-
-      // Extract user info
-      // Note: Apple only provides email/name on first sign-in
-      final user = AppUser(
-        id: credential.userIdentifier ?? 'apple-${DateTime.now().millisecondsSinceEpoch}',
-        email: credential.email,
-        name: _formatAppleName(credential.givenName, credential.familyName),
-        provider: AuthProvider.apple,
-        createdAt: DateTime.now(),
-      );
-
-      // Create tokens (in production, exchange authorizationCode with your backend)
-      // For now, we create placeholder tokens that would be exchanged server-side
-      final tokens = _createTokensFromCredential(
-        idToken: credential.identityToken,
-        authCode: credential.authorizationCode,
-      );
-
-      // Store user and tokens
-      await Future.wait([
-        _tokenStorage.saveUser(user),
-        if (tokens != null) _tokenStorage.saveTokens(tokens),
-      ]);
-
-      // Start proactive refresh timer
-      _startRefreshTimer();
-
-      return AuthResult.success(user: user, tokens: tokens);
-    } on SignInWithAppleAuthorizationException catch (e) {
-      if (e.code == AuthorizationErrorCode.canceled) {
-        return AuthResult.cancelled();
-      }
-      return AuthResult.failure('Apple Sign-In failed: ${e.message}');
-    } catch (e) {
-      return AuthResult.failure('Apple Sign-In failed: $e');
-    }
+    final result = await _oauthService.signInWithApple();
+    return _handleOAuthResult(result);
   }
 
   /// Signs in with Google.
-  ///
-  /// Uses Google Sign-In SDK for native integration.
   Future<AuthResult> signInWithGoogle() async {
-    try {
-      final account = await _googleSignIn.signIn();
-
-      if (account == null) {
-        return AuthResult.cancelled();
-      }
-
-      // Get authentication details
-      final auth = await account.authentication;
-
-      // Create user from Google account
-      final user = AppUser(
-        id: account.id,
-        email: account.email,
-        name: account.displayName,
-        provider: AuthProvider.google,
-        createdAt: DateTime.now(),
-      );
-
-      // Create tokens from Google auth
-      final tokens = _createTokensFromGoogleAuth(auth);
-
-      // Store user and tokens
-      await Future.wait([
-        _tokenStorage.saveUser(user),
-        if (tokens != null) _tokenStorage.saveTokens(tokens),
-      ]);
-
-      // Start proactive refresh timer
-      _startRefreshTimer();
-
-      return AuthResult.success(user: user, tokens: tokens);
-    } catch (e) {
-      // Check for cancellation
-      if (e.toString().contains('canceled') ||
-          e.toString().contains('cancelled')) {
-        return AuthResult.cancelled();
-      }
-      return AuthResult.failure('Google Sign-In failed: $e');
-    }
+    final result = await _oauthService.signInWithGoogle();
+    return _handleOAuthResult(result);
   }
 
   /// Signs in with Microsoft.
-  ///
-  /// Note: Microsoft Sign-In requires MSAL (Microsoft Authentication Library).
-  /// To enable Microsoft Sign-In:
-  /// 1. Add msal_flutter package to pubspec.yaml
-  /// 2. Configure Azure AD app registration in Azure Portal
-  /// 3. Set up redirect URIs for iOS and Android
-  /// 4. Add client ID to app configuration
-  ///
-  /// See: https://learn.microsoft.com/en-us/azure/active-directory/develop/mobile-app-quickstart
   Future<AuthResult> signInWithMicrosoft() async {
-    // Microsoft Sign-In is not yet configured for this app.
-    // Users can sign in with Apple or Google as alternatives.
-    return AuthResult.failure(
-      'Microsoft Sign-In is not available yet. '
-      'Please use Apple or Google sign-in instead.',
-    );
+    final result = await _oauthService.signInWithMicrosoft();
+    return _handleOAuthResult(result);
   }
 
   /// Skips sign-in for local-only mode.
-  ///
-  /// Creates a local user that can use the app without cloud sync.
   Future<AuthResult> skipSignIn() async {
     try {
-      final user = AppUser.localOnly();
-
-      // Store local user (no tokens needed)
-      await _tokenStorage.saveUser(user);
-
-      return AuthResult.success(user: user);
+      final result = _oauthService.createLocalUser();
+      if (result.success && result.user != null) {
+        await _sessionManager.saveUser(result.user!);
+        return AuthResult.success(user: result.user!);
+      }
+      return AuthResult.failure(result.error ?? 'Failed to create local user');
     } catch (e) {
       return AuthResult.failure('Failed to set up local mode: $e');
     }
   }
 
   /// Signs out the current user.
-  ///
-  /// Clears all stored tokens and user data.
   Future<void> signOut() async {
-    // Cancel refresh timer
-    _refreshTimer?.cancel();
-    _refreshTimer = null;
+    // Stop refresh timer
+    _tokenRefreshService.stopRefreshTimer();
 
-    // Sign out from providers
-    try {
-      if (await _googleSignIn.isSignedIn()) {
-        await _googleSignIn.signOut();
-      }
-    } catch (_) {
-      // Ignore sign-out errors from providers
-    }
+    // Sign out from OAuth providers
+    await _oauthService.signOutFromGoogle();
 
-    // Clear stored data
-    await _tokenStorage.clearAll();
+    // Clear session
+    await _sessionManager.clearSession();
   }
 
   /// Refreshes the access token using the refresh token.
-  ///
-  /// Per PRD Section 3A.2: Access token has 15-minute expiry, refresh token 30-day.
-  /// Makes a POST request to /auth/refresh with the refresh token.
   Future<AuthResult> refreshToken() async {
-    try {
-      final tokens = await _tokenStorage.getTokens();
+    final result = await _tokenRefreshService.refreshToken();
 
-      if (tokens == null) {
-        return AuthResult.failure('No tokens to refresh');
-      }
-
-      if (tokens.isRefreshTokenExpired) {
-        return AuthResult.failure('Refresh token expired, please sign in again');
-      }
-
-      // Exchange refresh token with backend
-      final response = await _httpClient.post(
-        Uri.parse('$_apiBaseUrl/auth/refresh'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'refresh_token': tokens.refreshToken}),
-      ).timeout(const Duration(seconds: 30));
-
-      if (response.statusCode == 401) {
-        // Refresh token is invalid or revoked
-        return AuthResult.failure('Session expired, please sign in again');
-      }
-
-      if (response.statusCode != 200) {
-        return AuthResult.failure('Token refresh failed with status ${response.statusCode}');
-      }
-
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-
-      // Parse new tokens from response
-      final newTokens = AuthTokens(
-        accessToken: data['access_token'] as String,
-        refreshToken: data['refresh_token'] as String,
-        accessTokenExpiry: DateTime.now().add(
-          Duration(seconds: data['expires_in'] as int? ?? 900),
-        ),
-        refreshTokenExpiry: DateTime.now().add(const Duration(days: 30)),
-      );
-
-      await _tokenStorage.saveTokens(newTokens);
-
-      final user = await _tokenStorage.getUser();
+    if (result.success && result.tokens != null) {
+      final user = await _sessionManager.getCurrentUser();
       if (user == null) {
         return AuthResult.failure('User data not found');
       }
-
-      // Restart refresh timer
-      _startRefreshTimer();
-
-      return AuthResult.success(user: user, tokens: newTokens);
-    } on TimeoutException {
-      return AuthResult.failure('Token refresh timed out, please check your connection');
-    } on SocketException catch (e) {
-      return AuthResult.failure('Network error during token refresh: ${e.message}');
-    } catch (e) {
-      return AuthResult.failure('Token refresh failed: $e');
+      _tokenRefreshService.startRefreshTimer();
+      return AuthResult.success(user: user, tokens: result.tokens);
     }
+
+    return AuthResult.failure(result.error ?? 'Token refresh failed');
   }
 
   /// Checks if the user is currently authenticated.
-  ///
-  /// Returns true if valid tokens and user data exist.
   Future<bool> isAuthenticated() async {
-    final user = await _tokenStorage.getUser();
-    if (user == null) return false;
-
-    // Local-only users are always "authenticated"
-    if (user.provider == AuthProvider.localOnly) return true;
-
-    // Check token validity
-    final tokens = await _tokenStorage.getTokens();
-    if (tokens == null) return false;
-
-    // If access token expired but refresh token valid, consider authenticated
-    // (will refresh on next API call)
-    return !tokens.isRefreshTokenExpired;
+    return _sessionManager.isAuthenticated();
   }
 
   /// Gets the current authenticated user.
-  ///
-  /// Returns null if not authenticated.
   Future<AppUser?> getCurrentUser() async {
-    return _tokenStorage.getUser();
+    return _sessionManager.getCurrentUser();
   }
 
   /// Checks if the access token needs refresh.
-  ///
-  /// Returns true if expired or will expire within 5 minutes.
   Future<bool> checkTokenExpiry() async {
-    return _tokenStorage.needsProactiveRefresh();
+    return _tokenRefreshService.needsRefresh();
   }
 
   /// Performs proactive token refresh if needed.
-  ///
-  /// Per PRD: Refresh when <5 minutes remaining.
-  /// Should be called periodically or before API calls.
   Future<void> proactiveRefresh() async {
-    final needsRefresh = await checkTokenExpiry();
-    if (needsRefresh) {
-      await refreshToken();
-    }
+    await _tokenRefreshService.proactiveRefresh();
   }
 
   /// Checks if onboarding has been completed.
   Future<bool> isOnboardingCompleted() async {
-    return _tokenStorage.isOnboardingCompleted();
+    return _sessionManager.isOnboardingCompleted();
   }
 
   /// Marks onboarding as completed.
   Future<void> completeOnboarding() async {
-    await _tokenStorage.setOnboardingCompleted(true);
+    await _sessionManager.completeOnboarding();
   }
 
   /// Initializes the auth service.
   ///
   /// Checks stored auth state and starts refresh timer if needed.
-  /// Call this on app startup.
   Future<AuthState> initialize() async {
-    try {
-      final isAuthed = await isAuthenticated();
-      final user = await getCurrentUser();
-      final onboardingCompleted = await isOnboardingCompleted();
+    final state = await _sessionManager.initialize();
 
-      if (isAuthed && user != null) {
-        // Start proactive refresh for non-local users
-        if (user.provider != AuthProvider.localOnly) {
-          _startRefreshTimer();
-          // Perform immediate refresh check
-          await proactiveRefresh();
-        }
-
-        return AuthState.authenticated(
-          user: user,
-          onboardingCompleted: onboardingCompleted,
-        );
+    if (state.isAuthenticated && state.user != null) {
+      // Start proactive refresh for non-local users
+      if (state.user!.provider != AuthProvider.localOnly) {
+        _tokenRefreshService.startRefreshTimer();
+        await proactiveRefresh();
       }
-
-      return AuthState.unauthenticated(onboardingCompleted: onboardingCompleted);
-    } catch (e) {
-      return AuthState.error('Failed to initialize auth: $e');
     }
+
+    return state;
   }
 
   /// Disposes resources.
-  ///
-  /// Call this when the service is no longer needed.
   void dispose() {
-    _refreshTimer?.cancel();
-    _refreshTimer = null;
+    _tokenRefreshService.dispose();
   }
 
   // Private helper methods
 
-  /// Formats Apple name from given and family name.
-  String? _formatAppleName(String? givenName, String? familyName) {
-    final parts = [givenName, familyName]
-        .where((p) => p != null && p.isNotEmpty)
-        .toList();
-    return parts.isEmpty ? null : parts.join(' ');
-  }
+  /// Handles an OAuth result by saving to session and starting refresh.
+  Future<AuthResult> _handleOAuthResult(OAuthResult result) async {
+    if (result.cancelled) {
+      return AuthResult.cancelled();
+    }
 
-  /// Creates tokens from Apple credential.
-  ///
-  /// In production, the identityToken and authorizationCode would be
-  /// sent to your backend to exchange for proper access/refresh tokens.
-  AuthTokens? _createTokensFromCredential({
-    String? idToken,
-    String? authCode,
-  }) {
-    if (idToken == null) return null;
+    if (!result.success || result.user == null) {
+      return AuthResult.failure(result.error ?? 'Sign-in failed');
+    }
 
-    // Placeholder tokens - in production, exchange with backend
-    return AuthTokens(
-      accessToken: idToken,
-      refreshToken: authCode ?? 'apple-refresh-${DateTime.now().millisecondsSinceEpoch}',
-      accessTokenExpiry: DateTime.now().add(const Duration(minutes: 15)),
-      refreshTokenExpiry: DateTime.now().add(const Duration(days: 30)),
-    );
-  }
+    try {
+      // Save user and tokens
+      await _sessionManager.saveUser(result.user!);
+      if (result.tokens != null) {
+        await _sessionManager.saveTokens(result.tokens!);
+      }
 
-  /// Creates tokens from Google authentication.
-  AuthTokens? _createTokensFromGoogleAuth(GoogleSignInAuthentication auth) {
-    final accessToken = auth.accessToken;
-    if (accessToken == null) return null;
+      // Start proactive refresh timer
+      _tokenRefreshService.startRefreshTimer();
 
-    // Google access tokens typically last 1 hour, but we follow PRD's 15-min pattern
-    // In production, exchange with your backend for consistent token management
-    return AuthTokens(
-      accessToken: accessToken,
-      refreshToken: 'google-refresh-${DateTime.now().millisecondsSinceEpoch}',
-      accessTokenExpiry: DateTime.now().add(const Duration(minutes: 15)),
-      refreshTokenExpiry: DateTime.now().add(const Duration(days: 30)),
-    );
-  }
-
-  /// Starts the proactive refresh timer.
-  ///
-  /// Checks every minute if refresh is needed.
-  void _startRefreshTimer() {
-    _refreshTimer?.cancel();
-    _refreshTimer = Timer.periodic(
-      const Duration(minutes: 1),
-      (_) => proactiveRefresh(),
-    );
+      return AuthResult.success(user: result.user!, tokens: result.tokens);
+    } catch (e) {
+      return AuthResult.failure('Failed to save session: $e');
+    }
   }
 }

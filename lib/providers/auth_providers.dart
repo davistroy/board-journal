@@ -211,8 +211,11 @@ final currentUserProvider = Provider<AppUser?>((ref) {
   return authState.user;
 });
 
-/// Provider for whether onboarding is completed.
-final isOnboardingCompletedProvider = Provider<bool>((ref) {
+/// Provider for whether onboarding is completed (from auth state).
+///
+/// Note: This is a synchronous provider that reads from the auth state cache.
+/// For the async database check, use isOnboardingCompletedProvider from repository_providers.
+final authOnboardingCompletedProvider = Provider<bool>((ref) {
   final authState = ref.watch(authNotifierProvider);
   return authState.onboardingCompleted;
 });

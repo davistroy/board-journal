@@ -1,0 +1,32 @@
+# Lefthook configuration for Boardroom Journal
+# Install: npm install -g @evilmartians/lefthook && lefthook install
+# Or: brew install lefthook && lefthook install
+
+pre-commit:
+  parallel: true
+  commands:
+    flutter-format:
+      glob: "*.dart"
+      exclude: "*.g.dart|*.freezed.dart"
+      run: dart format --set-exit-if-changed {staged_files}
+
+    flutter-analyze:
+      glob: "*.dart"
+      run: flutter analyze --no-fatal-infos lib
+
+    dart-analyze-backend:
+      glob: "backend/**/*.dart"
+      run: cd backend && dart analyze --fatal-infos
+
+pre-push:
+  parallel: true
+  commands:
+    flutter-test:
+      run: flutter test --reporter compact
+
+    backend-test:
+      run: cd backend && dart test
+
+# Skip hooks when merging or rebasing
+skip_merge: true
+skip_rebase: true

@@ -66,3 +66,8 @@ coverage/
 
 # Claude Code local state files
 .claude/*.local.md
+
+# Claude Code temp files
+tmpclaude-*
+nul
+NUL
