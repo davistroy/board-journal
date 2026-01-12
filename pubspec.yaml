@@ -59,6 +59,11 @@ dependencies:
   # Connectivity
   connectivity_plus: ^6.0.3
 
+  # Design system
+  google_fonts: ^6.1.0
+  flutter_animate: ^4.3.0
+  animations: ^2.0.8
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
