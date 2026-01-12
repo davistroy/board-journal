@@ -11,6 +11,7 @@ A voice-first journal that turns your week into an executive brief (600-800 word
 - **Local Storage:** SQLite via Drift
 - **Sync:** Custom multi-device sync API
 - **Export:** Markdown + JSON
+- **Design System:** Custom "Boardroom Executive" theme with Fraunces + Inter typography
 
 ## Core Loop
 
@@ -281,7 +282,7 @@ dart run build_runner watch
 
 ## Testing
 
-The project has comprehensive test coverage with **78 test files** and **1718+ passing tests**:
+The project has comprehensive test coverage with **78 test files** and **1718 passing tests**:
 
 ```bash
 # Run all Flutter tests

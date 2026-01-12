@@ -8,6 +8,7 @@ import 'providers/providers.dart';
 import 'router/router.dart';
 import 'services/scheduling/scheduling.dart';
 import 'ui/screens/screens.dart';
+import 'ui/theme/theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -255,17 +256,8 @@ class _BoardroomJournalAppState extends ConsumerState<BoardroomJournalApp>
 
     return MaterialApp.router(
       title: 'Boardroom Journal',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.indigo,
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system, // Follow system setting per PRD
       routerConfig: _router,
     );

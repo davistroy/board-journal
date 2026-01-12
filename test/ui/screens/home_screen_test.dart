@@ -58,6 +58,14 @@ Widget createTestApp({
   );
 }
 
+/// Helper to pump widget and wait for animations.
+/// Uses pump with duration instead of pumpAndSettle to handle infinite animations.
+Future<void> pumpWithAnimations(WidgetTester tester, {int frames = 10}) async {
+  for (int i = 0; i < frames; i++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+}
+
 void main() {
   group('HomeScreen', () {
     testWidgets('displays app bar with correct title', (tester) async {
@@ -77,7 +85,7 @@ void main() {
         ],
       ));
 
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
 
       expect(find.text('Boardroom Journal'), findsOneWidget);
     });
@@ -98,7 +106,7 @@ void main() {
         ],
       ));
 
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
 
       // Per PRD 5.1: Record Entry should be "one tap away from app open"
       expect(find.text('Record Entry'), findsOneWidget);
@@ -120,7 +128,7 @@ void main() {
         ],
       ));
 
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
 
       expect(find.byIcon(Icons.history), findsOneWidget);
     });
@@ -141,9 +149,9 @@ void main() {
         ],
       ));
 
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
 
-      expect(find.byIcon(Icons.settings), findsOneWidget);
+      expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
     });
 
     testWidgets('shows Setup prompt when shouldShowSetupPrompt is true', (tester) async {
@@ -162,7 +170,7 @@ void main() {
         ],
       ));
 
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
 
       // Per PRD 5.0: Setup prompt appears after 3-5 entries if no portfolio
       expect(find.textContaining('Set up'), findsWidgets);
@@ -184,7 +192,7 @@ void main() {
         ],
       ));
 
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
 
       // Setup prompt should not appear when user has portfolio
       expect(find.textContaining('board of directors'), findsNothing);
@@ -206,7 +214,7 @@ void main() {
         ],
       ));
 
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
 
       // Per PRD 5.1: Quick Actions include 15-min Audit and Governance
       expect(find.text('15-min Audit'), findsOneWidget);
@@ -229,7 +237,7 @@ void main() {
         ],
       ));
 
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
 
       // Should show entry count
       expect(find.textContaining('42'), findsWidgets);
@@ -251,7 +259,7 @@ void main() {
         ],
       ));
 
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
 
       // Find the scrollable widget and verify it exists
       final scrollFinder = find.byType(SingleChildScrollView);
@@ -274,7 +282,7 @@ void main() {
         ],
       ));
 
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
 
       expect(find.byType(RefreshIndicator), findsOneWidget);
     });
@@ -297,10 +305,10 @@ void main() {
         ],
       ));
 
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
 
-      await tester.tap(find.byIcon(Icons.settings));
-      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.settings_outlined));
+      await pumpWithAnimations(tester);
 
       expect(find.text('Settings'), findsOneWidget);
     });
@@ -321,10 +329,10 @@ void main() {
         ],
       ));
 
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
 
       await tester.tap(find.byIcon(Icons.history));
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
 
       expect(find.text('History'), findsOneWidget);
     });

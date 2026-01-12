@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../data/data.dart';
 import '../../../providers/providers.dart';
 import '../../../router/router.dart';
+import '../../animations/animations.dart';
+import '../../components/components.dart';
+import '../../theme/theme.dart';
 
 /// Home screen - the main hub of the app.
 ///
@@ -15,30 +20,48 @@ import '../../../router/router.dart';
 /// - Governance (Portfolio + Quarterly)
 /// - History access
 /// - Setup prompt after 3-5 entries if no portfolio
+///
+/// Redesigned with:
+/// - Hero record button
+/// - Staggered list animations
+/// - Premium card styling
+/// - Gradient accents
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final brightness = Theme.of(context).brightness;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Boardroom Journal'),
+        title: Text(
+          'Boardroom Journal',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.history),
             tooltip: 'History',
-            onPressed: () => context.go(AppRoutes.history),
+            onPressed: () {
+              HapticService.lightTap();
+              context.go(AppRoutes.history);
+            },
           ),
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings_outlined),
             tooltip: 'Settings',
-            onPressed: () => context.go(AppRoutes.settings),
+            onPressed: () {
+              HapticService.lightTap();
+              context.go(AppRoutes.settings);
+            },
           ),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          // Refresh all relevant providers
+          HapticService.lightTap();
           ref.invalidate(weeklyBriefsStreamProvider);
           ref.invalidate(dailyEntriesStreamProvider);
           ref.invalidate(hasPortfolioProvider);
@@ -47,32 +70,32 @@ class HomeScreen extends ConsumerWidget {
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Setup prompt (if needed)
-              const _SetupPromptCard(),
+              const _SetupPromptCard().staggerIn(index: 0),
 
-              // Record Entry button (prominent)
-              _RecordEntryCard(),
+              // Hero Record Button Section
+              _HeroRecordSection().staggerIn(index: 1),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
 
               // Latest Weekly Brief
-              const _LatestBriefCard(),
+              const _LatestBriefCard().staggerIn(index: 2),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
 
               // Quick Actions
-              _QuickActionsSection(),
+              _QuickActionsSection().staggerIn(index: 3),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
 
               // Entry Stats
-              const _EntryStatsCard(),
+              const _EntryStatsCard().staggerIn(index: 4),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.xxl),
             ],
           ),
         ),
@@ -88,62 +111,81 @@ class _SetupPromptCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final shouldShowPrompt = ref.watch(shouldShowSetupPromptProvider);
+    final brightness = Theme.of(context).brightness;
 
     return shouldShowPrompt.when(
       data: (show) {
         if (!show) return const SizedBox.shrink();
 
-        return Card(
-          color: Theme.of(context).colorScheme.primaryContainer,
-          margin: const EdgeInsets.only(bottom: 16),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.lightbulb_outline,
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Ready for your board?',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onPrimaryContainer,
-                          ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'You\'ve recorded a few entries. Set up your board of directors to unlock career governance.',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    FilledButton(
-                      onPressed: () => context.go(AppRoutes.setup),
-                      child: const Text('Set Up Board'),
-                    ),
-                    const SizedBox(width: 8),
-                    TextButton(
-                      onPressed: () async {
-                        // Dismiss prompt, will re-show after a week per PRD Section 5.0
-                        await ref.read(userPreferencesRepositoryProvider).dismissSetupPrompt();
-                        // Refresh the provider to update UI
-                        ref.invalidate(shouldShowSetupPromptProvider);
-                      },
-                      child: const Text('Later'),
-                    ),
-                  ],
-                ),
+        return Container(
+          margin: const EdgeInsets.only(bottom: AppSpacing.md),
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.accentGold.withOpacity(0.15),
+                AppColors.accentGold.withOpacity(0.05),
               ],
             ),
+            borderRadius: AppSpacing.cardRadius,
+            border: Border.all(
+              color: AppColors.accentGold.withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.sm),
+                    decoration: BoxDecoration(
+                      color: AppColors.accentGold.withOpacity(0.2),
+                      borderRadius: AppSpacing.borderRadiusSm,
+                    ),
+                    child: Icon(
+                      Icons.auto_awesome,
+                      color: AppColors.accentGold,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(
+                    'Ready for your board?',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'You\'ve recorded a few entries. Set up your board of directors to unlock career governance.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Row(
+                children: [
+                  AnimatedFilledButton(
+                    onPressed: () => context.go(AppRoutes.setup),
+                    child: const Text('Set Up Board'),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  AnimatedTextButton(
+                    onPressed: () async {
+                      await ref.read(userPreferencesRepositoryProvider).dismissSetupPrompt();
+                      ref.invalidate(shouldShowSetupPromptProvider);
+                    },
+                    child: const Text('Later'),
+                  ),
+                ],
+              ),
+            ],
           ),
         );
       },
@@ -153,56 +195,53 @@ class _SetupPromptCard extends ConsumerWidget {
   }
 }
 
-/// Prominent Record Entry button.
-class _RecordEntryCard extends StatelessWidget {
+/// Hero Record Entry section with prominent button.
+class _HeroRecordSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: () => context.go(AppRoutes.recordEntry),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.mic,
-                  size: 32,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Record Entry',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Voice or text - capture your day',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.chevron_right,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ],
-          ),
+    final brightness = Theme.of(context).brightness;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: brightness == Brightness.light
+              ? [
+                  colorScheme.primaryContainer,
+                  colorScheme.primaryContainer.withOpacity(0.7),
+                ]
+              : [
+                  AppColors.surfaceDarkMuted,
+                  AppColors.surfaceDarkAlt,
+                ],
         ),
+        borderRadius: AppSpacing.cardRadius,
+        boxShadow: AppShadows.cardShadow(brightness),
+      ),
+      child: Column(
+        children: [
+          HeroRecordButton(
+            onPressed: () => context.go(AppRoutes.recordEntry),
+            size: 72,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            'Record Entry',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Voice or text - capture your day',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+          ),
+        ],
       ),
     );
   }
@@ -215,146 +254,98 @@ class _LatestBriefCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final briefsAsync = ref.watch(weeklyBriefsStreamProvider);
+    final brightness = Theme.of(context).brightness;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return briefsAsync.when(
       data: (briefs) {
         if (briefs.isEmpty) {
-          return Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+          return Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: brightness == Brightness.light
+                  ? colorScheme.surface
+                  : AppColors.surfaceDarkAlt,
+              borderRadius: AppSpacing.cardRadius,
+              boxShadow: AppShadows.cardShadow(brightness),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.article_outlined,
+                      color: colorScheme.onSurfaceVariant,
+                      size: 20,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(
+                      'Weekly Brief',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  'No briefs yet. Generate one now or wait until Sunday 8pm for automatic generation.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                AnimatedFilledButton(
+                  onPressed: () => context.go(AppRoutes.latestWeeklyBrief),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.summarize_outlined,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Weekly Brief',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
+                      Icon(Icons.auto_awesome, size: 18),
+                      const SizedBox(width: AppSpacing.sm),
+                      const Text('Generate Brief'),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'No briefs yet. Generate one now or wait until Sunday 8pm for automatic generation.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      FilledButton.tonalIcon(
-                        onPressed: () => context.go(AppRoutes.latestWeeklyBrief),
-                        icon: const Icon(Icons.auto_awesome),
-                        label: const Text('Generate Brief'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
         }
 
-        // Get the most recent brief
         final latestBrief = briefs.first;
+        final headline = _getPreviewText(latestBrief.briefMarkdown ?? '');
 
-        return Card(
-          child: InkWell(
-            onTap: () => context.go(AppRoutes.latestWeeklyBrief),
-            borderRadius: BorderRadius.circular(12),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.summarize,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Latest Weekly Brief',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const Spacer(),
-                      Icon(
-                        Icons.chevron_right,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _formatWeekRange(latestBrief.weekStartUtc, latestBrief.weekEndUtc),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                  ),
-                  const SizedBox(height: 12),
-                  if (latestBrief.briefMarkdown != null)
-                    Text(
-                      _getPreviewText(latestBrief.briefMarkdown!),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.article_outlined,
-                        size: 16,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${latestBrief.entryCount} entries',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
+        return LatestBriefBanner(
+          headline: headline.isNotEmpty ? headline : 'Your weekly brief is ready',
+          date: latestBrief.weekEndUtc,
+          onTap: () => context.go(AppRoutes.latestWeeklyBrief),
         );
       },
-      loading: () => const Card(
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Center(child: CircularProgressIndicator()),
+      loading: () => Container(
+        height: 120,
+        decoration: BoxDecoration(
+          color: brightness == Brightness.light
+              ? colorScheme.surface
+              : AppColors.surfaceDarkAlt,
+          borderRadius: AppSpacing.cardRadius,
         ),
+        child: const Center(child: CircularProgressIndicator()),
       ),
-      error: (error, _) => Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Text('Error loading briefs: $error'),
+      error: (error, _) => Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: AppColors.error.withOpacity(0.1),
+          borderRadius: AppSpacing.cardRadius,
         ),
+        child: Text('Error loading briefs: $error'),
       ),
     );
   }
 
-  String _formatWeekRange(DateTime start, DateTime end) {
-    return '${start.month}/${start.day} - ${end.month}/${end.day}/${end.year}';
-  }
-
   String _getPreviewText(String markdown) {
-    // Simple extraction: get first non-header line
     final lines = markdown.split('\n').where((line) {
       final trimmed = line.trim();
       return trimmed.isNotEmpty && !trimmed.startsWith('#');
     });
-    return lines.take(3).join(' ').replaceAll(RegExp(r'\s+'), ' ');
+    return lines.take(2).join(' ').replaceAll(RegExp(r'\s+'), ' ');
   }
 }
 
@@ -367,23 +358,27 @@ class _QuickActionsSection extends StatelessWidget {
       children: [
         Text(
           'Quick Actions',
-          style: Theme.of(context).textTheme.titleMedium,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         Row(
           children: [
             Expanded(
               child: _QuickActionCard(
                 icon: Icons.timer_outlined,
                 label: '15-min Audit',
+                color: SignalColors.getPrimary(SignalType.actions),
                 onTap: () => context.go(AppRoutes.quickVersion),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.md),
             Expanded(
               child: _QuickActionCard(
                 icon: Icons.dashboard_outlined,
                 label: 'Governance',
+                color: AppColors.accentGold,
                 onTap: () => context.go(AppRoutes.governanceHub),
               ),
             ),
@@ -398,35 +393,57 @@ class _QuickActionCard extends StatelessWidget {
   const _QuickActionCard({
     required this.icon,
     required this.label,
+    required this.color,
     required this.onTap,
   });
 
   final IconData icon;
   final String label;
+  final Color color;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Icon(
-                icon,
-                size: 32,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-            ],
+    final brightness = Theme.of(context).brightness;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return PressableScale(
+      onPressed: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: brightness == Brightness.light
+              ? colorScheme.surface
+              : AppColors.surfaceDarkAlt,
+          borderRadius: AppSpacing.cardRadius,
+          boxShadow: AppShadows.cardShadow(brightness),
+          border: Border.all(
+            color: color.withOpacity(0.2),
+            width: 1,
           ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: AppSpacing.borderRadiusMd,
+              ),
+              child: Icon(
+                icon,
+                size: 28,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ],
         ),
       ),
     );
@@ -441,46 +458,58 @@ class _EntryStatsCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final totalCount = ref.watch(totalEntryCountProvider);
     final hasPortfolio = ref.watch(hasPortfolioProvider);
+    final brightness = Theme.of(context).brightness;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Your Progress',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _StatItem(
-                    icon: Icons.article_outlined,
-                    label: 'Entries',
-                    value: totalCount.when(
-                      data: (count) => count.toString(),
-                      loading: () => '-',
-                      error: (_, __) => '-',
-                    ),
-                  ),
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: brightness == Brightness.light
+            ? colorScheme.surface
+            : AppColors.surfaceDarkAlt,
+        borderRadius: AppSpacing.cardRadius,
+        boxShadow: AppShadows.cardShadow(brightness),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Your Progress',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
-                Expanded(
-                  child: _StatItem(
-                    icon: Icons.groups_outlined,
-                    label: 'Board',
-                    value: hasPortfolio.when(
-                      data: (has) => has ? 'Active' : 'Not Set',
-                      loading: () => '-',
-                      error: (_, __) => '-',
-                    ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              Expanded(
+                child: _StatItem(
+                  icon: Icons.article_outlined,
+                  label: 'Entries',
+                  value: totalCount.when(
+                    data: (count) => count.toString(),
+                    loading: () => '-',
+                    error: (_, __) => '-',
                   ),
+                  color: SignalColors.getPrimary(SignalType.wins),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: _StatItem(
+                  icon: Icons.groups_outlined,
+                  label: 'Board',
+                  value: hasPortfolio.when(
+                    data: (has) => has ? 'Active' : 'Not Set',
+                    loading: () => '-',
+                    error: (_, __) => '-',
+                  ),
+                  color: AppColors.accentGold,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -491,27 +520,40 @@ class _StatItem extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
+    required this.color,
   });
 
   final IconData icon;
   final String label;
   final String value;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(
-          icon,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        Container(
+          padding: const EdgeInsets.all(AppSpacing.sm),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: AppSpacing.borderRadiusSm,
+          ),
+          child: Icon(
+            icon,
+            color: color,
+            size: 20,
+          ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: AppSpacing.sm),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               value,
-              style: Theme.of(context).textTheme.titleLarge,
+              style: AppTypography.statNumberStyle(
+                fontSize: 24,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
             Text(
               label,

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -51,20 +51,30 @@ void resetScreenSize(WidgetTester tester) {
   tester.view.resetDevicePixelRatio();
 }
 
+/// Helper to pump widget and wait for animations.
+/// Uses pump with duration instead of pumpAndSettle to handle stagger animations.
+Future<void> pumpWithAnimations(WidgetTester tester, {int frames = 15}) async {
+  for (int i = 0; i < frames; i++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+}
+
 void main() {
   group('WelcomeScreen', () {
     testWidgets('displays app name', (tester) async {
       setLargeScreenSize(tester);
       await tester.pumpWidget(createTestApp());
-      await tester.pumpAndSettle();
-      expect(find.text('Boardroom Journal'), findsOneWidget);
+      await pumpWithAnimations(tester);
+      // Updated: app name is split across two lines
+      expect(find.text('Boardroom'), findsOneWidget);
+      expect(find.text('Journal'), findsOneWidget);
       resetScreenSize(tester);
     });
 
     testWidgets('displays tagline', (tester) async {
       setLargeScreenSize(tester);
       await tester.pumpWidget(createTestApp());
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
       expect(find.text('Your AI-Powered Board of Directors'), findsOneWidget);
       resetScreenSize(tester);
     });
@@ -72,7 +82,7 @@ void main() {
     testWidgets('displays value propositions', (tester) async {
       setLargeScreenSize(tester);
       await tester.pumpWidget(createTestApp());
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
       expect(find.text('Voice-First Journaling'), findsOneWidget);
       expect(find.text('Weekly Executive Briefs'), findsOneWidget);
       expect(find.text('Career Governance'), findsOneWidget);
@@ -82,7 +92,7 @@ void main() {
     testWidgets('has Get Started button', (tester) async {
       setLargeScreenSize(tester);
       await tester.pumpWidget(createTestApp());
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
       expect(find.text('Get Started'), findsOneWidget);
       resetScreenSize(tester);
     });
@@ -90,9 +100,9 @@ void main() {
     testWidgets('Get Started navigates to privacy screen', (tester) async {
       setLargeScreenSize(tester);
       await tester.pumpWidget(createTestApp());
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
       await tester.tap(find.text('Get Started'));
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
       expect(find.byType(PrivacyScreen), findsOneWidget);
       resetScreenSize(tester);
     });
@@ -100,7 +110,7 @@ void main() {
     testWidgets('displays app icon', (tester) async {
       setLargeScreenSize(tester);
       await tester.pumpWidget(createTestApp());
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
       expect(find.byIcon(Icons.groups_outlined), findsOneWidget);
       resetScreenSize(tester);
     });
@@ -189,10 +199,10 @@ void main() {
     testWidgets('welcome to privacy flow works', (tester) async {
       setLargeScreenSize(tester);
       await tester.pumpWidget(createTestApp());
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
       expect(find.byType(WelcomeScreen), findsOneWidget);
       await tester.tap(find.text('Get Started'));
-      await tester.pumpAndSettle();
+      await pumpWithAnimations(tester);
       expect(find.byType(PrivacyScreen), findsOneWidget);
       resetScreenSize(tester);
     });
