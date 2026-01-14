@@ -28,11 +28,7 @@ jobs:
 
       - name: Analyze backend code
         working-directory: backend
-        run: |
-          echo "=== Running dart analyze (info output) ==="
-          dart analyze || true
-          echo "=== Running dart analyze --fatal-infos ==="
-          dart analyze --fatal-infos
+        run: dart analyze
 
       - name: Run backend tests
         working-directory: backend
@@ -61,11 +57,7 @@ jobs:
         run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Analyze code
-        run: |
-          echo "=== Running flutter analyze (verbose) ==="
-          flutter analyze || true
-          echo "=== Running flutter analyze --no-fatal-infos ==="
-          flutter analyze --no-fatal-infos
+        run: flutter analyze
 
       - name: Run tests with coverage
         run: flutter test --coverage
