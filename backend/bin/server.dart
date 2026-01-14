@@ -40,15 +40,15 @@ void main() async {
     exit(1);
   }
 
-  print('Starting Boardroom Journal Backend...');
-  print('Environment: ${config.environment}');
+  stdout.writeln('Starting Boardroom Journal Backend...');
+  stdout.writeln('Environment: ${config.environment}');
 
   // Initialize database
   Database db;
   try {
-    print('Connecting to database at ${config.databaseHost}:${config.databasePort}...');
+    stdout.writeln('Connecting to database at ${config.databaseHost}:${config.databasePort}...');
     db = await Database.initialize(config);
-    print('Database connected successfully.');
+    stdout.writeln('Database connected successfully.');
   } catch (e) {
     stderr.writeln('Database connection failed: $e');
     exit(1);
@@ -78,38 +78,38 @@ void main() async {
   // Enable compression
   server.autoCompress = true;
 
-  print('');
-  print('Server running on http://${server.address.host}:${server.port}');
-  print('');
-  print('Endpoints:');
-  print('  Health:    GET  /health');
-  print('  Version:   GET  /version');
-  print('  Auth:      POST /auth/oauth/{provider}');
-  print('             POST /auth/refresh');
-  print('             GET  /auth/session');
-  print('  Sync:      GET  /sync?since={timestamp}');
-  print('             POST /sync');
-  print('             GET  /sync/full');
-  print('  Account:   GET  /account');
-  print('             DELETE /account');
-  print('             GET  /account/export');
-  print('  AI:        POST /ai/transcribe');
-  print('             POST /ai/extract');
-  print('             POST /ai/generate');
-  print('');
+  stdout.writeln('');
+  stdout.writeln('Server running on http://${server.address.host}:${server.port}');
+  stdout.writeln('');
+  stdout.writeln('Endpoints:');
+  stdout.writeln('  Health:    GET  /health');
+  stdout.writeln('  Version:   GET  /version');
+  stdout.writeln('  Auth:      POST /auth/oauth/{provider}');
+  stdout.writeln('             POST /auth/refresh');
+  stdout.writeln('             GET  /auth/session');
+  stdout.writeln('  Sync:      GET  /sync?since={timestamp}');
+  stdout.writeln('             POST /sync');
+  stdout.writeln('             GET  /sync/full');
+  stdout.writeln('  Account:   GET  /account');
+  stdout.writeln('             DELETE /account');
+  stdout.writeln('             GET  /account/export');
+  stdout.writeln('  AI:        POST /ai/transcribe');
+  stdout.writeln('             POST /ai/extract');
+  stdout.writeln('             POST /ai/generate');
+  stdout.writeln('');
 
   // Handle shutdown signals
   ProcessSignal.sigint.watch().listen((_) async {
-    print('\nShutting down...');
+    stdout.writeln('\nShutting down...');
     await db.close();
     exit(0);
   });
 
   ProcessSignal.sigterm.watch().listen((_) async {
-    print('\nShutting down...');
+    stdout.writeln('\nShutting down...');
     await db.close();
     exit(0);
   });
 
-  print('Press Ctrl+C to stop.');
+  stdout.writeln('Press Ctrl+C to stop.');
 }
