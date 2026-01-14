@@ -319,9 +319,8 @@ void callbackDispatcher() {
       final handler = await BackgroundTaskHandler.create();
       return await handler.onBackgroundTask(taskName);
     } catch (e) {
-      // Log error for debugging
-      // ignore: avoid_print
-      print('Background task error: $e');
+      // Log error for debugging (using stderr since debugPrint unavailable in isolate)
+      stderr.writeln('Background task error: $e');
       return false;
     }
   });
