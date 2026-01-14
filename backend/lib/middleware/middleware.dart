@@ -63,14 +63,9 @@ class CommonMiddleware {
             headers: {'Content-Type': 'application/json'},
           );
         } catch (e, stackTrace) {
-          // Log error in production
-          if (_config.isProduction) {
-            stderr.writeln('Unhandled error: $e');
-            stderr.writeln(stackTrace);
-          } else {
-            print('Unhandled error: $e');
-            print(stackTrace);
-          }
+          // Log error to stderr
+          stderr.writeln('Unhandled error: $e');
+          stderr.writeln('$stackTrace');
 
           return Response(
             500,
@@ -125,7 +120,7 @@ class CommonMiddleware {
         ].join(' | ');
 
         if (_config.isDevelopment) {
-          print(logLine);
+          stdout.writeln(logLine);
         }
 
         return response;
