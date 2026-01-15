@@ -1,8 +1,11 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:record/record.dart';
+
+// Conditional imports for platform-specific code
+import 'audio_recorder_io.dart' if (dart.library.html) 'audio_recorder_web.dart'
+    as platform;
 
 /// Recording state for the audio recorder.
 enum RecordingState {
@@ -185,6 +188,25 @@ class AudioRecorderService {
   /// Whether at or past warning threshold.
   bool get isNearLimit => _duration >= config.warningThreshold;
 
+  /// Returns the appropriate RecordConfig for the current platform.
+  RecordConfig _getRecordConfig() {
+    if (kIsWeb) {
+      // Web: use WAV for universal browser support
+      // (Opus has Safari issues, AAC not supported on Chrome/Firefox)
+      return const RecordConfig(
+        encoder: AudioEncoder.wav,
+        sampleRate: 44100,
+        numChannels: 1, // Mono for smaller files
+      );
+    }
+    // Mobile: use AAC-LC for compressed audio
+    return const RecordConfig(
+      encoder: AudioEncoder.aacLc,
+      bitRate: 128000,
+      sampleRate: 44100,
+    );
+  }
+
   /// Starts a new recording.
   ///
   /// Throws [AudioRecorderError] if microphone permission is denied
@@ -201,26 +223,22 @@ class AudioRecorderService {
       );
     }
 
-    // Check permission
-    final hasPermission = await _recorder.hasPermission();
-    if (!hasPermission) {
-      throw const AudioRecorderError(
-        message: 'Microphone permission denied',
-        code: 'permission_denied',
-      );
+    // Check permission (mobile only - web handles via browser prompt)
+    if (!kIsWeb) {
+      final hasPermission = await _recorder.hasPermission();
+      if (!hasPermission) {
+        throw const AudioRecorderError(
+          message: 'Microphone permission denied',
+          code: 'permission_denied',
+        );
+      }
     }
 
-    // Generate file path
-    final directory = await getTemporaryDirectory();
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    _currentFilePath = '${directory.path}/recording_$timestamp.m4a';
+    // Generate file path (platform-specific)
+    _currentFilePath = await platform.getRecordingPath();
 
-    // Configure recording
-    const recordConfig = RecordConfig(
-      encoder: AudioEncoder.aacLc,
-      bitRate: 128000,
-      sampleRate: 44100,
-    );
+    // Configure recording (platform-specific)
+    final recordConfig = _getRecordConfig();
 
     try {
       await _recorder.start(recordConfig, path: _currentFilePath!);
@@ -323,16 +341,9 @@ class AudioRecorderService {
       // Ignore errors when canceling
     }
 
-    // Delete the file
+    // Delete the file (platform-specific)
     if (_currentFilePath != null) {
-      try {
-        final file = File(_currentFilePath!);
-        if (await file.exists()) {
-          await file.delete();
-        }
-      } catch (_) {
-        // Ignore delete errors
-      }
+      await platform.deleteAudioFile(_currentFilePath!);
     }
 
     _state = RecordingState.idle;
@@ -344,14 +355,7 @@ class AudioRecorderService {
 
   /// Deletes an audio file after successful transcription.
   Future<void> deleteAudioFile(String filePath) async {
-    try {
-      final file = File(filePath);
-      if (await file.exists()) {
-        await file.delete();
-      }
-    } catch (_) {
-      // Ignore delete errors
-    }
+    await platform.deleteAudioFile(filePath);
   }
 
   /// Disposes of the service and releases resources.

@@ -1,11 +1,15 @@
 import 'dart:async';
-import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/ai/transcription_service.dart';
 import '../services/audio/audio_recorder_service.dart';
 import '../services/audio/waveform_data.dart';
+
+// Conditional import for File type
+import 'audio_providers_io.dart' if (dart.library.html) 'audio_providers_web.dart'
+    as platform;
 
 // ==================
 // Transcription Configuration Provider
@@ -436,7 +440,17 @@ class VoiceRecordingNotifier extends AutoDisposeNotifier<VoiceRecordingState> {
     }
 
     try {
-      final result = await transcriptionService.transcribe(File(filePath));
+      TranscriptionResult result;
+      if (kIsWeb) {
+        // Web: filePath is a blob URL, use transcribeFromUrl
+        result = await transcriptionService.transcribeFromUrl(
+          filePath,
+          mimeType: 'audio/wav', // Web recordings are WAV format
+        );
+      } else {
+        // Mobile: filePath is a file path, use transcribe with File
+        result = await transcriptionService.transcribe(platform.createFile(filePath));
+      }
 
       state = state.copyWith(
         phase: VoiceRecordingPhase.editTranscript,
@@ -450,7 +464,7 @@ class VoiceRecordingNotifier extends AutoDisposeNotifier<VoiceRecordingState> {
       final recorderService = ref.read(audioRecorderServiceProvider);
       await recorderService.deleteAudioFile(filePath);
     } on TranscriptionError catch (e) {
-      // Keep the audio file for retry
+      // Keep the audio file for retry (mobile only - web blobs auto-cleanup)
       state = state.copyWith(
         phase: VoiceRecordingPhase.error,
         error: 'Transcription failed: ${e.message}. Audio saved for retry.',
