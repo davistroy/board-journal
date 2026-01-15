@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Boardroom Journal is a Flutter mobile app (iOS + Android) for voice-first career journaling with AI-powered governance. Users record daily entries, receive weekly executive briefs, and engage in structured career governance sessions with a 5-7 role AI board.
+Boardroom Journal is a Flutter app (iOS, Android, and Web) for voice-first career journaling with AI-powered governance. Users record daily entries, receive weekly executive briefs, and engage in structured career governance sessions with a 5-7 role AI board.
 
 **Core loop:** Daily capture → Weekly brief → Board governance (Quick/Setup/Quarterly) → portfolio + bets updated → repeat
 
@@ -32,6 +32,30 @@ flutter run
 # Run backend tests
 cd backend && dart test
 ```
+
+## Web Development
+
+```bash
+# Run web version locally
+flutter run -d chrome
+
+# Build for production (with API keys)
+flutter build web --release \
+  --dart-define=ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
+  --dart-define=DEEPGRAM_API_KEY=$DEEPGRAM_API_KEY \
+  --dart-define=OPENAI_API_KEY=$OPENAI_API_KEY
+
+# Test production build locally
+cd build/web && python -m http.server 8080
+```
+
+### Web Platform Limitations
+
+- **Audio Recording**: Uses WAV format (larger files than mobile AAC)
+- **Background Tasks**: Not available; weekly briefs checked on app load
+- **Token Storage**: Uses localStorage (less secure than mobile Keychain/Keystore)
+- **Apple Sign-In**: Not available on web
+- **Database**: Uses sql.js (SQLite compiled to WebAssembly) with IndexedDB persistence
 
 ## Pre-commit Hooks (Optional)
 
@@ -79,10 +103,11 @@ Hooks run automatically on commit/push:
 
 ### Sync Strategy
 
-- Local-first SQLite via Drift
+- Local-first SQLite via Drift (native SQLite on mobile, sql.js on web)
 - All tables include `syncStatus`, `serverVersion`, `deletedAtUtc` columns
 - Last-write-wins conflict resolution with user notification
 - Soft delete with 30-day retention before hard delete
+- Web uses IndexedDB for database persistence
 
 ## Technical Constraints (from PRD)
 
