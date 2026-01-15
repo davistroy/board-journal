@@ -62,7 +62,24 @@ jobs:
         continue-on-error: true
 
       - name: Run tests with coverage
-        run: flutter test --coverage
+        run: flutter test --coverage --reporter expanded 2>&1 | tee test_output.txt || true
+
+      - name: Show failed tests
+        if: always()
+        run: |
+          echo "=== Test Summary ==="
+          if [ -f test_output.txt ]; then
+            # Show failed test details
+            grep -A5 "FAIL\|Error\|Exception" test_output.txt | head -200 || echo "No explicit failures found in output"
+            echo ""
+            echo "=== Last 100 lines of test output ==="
+            tail -100 test_output.txt
+          else
+            echo "No test output file found"
+          fi
+
+          # Exit with failure if tests failed
+          grep -q "Some tests failed" test_output.txt && exit 1 || true
 
       - name: Check coverage threshold
         run: |
