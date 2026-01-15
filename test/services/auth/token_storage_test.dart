@@ -15,7 +15,7 @@ void main() {
 
   setUp(() {
     mockStorage = MockFlutterSecureStorage();
-    tokenStorage = TokenStorage(storage: mockStorage);
+    tokenStorage = TokenStorage.forTesting(secureStorage: mockStorage);
   });
 
   group('TokenStorage', () {

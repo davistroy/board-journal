@@ -144,7 +144,7 @@ void main() {
 
     setUp(() {
       mockStorage = MockSecureStorage();
-      tokenStorage = TokenStorage(storage: mockStorage);
+      tokenStorage = TokenStorage.forTesting(secureStorage: mockStorage);
     });
 
     group('saveTokens and getTokens', () {
@@ -602,7 +602,7 @@ void main() {
 
     setUp(() {
       mockStorage = MockSecureStorage();
-      tokenStorage = TokenStorage(storage: mockStorage);
+      tokenStorage = TokenStorage.forTesting(secureStorage: mockStorage);
       authService = AuthService(tokenStorage: tokenStorage);
     });
 
