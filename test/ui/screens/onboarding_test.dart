@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:boardroom_journal/providers/auth_providers.dart';
+import 'package:boardroom_journal/services/auth/token_storage.dart';
 import 'package:boardroom_journal/ui/screens/screens.dart';
 
 /// Creates a test router with onboarding screens.
@@ -33,6 +35,10 @@ GoRouter _createTestRouter({String initialLocation = '/onboarding/welcome'}) {
 /// Wraps a widget with MaterialApp.router for testing.
 Widget createTestApp({String initialLocation = '/onboarding/welcome'}) {
   return ProviderScope(
+    overrides: [
+      // Override tokenStorageProvider to avoid platform plugin calls
+      tokenStorageProvider.overrideWithValue(TokenStorage.forTesting()),
+    ],
     child: MaterialApp.router(
       routerConfig: _createTestRouter(initialLocation: initialLocation),
     ),

@@ -62,7 +62,25 @@ jobs:
         continue-on-error: true
 
       - name: Run tests with coverage
-        run: flutter test --coverage
+        id: run_tests
+        run: |
+          # Run tests and capture exit code
+          set +e
+          flutter test --coverage --reporter expanded 2>&1 | tee test_output.txt
+          TEST_EXIT_CODE=$?
+          set -e
+
+          # Parse and show failed tests
+          echo "=== FAILED TESTS ===" >> $GITHUB_STEP_SUMMARY
+          if grep -q "✗" test_output.txt; then
+            grep "✗" test_output.txt >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "=== LAST 50 LINES ===" >> $GITHUB_STEP_SUMMARY
+          tail -50 test_output.txt >> $GITHUB_STEP_SUMMARY
+
+          exit $TEST_EXIT_CODE
 
       - name: Check coverage threshold
         run: |
