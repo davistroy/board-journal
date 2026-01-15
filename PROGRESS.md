@@ -605,7 +605,7 @@ The following features are explicitly out of scope for MVP (per PRD Section 2.2)
 - Push notifications/reminders
 - Calendar/email integrations
 - PDF export
-- Web app
+- ~~Web app~~ (Implemented January 15, 2026)
 - Attachments/file uploads
 - Search/filter in History
 - Tablet-optimized layouts
@@ -649,4 +649,39 @@ The following features are explicitly out of scope for MVP (per PRD Section 2.2)
 
 ---
 
-*Last updated: January 11, 2026*
+## Web Platform Support (Completed January 15, 2026)
+
+Full web platform support implemented via the Record Package 6.x upgrade plan:
+
+### Phase 1: Package Upgrade
+- Upgraded record package from 5.1.2 to 6.1.0
+- Fixed all breaking API changes
+- All existing tests passing
+
+### Phase 2: Web Audio Support
+- Platform-adaptive encoder selection (WAV on web, AAC on mobile)
+- Web blob URL handling via conditional imports
+- Permission checking adjusted for browser behavior
+- Platform-specific files: `audio_recorder_web.dart`, `transcription_web.dart`
+
+### Phase 3: Database & Storage
+- Added `drift_flutter` package for automatic platform detection
+- Database uses sql.js (WebAssembly) with IndexedDB on web
+- Token storage falls back to SharedPreferences on web
+- Background task scheduling disabled on web (briefs checked on app load)
+
+### Phase 4: Web Platform Configuration
+- Created `web/` directory with `index.html` and `manifest.json`
+- PWA configuration with installable app support
+- Environment variables via `--dart-define` for API keys
+- Documented web build commands in CLAUDE.md
+
+### Web Platform Limitations
+- Audio recording uses WAV format (larger files than mobile AAC)
+- Background tasks not available (weekly briefs checked on app load)
+- Token storage uses localStorage (less secure than mobile Keychain/Keystore)
+- Apple Sign-In not available on web
+
+---
+
+*Last updated: January 15, 2026*
