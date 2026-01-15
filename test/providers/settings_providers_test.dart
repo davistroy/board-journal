@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -5,6 +7,39 @@ import 'package:boardroom_journal/data/data.dart';
 import 'package:boardroom_journal/providers/database_provider.dart';
 import 'package:boardroom_journal/providers/settings_providers.dart';
 import 'package:boardroom_journal/providers/repository_providers.dart';
+
+/// Helper to wait for an async provider to complete loading.
+Future<T> waitForAsyncValue<T>(
+  ProviderContainer container,
+  ProviderListenable<AsyncValue<T>> provider, {
+  Duration timeout = const Duration(seconds: 5),
+}) async {
+  final completer = Completer<T>();
+  final subscription = container.listen<AsyncValue<T>>(
+    provider,
+    (previous, next) {
+      next.whenData((data) {
+        if (!completer.isCompleted) {
+          completer.complete(data);
+        }
+      });
+      next.whenOrNull(
+        error: (e, st) {
+          if (!completer.isCompleted) {
+            completer.completeError(e, st);
+          }
+        },
+      );
+    },
+    fireImmediately: true,
+  );
+
+  try {
+    return await completer.future.timeout(timeout);
+  } finally {
+    subscription.close();
+  }
+}
 
 void main() {
   late AppDatabase database;
@@ -35,20 +70,19 @@ void main() {
 
     group('AbstractionModeNotifier', () {
       test('initializes with false (default)', () async {
-        // Wait for the async initialization to complete
-        final notifier = container.read(abstractionModeNotifierProvider.notifier);
+        // Wait for the async initialization to complete properly
+        final value = await waitForAsyncValue(
+          container,
+          abstractionModeNotifierProvider,
+        );
 
-        // Wait for state to settle
-        await Future<void>.delayed(const Duration(milliseconds: 200));
-
-        final state = container.read(abstractionModeNotifierProvider);
-        expect(state.hasValue, isTrue);
-        expect(state.valueOrNull, isFalse);
+        expect(value, isFalse);
       });
 
       test('setEnabled updates state', () async {
         final notifier = container.read(abstractionModeNotifierProvider.notifier);
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        // Wait for initial load
+        await waitForAsyncValue(container, abstractionModeNotifierProvider);
 
         await notifier.setEnabled(true);
 
@@ -58,7 +92,8 @@ void main() {
 
       test('toggle switches state', () async {
         final notifier = container.read(abstractionModeNotifierProvider.notifier);
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        // Wait for initial load
+        await waitForAsyncValue(container, abstractionModeNotifierProvider);
 
         // Initially false
         expect(container.read(abstractionModeNotifierProvider).valueOrNull, isFalse);
@@ -75,17 +110,19 @@ void main() {
 
     group('AnalyticsNotifier', () {
       test('initializes with true (default per PRD)', () async {
-        final notifier = container.read(analyticsNotifierProvider.notifier);
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        // Wait for the async initialization to complete properly
+        final value = await waitForAsyncValue(
+          container,
+          analyticsNotifierProvider,
+        );
 
-        final state = container.read(analyticsNotifierProvider);
-        expect(state.hasValue, isTrue);
-        expect(state.valueOrNull, isTrue);
+        expect(value, isTrue);
       });
 
       test('setEnabled updates state', () async {
         final notifier = container.read(analyticsNotifierProvider.notifier);
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+        // Wait for initial load
+        await waitForAsyncValue(container, analyticsNotifierProvider);
 
         await notifier.setEnabled(false);
 
