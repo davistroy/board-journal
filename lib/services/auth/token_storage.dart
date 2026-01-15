@@ -1,6 +1,11 @@
 import 'dart:convert';
 
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Conditional import for secure storage (not available on web)
+import 'token_storage_io.dart' if (dart.library.html) 'token_storage_web.dart'
+    as platform;
 
 import '../../models/models.dart';
 
@@ -17,28 +22,58 @@ abstract class _StorageKeys {
 /// Secure token storage for authentication.
 ///
 /// Per PRD requirements:
-/// - Tokens stored in Keychain (iOS) / Keystore (Android)
+/// - Mobile: Tokens stored in Keychain (iOS) / Keystore (Android)
+/// - Web: Tokens stored in localStorage (WARNING: less secure)
 /// - Access token: 15-minute expiry (JWT)
 /// - Refresh token: 30-day expiry (opaque)
 class TokenStorage {
-  final FlutterSecureStorage _storage;
+  /// Secure storage for mobile platforms (null on web).
+  final platform.SecureStorageType? _secureStorage;
+
+  /// SharedPreferences instance for web fallback.
+  SharedPreferences? _prefs;
 
   /// Creates a TokenStorage instance.
-  ///
-  /// Optionally accepts a [FlutterSecureStorage] for testing.
-  TokenStorage({FlutterSecureStorage? storage})
-      : _storage = storage ?? _createSecureStorage();
+  TokenStorage() : _secureStorage = kIsWeb ? null : platform.createSecureStorage();
 
-  /// Creates secure storage with platform-appropriate options.
-  static FlutterSecureStorage _createSecureStorage() {
-    return const FlutterSecureStorage(
-      aOptions: AndroidOptions(
-        encryptedSharedPreferences: true,
-      ),
-      iOptions: IOSOptions(
-        accessibility: KeychainAccessibility.first_unlock_this_device,
-      ),
-    );
+  /// Creates a TokenStorage instance for testing.
+  TokenStorage.forTesting({platform.SecureStorageType? secureStorage})
+      : _secureStorage = secureStorage;
+
+  /// Gets SharedPreferences instance (lazily initialized).
+  Future<SharedPreferences> _getPrefs() async {
+    _prefs ??= await SharedPreferences.getInstance();
+    return _prefs!;
+  }
+
+  /// Platform-adaptive write operation.
+  Future<void> _write(String key, String value) async {
+    if (kIsWeb) {
+      final prefs = await _getPrefs();
+      await prefs.setString(key, value);
+    } else {
+      await platform.write(_secureStorage!, key, value);
+    }
+  }
+
+  /// Platform-adaptive read operation.
+  Future<String?> _read(String key) async {
+    if (kIsWeb) {
+      final prefs = await _getPrefs();
+      return prefs.getString(key);
+    } else {
+      return platform.read(_secureStorage!, key);
+    }
+  }
+
+  /// Platform-adaptive delete operation.
+  Future<void> _delete(String key) async {
+    if (kIsWeb) {
+      final prefs = await _getPrefs();
+      await prefs.remove(key);
+    } else {
+      await platform.delete(_secureStorage!, key);
+    }
   }
 
   /// Saves authentication tokens.
@@ -46,16 +81,15 @@ class TokenStorage {
   /// Stores access token, refresh token, and their expiry times.
   Future<void> saveTokens(AuthTokens tokens) async {
     await Future.wait([
-      _storage.write(key: _StorageKeys.accessToken, value: tokens.accessToken),
-      _storage.write(
-          key: _StorageKeys.refreshToken, value: tokens.refreshToken),
-      _storage.write(
-        key: _StorageKeys.accessTokenExpiry,
-        value: tokens.accessTokenExpiry.toIso8601String(),
+      _write(_StorageKeys.accessToken, tokens.accessToken),
+      _write(_StorageKeys.refreshToken, tokens.refreshToken),
+      _write(
+        _StorageKeys.accessTokenExpiry,
+        tokens.accessTokenExpiry.toIso8601String(),
       ),
-      _storage.write(
-        key: _StorageKeys.refreshTokenExpiry,
-        value: tokens.refreshTokenExpiry.toIso8601String(),
+      _write(
+        _StorageKeys.refreshTokenExpiry,
+        tokens.refreshTokenExpiry.toIso8601String(),
       ),
     ]);
   }
@@ -64,14 +98,14 @@ class TokenStorage {
   ///
   /// Returns null if no token is stored.
   Future<String?> getAccessToken() async {
-    return _storage.read(key: _StorageKeys.accessToken);
+    return _read(_StorageKeys.accessToken);
   }
 
   /// Retrieves the refresh token.
   ///
   /// Returns null if no token is stored.
   Future<String?> getRefreshToken() async {
-    return _storage.read(key: _StorageKeys.refreshToken);
+    return _read(_StorageKeys.refreshToken);
   }
 
   /// Retrieves all stored tokens.
@@ -79,10 +113,10 @@ class TokenStorage {
   /// Returns null if any token data is missing.
   Future<AuthTokens?> getTokens() async {
     final results = await Future.wait([
-      _storage.read(key: _StorageKeys.accessToken),
-      _storage.read(key: _StorageKeys.refreshToken),
-      _storage.read(key: _StorageKeys.accessTokenExpiry),
-      _storage.read(key: _StorageKeys.refreshTokenExpiry),
+      _read(_StorageKeys.accessToken),
+      _read(_StorageKeys.refreshToken),
+      _read(_StorageKeys.accessTokenExpiry),
+      _read(_StorageKeys.refreshTokenExpiry),
     ]);
 
     final accessToken = results[0];
@@ -141,22 +175,22 @@ class TokenStorage {
   /// Clears all stored tokens.
   Future<void> clearTokens() async {
     await Future.wait([
-      _storage.delete(key: _StorageKeys.accessToken),
-      _storage.delete(key: _StorageKeys.refreshToken),
-      _storage.delete(key: _StorageKeys.accessTokenExpiry),
-      _storage.delete(key: _StorageKeys.refreshTokenExpiry),
+      _delete(_StorageKeys.accessToken),
+      _delete(_StorageKeys.refreshToken),
+      _delete(_StorageKeys.accessTokenExpiry),
+      _delete(_StorageKeys.refreshTokenExpiry),
     ]);
   }
 
   /// Saves user information.
   Future<void> saveUser(AppUser user) async {
     final userJson = jsonEncode(user.toJson());
-    await _storage.write(key: _StorageKeys.user, value: userJson);
+    await _write(_StorageKeys.user, userJson);
   }
 
   /// Retrieves stored user information.
   Future<AppUser?> getUser() async {
-    final userJson = await _storage.read(key: _StorageKeys.user);
+    final userJson = await _read(_StorageKeys.user);
     if (userJson == null) return null;
 
     try {
@@ -169,20 +203,17 @@ class TokenStorage {
 
   /// Clears stored user information.
   Future<void> clearUser() async {
-    await _storage.delete(key: _StorageKeys.user);
+    await _delete(_StorageKeys.user);
   }
 
   /// Saves onboarding completion status.
   Future<void> setOnboardingCompleted(bool completed) async {
-    await _storage.write(
-      key: _StorageKeys.onboardingCompleted,
-      value: completed.toString(),
-    );
+    await _write(_StorageKeys.onboardingCompleted, completed.toString());
   }
 
   /// Checks if onboarding has been completed.
   Future<bool> isOnboardingCompleted() async {
-    final value = await _storage.read(key: _StorageKeys.onboardingCompleted);
+    final value = await _read(_StorageKeys.onboardingCompleted);
     return value == 'true';
   }
 
@@ -191,7 +222,7 @@ class TokenStorage {
     await Future.wait([
       clearTokens(),
       clearUser(),
-      _storage.delete(key: _StorageKeys.onboardingCompleted),
+      _delete(_StorageKeys.onboardingCompleted),
     ]);
   }
 }

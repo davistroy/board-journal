@@ -16,6 +16,9 @@ dependencies:
   path_provider: ^2.1.1
   path: ^1.8.3
 
+  # Web database support
+  drift_flutter: ^0.2.0
+
   # JSON serialization
   json_annotation: ^4.8.1
 
@@ -31,7 +34,7 @@ dependencies:
   share_plus: ^7.2.1
 
   # Audio recording
-  record: ^5.1.2
+  record: ^6.1.0
 
   # State management
   flutter_riverpod: ^2.4.9

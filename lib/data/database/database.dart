@@ -1,9 +1,5 @@
-import 'dart:io';
-
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
+import 'package:drift_flutter/drift_flutter.dart';
 
 import 'tables/tables.dart';
 
@@ -55,17 +51,25 @@ class AppDatabase extends _$AppDatabase {
       },
       beforeOpen: (details) async {
         // Enable foreign keys for SQLite.
+        // Note: This works on both web (via sql.js) and native.
         await customStatement('PRAGMA foreign_keys = ON');
       },
     );
   }
 }
 
-/// Opens a connection to the SQLite database.
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'boardroom_journal.sqlite'));
-    return NativeDatabase.createInBackground(file);
-  });
+/// Opens a connection to the database.
+///
+/// Uses drift_flutter which automatically handles platform detection:
+/// - Web: Uses sql.js (SQLite compiled to WebAssembly) with IndexedDB persistence
+/// - Mobile/Desktop: Uses native SQLite via sqlite3_flutter_libs
+QueryExecutor _openConnection() {
+  return driftDatabase(
+    name: 'boardroom_journal',
+    // Web-specific options for IndexedDB storage
+    web: DriftWebOptions(
+      sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+      driftWorker: Uri.parse('drift_worker.js'),
+    ),
+  );
 }

@@ -1,8 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
+
+// Conditional import for platform-specific code
+import 'transcription_io.dart' if (dart.library.html) 'transcription_web.dart'
+    as platform;
 
 /// Configuration for transcription services.
 class TranscriptionConfig {
@@ -36,8 +41,8 @@ class TranscriptionConfig {
   /// Creates config from environment variables.
   factory TranscriptionConfig.fromEnvironment() {
     return TranscriptionConfig(
-      deepgramApiKey: Platform.environment['DEEPGRAM_API_KEY'],
-      openaiApiKey: Platform.environment['OPENAI_API_KEY'],
+      deepgramApiKey: platform.getEnvironmentVariable('DEEPGRAM_API_KEY'),
+      openaiApiKey: platform.getEnvironmentVariable('OPENAI_API_KEY'),
     );
   }
 
@@ -179,11 +184,19 @@ class TranscriptionService {
   /// Whether the service is configured and available.
   bool get isConfigured => config.isConfigured;
 
-  /// Transcribes an audio file using the best available provider.
+  /// Transcribes audio bytes using the best available provider.
   ///
   /// Tries Deepgram first, falls back to Whisper on repeated failures.
   /// Throws [TranscriptionError] on failure.
-  Future<TranscriptionResult> transcribe(File audioFile) async {
+  ///
+  /// [audioBytes] - The raw audio data
+  /// [mimeType] - The MIME type of the audio (e.g., 'audio/wav', 'audio/m4a')
+  /// [fileName] - Optional file name for APIs that require it
+  Future<TranscriptionResult> transcribeBytes(
+    Uint8List audioBytes, {
+    required String mimeType,
+    String fileName = 'audio.wav',
+  }) async {
     if (!config.isConfigured) {
       throw const TranscriptionError(
         message: 'No transcription service configured',
@@ -191,10 +204,10 @@ class TranscriptionService {
       );
     }
 
-    if (!await audioFile.exists()) {
-      throw TranscriptionError(
-        message: 'Audio file not found: ${audioFile.path}',
-        code: 'file_not_found',
+    if (audioBytes.isEmpty) {
+      throw const TranscriptionError(
+        message: 'Audio data is empty',
+        code: 'empty_audio',
       );
     }
 
@@ -205,12 +218,12 @@ class TranscriptionService {
         _deepgramFailureCount >= config.fallbackThreshold;
 
     if (shouldUseWhisper && config.hasWhisper) {
-      return _transcribeWithWhisper(audioFile, stopwatch);
+      return _transcribeBytesWithWhisper(audioBytes, mimeType, fileName, stopwatch);
     }
 
     if (config.hasDeepgram) {
       try {
-        final result = await _transcribeWithDeepgram(audioFile, stopwatch);
+        final result = await _transcribeBytesWithDeepgram(audioBytes, mimeType, stopwatch);
         _deepgramFailureCount = 0; // Reset on success
         return result;
       } on TranscriptionError catch (e) {
@@ -219,7 +232,7 @@ class TranscriptionService {
         // Try Whisper fallback if available and threshold reached
         if (config.hasWhisper &&
             _deepgramFailureCount >= config.fallbackThreshold) {
-          return _transcribeWithWhisper(audioFile, stopwatch);
+          return _transcribeBytesWithWhisper(audioBytes, mimeType, fileName, stopwatch);
         }
 
         rethrow;
@@ -232,20 +245,87 @@ class TranscriptionService {
     );
   }
 
+  /// Transcribes audio from a URL (typically a web blob URL).
+  ///
+  /// Fetches the audio data from the URL and transcribes it.
+  /// Throws [TranscriptionError] on failure.
+  Future<TranscriptionResult> transcribeFromUrl(
+    String url, {
+    String mimeType = 'audio/wav',
+  }) async {
+    try {
+      final response = await _httpClient.get(Uri.parse(url));
+      if (response.statusCode != 200) {
+        throw TranscriptionError(
+          message: 'Failed to fetch audio from URL: ${response.statusCode}',
+          code: 'fetch_failed',
+        );
+      }
+
+      return transcribeBytes(
+        response.bodyBytes,
+        mimeType: mimeType,
+        fileName: 'recording.wav',
+      );
+    } catch (e) {
+      if (e is TranscriptionError) rethrow;
+      throw TranscriptionError(
+        message: 'Failed to fetch audio: $e',
+        code: 'fetch_error',
+      );
+    }
+  }
+
+  /// Transcribes an audio file using the best available provider.
+  /// This method is for mobile platforms only.
+  ///
+  /// Tries Deepgram first, falls back to Whisper on repeated failures.
+  /// Throws [TranscriptionError] on failure.
+  Future<TranscriptionResult> transcribe(dynamic audioFile) async {
+    if (kIsWeb) {
+      throw const TranscriptionError(
+        message: 'Use transcribeFromUrl() on web platform',
+        code: 'wrong_method',
+      );
+    }
+
+    final file = audioFile as platform.FileType;
+
+    if (!config.isConfigured) {
+      throw const TranscriptionError(
+        message: 'No transcription service configured',
+        code: 'not_configured',
+      );
+    }
+
+    if (!await platform.fileExists(file)) {
+      throw TranscriptionError(
+        message: 'Audio file not found: ${platform.getFilePath(file)}',
+        code: 'file_not_found',
+      );
+    }
+
+    final audioBytes = await platform.readFileBytes(file);
+    return transcribeBytes(
+      audioBytes,
+      mimeType: 'audio/m4a',
+      fileName: 'recording.m4a',
+    );
+  }
+
   /// Transcribes with fallback logic built-in.
   ///
   /// Convenience method that handles provider selection automatically.
-  Future<TranscriptionResult> transcribeWithFallback(File audioFile) async {
+  Future<TranscriptionResult> transcribeWithFallback(dynamic audioFile) async {
     return transcribe(audioFile);
   }
 
-  /// Transcribes using Deepgram Nova-2.
-  Future<TranscriptionResult> _transcribeWithDeepgram(
-    File audioFile,
+  /// Transcribes bytes using Deepgram Nova-2.
+  Future<TranscriptionResult> _transcribeBytesWithDeepgram(
+    Uint8List audioBytes,
+    String mimeType,
     Stopwatch stopwatch,
   ) async {
-    final audioBytes = await audioFile.readAsBytes();
-
     return _retryWithBackoff(() async {
       final url = Uri.parse(
         'https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true',
@@ -256,7 +336,7 @@ class TranscriptionService {
             url,
             headers: {
               'Authorization': 'Token ${config.deepgramApiKey}',
-              'Content-Type': 'audio/m4a',
+              'Content-Type': mimeType,
             },
             body: audioBytes,
           )
@@ -300,9 +380,11 @@ class TranscriptionService {
     });
   }
 
-  /// Transcribes using OpenAI Whisper.
-  Future<TranscriptionResult> _transcribeWithWhisper(
-    File audioFile,
+  /// Transcribes bytes using OpenAI Whisper.
+  Future<TranscriptionResult> _transcribeBytesWithWhisper(
+    Uint8List audioBytes,
+    String mimeType,
+    String fileName,
     Stopwatch stopwatch,
   ) async {
     return _retryWithBackoff(() async {
@@ -312,7 +394,11 @@ class TranscriptionService {
       request.headers['Authorization'] = 'Bearer ${config.openaiApiKey}';
       request.fields['model'] = 'whisper-1';
       request.files.add(
-        await http.MultipartFile.fromPath('file', audioFile.path),
+        http.MultipartFile.fromBytes(
+          'file',
+          audioBytes,
+          filename: fileName,
+        ),
       );
 
       final streamedResponse = await request.send().timeout(config.timeout);
@@ -397,16 +483,22 @@ class TranscriptionService {
   }
 
   /// Processes pending transcriptions.
+  /// Note: This method only works on mobile platforms (not web).
   ///
   /// Returns a list of successful transcription results.
   Future<List<TranscriptionResult>> processPendingQueue() async {
+    if (kIsWeb) {
+      // Offline queue is not supported on web
+      return [];
+    }
+
     final results = <TranscriptionResult>[];
     final toRemove = <String>[];
 
     for (final pending in _pendingQueue) {
       try {
-        final file = File(pending.audioFilePath);
-        if (!await file.exists()) {
+        final file = platform.createFile(pending.audioFilePath);
+        if (!await platform.fileExists(file)) {
           // File was deleted, remove from queue
           toRemove.add(pending.id);
           continue;
@@ -417,7 +509,7 @@ class TranscriptionService {
         toRemove.add(pending.id);
 
         // Delete the audio file after successful transcription
-        await file.delete();
+        await platform.deleteFile(file);
       } on TranscriptionError {
         // Update attempt count but keep in queue
         final index = _pendingQueue.indexWhere((p) => p.id == pending.id);

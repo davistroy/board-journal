@@ -1,8 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:workmanager/workmanager.dart';
+
+// Conditional import for workmanager (not available on web)
+import 'brief_scheduler_io.dart'
+    if (dart.library.html) 'brief_scheduler_web.dart' as platform;
 
 /// Task name for weekly brief generation.
 const String weeklyBriefTaskName = 'weekly_brief_generation';
@@ -15,6 +19,9 @@ const List<int> retryDelayMinutes = [1, 5, 30];
 
 /// Maximum retry attempts per scheduled slot.
 const int maxRetryAttempts = 3;
+
+/// Key for storing scheduled time in SharedPreferences (web fallback).
+const String _scheduledTimeKey = 'brief_scheduled_time';
 
 /// Service for scheduling automatic weekly brief generation.
 ///
@@ -29,8 +36,11 @@ const int maxRetryAttempts = 3;
 ///   iOS may defer or skip background tasks based on system conditions.
 ///   Brief generation may need to happen on next app open if background
 ///   execution was not possible.
+/// - **Web:** Background tasks not available. Brief generation is checked
+///   on app load and generated if missed.
 class BriefSchedulerService {
-  final Workmanager _workmanager;
+  /// Workmanager instance (null on web).
+  final platform.WorkmanagerType? _workmanager;
 
   /// Stored next scheduled time for display purposes.
   DateTime? _nextScheduledTime;
@@ -47,19 +57,45 @@ class BriefSchedulerService {
   /// Stream of scheduler state changes.
   Stream<BriefSchedulerState> get stateStream => _stateController.stream;
 
-  BriefSchedulerService({Workmanager? workmanager})
-      : _workmanager = workmanager ?? Workmanager();
+  BriefSchedulerService()
+      : _workmanager = platform.isSupported ? platform.createWorkmanager() : null;
 
   /// Initializes the background task worker.
   ///
   /// Must be called once at app startup before scheduling any tasks.
   /// The [callbackDispatcher] is the top-level function that handles
   /// background task execution.
+  /// On web, this is a no-op since background tasks are not supported.
   Future<void> initialize(Function callbackDispatcher) async {
-    await _workmanager.initialize(
-      callbackDispatcher,
-      isInDebugMode: kDebugMode,
-    );
+    if (_workmanager == null) {
+      // Web: no background task support, check for missed briefs on app load
+      await _loadScheduledTimeFromPrefs();
+      return;
+    }
+    await platform.initialize(_workmanager!, callbackDispatcher, kDebugMode);
+  }
+
+  /// Loads scheduled time from SharedPreferences (for web persistence).
+  Future<void> _loadScheduledTimeFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final scheduledTimeStr = prefs.getString(_scheduledTimeKey);
+    if (scheduledTimeStr != null) {
+      try {
+        _nextScheduledTime = DateTime.parse(scheduledTimeStr);
+      } catch (_) {
+        // Invalid stored date
+      }
+    }
+  }
+
+  /// Saves scheduled time to SharedPreferences (for web persistence).
+  Future<void> _saveScheduledTimeToPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_nextScheduledTime != null) {
+      await prefs.setString(_scheduledTimeKey, _nextScheduledTime!.toIso8601String());
+    } else {
+      await prefs.remove(_scheduledTimeKey);
+    }
   }
 
   /// Schedules the weekly brief generation for Sunday 8pm local time.
@@ -67,10 +103,20 @@ class BriefSchedulerService {
   /// Calculates the next Sunday at 8pm based on device timezone and
   /// schedules a one-off task. When that task executes, it will
   /// reschedule itself for the next week.
+  ///
+  /// On web, stores the scheduled time in SharedPreferences for checking
+  /// on app load.
   Future<void> scheduleWeeklyBrief() async {
     final nextSunday8pm = _calculateNextSunday8pm();
     _nextScheduledTime = nextSunday8pm;
     _currentRetryCount = 0;
+
+    if (_workmanager == null) {
+      // Web: store scheduled time for checking on app load
+      await _saveScheduledTimeToPrefs();
+      _emitState();
+      return;
+    }
 
     // Calculate initial delay from now until Sunday 8pm
     final now = DateTime.now();
@@ -78,20 +124,11 @@ class BriefSchedulerService {
 
     // Use one-off task with specific delay rather than periodic
     // This gives us more control over the exact execution time
-    await _workmanager.registerOneOffTask(
+    await platform.registerOneOffTask(
+      _workmanager!,
       weeklyBriefTaskUniqueName,
       weeklyBriefTaskName,
-      initialDelay: initialDelay.isNegative ? Duration.zero : initialDelay,
-      constraints: Constraints(
-        networkType: NetworkType.connected, // Need network for AI generation
-        requiresBatteryNotLow: false, // Generate even on low battery
-        requiresCharging: false,
-        requiresDeviceIdle: false,
-        requiresStorageNotLow: false,
-      ),
-      backoffPolicy: BackoffPolicy.exponential,
-      backoffPolicyDelay: const Duration(minutes: 1),
-      existingWorkPolicy: ExistingWorkPolicy.replace,
+      initialDelay.isNegative ? Duration.zero : initialDelay,
     );
 
     _emitState();
@@ -99,9 +136,12 @@ class BriefSchedulerService {
 
   /// Cancels the scheduled weekly brief task.
   Future<void> cancelScheduledBrief() async {
-    await _workmanager.cancelByUniqueName(weeklyBriefTaskUniqueName);
+    if (_workmanager != null) {
+      await platform.cancelByUniqueName(_workmanager!, weeklyBriefTaskUniqueName);
+    }
     _nextScheduledTime = null;
     _currentRetryCount = 0;
+    await _saveScheduledTimeToPrefs();
     _emitState();
   }
 
@@ -128,16 +168,40 @@ class BriefSchedulerService {
   ///
   /// Use for manual "Generate Now" functionality.
   /// Does not affect the regular weekly schedule.
-  Future<void> executeNow() async {
-    await _workmanager.registerOneOffTask(
+  /// On web, returns true to indicate caller should generate immediately.
+  Future<bool> executeNow() async {
+    if (_workmanager == null) {
+      // Web: caller should trigger generation directly
+      return true;
+    }
+
+    await platform.registerOneOffTask(
+      _workmanager!,
       '${weeklyBriefTaskUniqueName}_immediate',
       weeklyBriefTaskName,
-      initialDelay: Duration.zero,
-      constraints: Constraints(
-        networkType: NetworkType.connected,
-      ),
-      existingWorkPolicy: ExistingWorkPolicy.replace,
+      Duration.zero,
     );
+    return false;
+  }
+
+  /// Checks for missed briefs on web platform.
+  ///
+  /// Call this on app startup/resume for web.
+  /// Returns true if a brief was scheduled but missed (should generate now).
+  Future<bool> checkForMissedBriefs() async {
+    await _loadScheduledTimeFromPrefs();
+
+    if (_nextScheduledTime == null) {
+      return false;
+    }
+
+    final now = DateTime.now();
+    if (_nextScheduledTime!.isBefore(now)) {
+      // Brief was scheduled but missed - caller should generate
+      return true;
+    }
+
+    return false;
   }
 
   /// Checks if the current schedule is still valid and reschedules if needed.
@@ -180,7 +244,13 @@ class BriefSchedulerService {
   ///
   /// Called by the background task handler when generation fails.
   /// Returns true if retry was scheduled, false if max retries exceeded.
+  /// On web, returns false since background retries are not supported.
   Future<bool> scheduleRetry() async {
+    if (_workmanager == null) {
+      // Web: no background retry support
+      return false;
+    }
+
     if (_currentRetryCount >= maxRetryAttempts) {
       // Max retries exceeded, wait until next Sunday
       _currentRetryCount = 0;
@@ -191,14 +261,11 @@ class BriefSchedulerService {
     final delayMinutes = retryDelayMinutes[_currentRetryCount];
     _currentRetryCount++;
 
-    await _workmanager.registerOneOffTask(
+    await platform.registerOneOffTask(
+      _workmanager!,
       '${weeklyBriefTaskUniqueName}_retry_$_currentRetryCount',
       weeklyBriefTaskName,
-      initialDelay: Duration(minutes: delayMinutes),
-      constraints: Constraints(
-        networkType: NetworkType.connected,
-      ),
-      existingWorkPolicy: ExistingWorkPolicy.replace,
+      Duration(minutes: delayMinutes),
     );
 
     _emitState();
