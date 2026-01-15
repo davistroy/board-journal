@@ -62,24 +62,25 @@ jobs:
         continue-on-error: true
 
       - name: Run tests with coverage
-        run: flutter test --coverage --reporter expanded 2>&1 | tee test_output.txt || true
-
-      - name: Show failed tests
-        if: always()
+        id: run_tests
         run: |
-          echo "=== Test Summary ==="
-          if [ -f test_output.txt ]; then
-            # Show failed test details
-            grep -A5 "FAIL\|Error\|Exception" test_output.txt | head -200 || echo "No explicit failures found in output"
-            echo ""
-            echo "=== Last 100 lines of test output ==="
-            tail -100 test_output.txt
-          else
-            echo "No test output file found"
+          # Run tests and capture exit code
+          set +e
+          flutter test --coverage --reporter expanded 2>&1 | tee test_output.txt
+          TEST_EXIT_CODE=$?
+          set -e
+
+          # Parse and show failed tests
+          echo "=== FAILED TESTS ===" >> $GITHUB_STEP_SUMMARY
+          if grep -q "✗" test_output.txt; then
+            grep "✗" test_output.txt >> $GITHUB_STEP_SUMMARY
           fi
 
-          # Exit with failure if tests failed
-          grep -q "Some tests failed" test_output.txt && exit 1 || true
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "=== LAST 50 LINES ===" >> $GITHUB_STEP_SUMMARY
+          tail -50 test_output.txt >> $GITHUB_STEP_SUMMARY
+
+          exit $TEST_EXIT_CODE
 
       - name: Check coverage threshold
         run: |
