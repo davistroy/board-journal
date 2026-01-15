@@ -77,7 +77,14 @@ void main() {
     });
 
     test('briefSchedulerServiceProvider creates service', () {
-      final container = ProviderContainer();
+      // Override with forTesting constructor to avoid platform plugin calls
+      final container = ProviderContainer(
+        overrides: [
+          briefSchedulerServiceProvider.overrideWithValue(
+            BriefSchedulerService.forTesting(),
+          ),
+        ],
+      );
       addTearDown(container.dispose);
 
       final service = container.read(briefSchedulerServiceProvider);
@@ -86,7 +93,13 @@ void main() {
     });
 
     test('briefSchedulerStateProvider returns current state', () {
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: [
+          briefSchedulerServiceProvider.overrideWithValue(
+            BriefSchedulerService.forTesting(),
+          ),
+        ],
+      );
       addTearDown(container.dispose);
 
       final state = container.read(briefSchedulerStateProvider);
@@ -95,7 +108,13 @@ void main() {
     });
 
     test('nextScheduledBriefTimeProvider returns time from state', () {
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: [
+          briefSchedulerServiceProvider.overrideWithValue(
+            BriefSchedulerService.forTesting(),
+          ),
+        ],
+      );
       addTearDown(container.dispose);
 
       final time = container.read(nextScheduledBriefTimeProvider);
@@ -105,7 +124,13 @@ void main() {
     });
 
     test('lastBriefExecutionTimeProvider returns time from state', () {
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: [
+          briefSchedulerServiceProvider.overrideWithValue(
+            BriefSchedulerService.forTesting(),
+          ),
+        ],
+      );
       addTearDown(container.dispose);
 
       final time = container.read(lastBriefExecutionTimeProvider);
@@ -115,7 +140,13 @@ void main() {
     });
 
     test('isBriefScheduledProvider returns scheduled status', () {
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: [
+          briefSchedulerServiceProvider.overrideWithValue(
+            BriefSchedulerService.forTesting(),
+          ),
+        ],
+      );
       addTearDown(container.dispose);
 
       final isScheduled = container.read(isBriefScheduledProvider);
@@ -124,7 +155,13 @@ void main() {
     });
 
     test('schedulerActionProvider returns initial state', () {
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: [
+          briefSchedulerServiceProvider.overrideWithValue(
+            BriefSchedulerService.forTesting(),
+          ),
+        ],
+      );
       addTearDown(container.dispose);
 
       final state = container.read(schedulerActionProvider);
@@ -167,7 +204,13 @@ void main() {
 
   group('SchedulerActionNotifier', () {
     test('initial state is not loading', () {
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: [
+          briefSchedulerServiceProvider.overrideWithValue(
+            BriefSchedulerService.forTesting(),
+          ),
+        ],
+      );
       addTearDown(container.dispose);
 
       final state = container.read(schedulerActionProvider);
@@ -176,7 +219,13 @@ void main() {
     });
 
     test('clearError clears error state', () {
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: [
+          briefSchedulerServiceProvider.overrideWithValue(
+            BriefSchedulerService.forTesting(),
+          ),
+        ],
+      );
       addTearDown(container.dispose);
 
       final notifier = container.read(schedulerActionProvider.notifier);

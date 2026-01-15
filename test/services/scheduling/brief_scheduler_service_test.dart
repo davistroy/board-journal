@@ -6,7 +6,7 @@ void main() {
     late BriefSchedulerService service;
 
     setUp(() {
-      service = BriefSchedulerService();
+      service = BriefSchedulerService.forTesting();
     });
 
     tearDown(() {

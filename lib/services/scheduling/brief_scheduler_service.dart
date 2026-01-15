@@ -60,6 +60,11 @@ class BriefSchedulerService {
   BriefSchedulerService()
       : _workmanager = platform.isSupported ? platform.createWorkmanager() : null;
 
+  /// Creates a BriefSchedulerService instance for testing.
+  /// On test environments, pass null to disable workmanager calls.
+  BriefSchedulerService.forTesting({platform.WorkmanagerType? workmanager})
+      : _workmanager = workmanager;
+
   /// Initializes the background task worker.
   ///
   /// Must be called once at app startup before scheduling any tasks.

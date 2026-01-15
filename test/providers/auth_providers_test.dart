@@ -140,7 +140,12 @@ void main() {
 
   group('Auth Providers', () {
     test('tokenStorageProvider creates TokenStorage instance', () {
-      final container = ProviderContainer();
+      // Override with forTesting constructor to avoid platform plugin calls
+      final container = ProviderContainer(
+        overrides: [
+          tokenStorageProvider.overrideWithValue(TokenStorage.forTesting()),
+        ],
+      );
       addTearDown(container.dispose);
 
       final tokenStorage = container.read(tokenStorageProvider);
@@ -149,7 +154,12 @@ void main() {
     });
 
     test('authServiceProvider creates AuthService with TokenStorage', () {
-      final container = ProviderContainer();
+      // Override with forTesting constructor to avoid platform plugin calls
+      final container = ProviderContainer(
+        overrides: [
+          tokenStorageProvider.overrideWithValue(TokenStorage.forTesting()),
+        ],
+      );
       addTearDown(container.dispose);
 
       final authService = container.read(authServiceProvider);
