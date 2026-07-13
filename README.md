@@ -1,3 +1,10 @@
+> **ARCHIVED** — 2026-07-13
+> **Reason:** Six months idle (last active 2026-01-15); the product territory — weekly executive brief + AI governance board — is explicitly claimed by open-brain's clean-room reimplementation (open-brain PRD, no code reuse), so this repo is not the vehicle for it.
+> **What I learned:** The governance-board + weekly-brief concept is worth keeping as *principles* ported into open-brain, not as this ~15K-line Flutter app. Dogfooding should gate product build-out — the governance/brief loops were CI-hardened but never exercised outside test suites.
+> **Superseded by:** open-brain (Slack-native governance reimplementation)
+
+---
+
 # Boardroom Journal
 
 A voice-first journal that turns your week into an executive brief (600-800 words) and runs a receipts-based career governance system using a 5-7 role AI board (5 core + 2 conditional growth roles) with distinct personas.
