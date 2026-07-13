@@ -1,76 +1,51 @@
-# CLAUDE.md
+## Learning Capture — Every Session
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+After any non-trivial finding (Flutter build failure, Drift codegen issue, AI integration surprise, state machine quirk, sync/SQLite behavior, multi-attempt fix):
+1. Update `CLAUDE.md` — add/update bullet in relevant section
+2. Update memory file — `C:\Users\Troy Davis\.claude\projects\C--Users-Troy-Davis-dev-personal-board-journal\memory\`
+3. Update `MEMORY.md` — concise bullet + link to topic file
+
+| File | Purpose |
+|------|---------|
+| `CLAUDE.md` | Operational rules, always enforced |
+| `memory/MEMORY.md` | Concise index, survives compaction |
+| `memory/flutter-build-learnings.md` | Build, codegen, toolchain issues |
+| `memory/ai-integration-learnings.md` | Claude API, schema validation, governance FSM |
+| `memory/data-layer-learnings.md` | Drift, SQLite, sync behavior |
+
+### Verified Operational Rules
+
+*(None yet — add as discovered)*
+
+---
+
+# CLAUDE.md
 
 ## Project Overview
 
-Boardroom Journal is a Flutter app (iOS, Android, and Web) for voice-first career journaling with AI-powered governance. Users record daily entries, receive weekly executive briefs, and engage in structured career governance sessions with a 5-7 role AI board.
+Boardroom Journal — Flutter mobile app (iOS + Android) for voice-first career journaling with AI-powered governance.
 
 **Core loop:** Daily capture → Weekly brief → Board governance (Quick/Setup/Quarterly) → portfolio + bets updated → repeat
 
 ## Build Commands
 
 ```bash
-# Install dependencies
 flutter pub get
-
-# Generate Drift database code (required after modifying tables)
-dart run build_runner build --delete-conflicting-outputs
-
-# Watch mode for continuous code generation
-dart run build_runner watch
-
-# Run all tests
+dart run build_runner build --delete-conflicting-outputs  # After modifying Drift tables
+dart run build_runner watch                               # Continuous codegen
 flutter test
-
-# Run a single test file
 flutter test test/data/database/database_test.dart
-
-# Run the app
 flutter run
-
-# Run backend tests
 cd backend && dart test
 ```
 
-## Web Development
+## Pre-commit Hooks (Lefthook)
 
 ```bash
-# Run web version locally
-flutter run -d chrome
-
-# Build for production (with API keys)
-flutter build web --release \
-  --dart-define=ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
-  --dart-define=DEEPGRAM_API_KEY=$DEEPGRAM_API_KEY \
-  --dart-define=OPENAI_API_KEY=$OPENAI_API_KEY
-
-# Test production build locally
-cd build/web && python -m http.server 8080
-```
-
-### Web Platform Limitations
-
-- **Audio Recording**: Uses WAV format (larger files than mobile AAC)
-- **Background Tasks**: Not available; weekly briefs checked on app load
-- **Token Storage**: Uses localStorage (less secure than mobile Keychain/Keystore)
-- **Apple Sign-In**: Not available on web
-- **Database**: Uses sql.js (SQLite compiled to WebAssembly) with IndexedDB persistence
-
-## Pre-commit Hooks (Optional)
-
-This project uses [Lefthook](https://github.com/evilmartians/lefthook) for pre-commit hooks:
-
-```bash
-# Install lefthook (choose one)
-npm install -g @evilmartians/lefthook
-# or: brew install lefthook
-
-# Enable hooks in this repo
+npm install -g @evilmartians/lefthook  # or: brew install lefthook
 lefthook install
 ```
 
-Hooks run automatically on commit/push:
 - **pre-commit:** Format check, Flutter analyze, Backend analyze
 - **pre-push:** Flutter tests, Backend tests
 
@@ -78,23 +53,23 @@ Hooks run automatically on commit/push:
 
 ### Data Layer (`lib/data/`)
 
-**Database (Drift ORM):**
-- `database/database.dart` - Main database configuration with all tables
-- `database/tables/` - 11 Drift table definitions (DailyEntries, WeeklyBriefs, Problems, etc.)
-- `database/converters/` - Type converters for enum ↔ string mapping
-- Generated code goes to `database.g.dart` (gitignored)
+**Drift ORM:**
+- `database/database.dart` — Main DB config with all tables
+- `database/tables/` — 11 table definitions
+- `database/converters/` — Enum ↔ string converters
+- Generated: `database.g.dart` (gitignored)
 
-**Enums (`enums/`):**
-- `SignalType` - 7 types extracted from entries (wins, blockers, risks, avoidedDecision, comfortWork, actions, learnings)
-- `BetStatus` - OPEN → CORRECT/WRONG/EXPIRED (no partial states)
-- `BoardRoleType` - 5 core roles + 2 growth roles with metadata extensions
-- `ProblemDirection` - appreciating/depreciating/stable
+**Enums:**
+- `SignalType` — 7 types (wins, blockers, risks, avoidedDecision, comfortWork, actions, learnings)
+- `BetStatus` — OPEN → CORRECT/WRONG/EXPIRED (no partial states)
+- `BoardRoleType` — 5 core + 2 growth roles
+- `ProblemDirection` — appreciating/depreciating/stable
 
 ### Key Domain Concepts
 
-**Board Roles:** 5 core roles always active; 2 growth roles (PortfolioDefender, OpportunityScout) activate only when appreciating problems exist. Each role anchors to a specific problem with a specific demand.
+**Board Roles:** 5 core always active; 2 growth roles (PortfolioDefender, OpportunityScout) activate only when appreciating problems exist.
 
-**Governance Sessions:** Implemented as finite state machines (not free-form chat). Three types:
+**Governance Sessions:** Finite state machines. Three types:
 - Quick Version: 15-min 5-question audit
 - Setup: Portfolio (3-5 problems) + Board creation
 - Quarterly: Full report with board interrogation
@@ -103,15 +78,14 @@ Hooks run automatically on commit/push:
 
 ### Sync Strategy
 
-- Local-first SQLite via Drift (native SQLite on mobile, sql.js on web)
-- All tables include `syncStatus`, `serverVersion`, `deletedAtUtc` columns
+- Local-first SQLite via Drift
+- All tables: `syncStatus`, `serverVersion`, `deletedAtUtc` columns
 - Last-write-wins conflict resolution with user notification
-- Soft delete with 30-day retention before hard delete
-- Web uses IndexedDB for database persistence
+- Soft delete with 30-day retention
 
-## Technical Constraints (from PRD)
+## Technical Constraints
 
-- Voice entries: max 15 min recording, max 7500 words including follow-ups
+- Voice entries: max 15 min, max 7500 words including follow-ups
 - Weekly brief: target 600 words, max 800 words
 - Governance vagueness gates: max 2 skips per session
 - Portfolio: exactly 3-5 problems, time allocation must sum to 95-105%
@@ -119,7 +93,7 @@ Hooks run automatically on commit/push:
 
 ## LLM Integration
 
-- Claude Opus 4.5 for governance (Setup, Quarterly)
-- Claude Sonnet 4.5 for daily operations (extraction, briefs)
-- Deepgram Nova-2 for speech-to-text
+- Claude Opus 4.5 — governance (Setup, Quarterly)
+- Claude Sonnet 4.5 — daily operations (extraction, briefs)
+- Deepgram Nova-2 — speech-to-text
 - All AI outputs validated against strict schemas with word/bullet caps
