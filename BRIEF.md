@@ -25,6 +25,6 @@ Boardroom Journal is a voice-first journaling app that turns a week of daily voi
 
 ## Disposition
 
-RECOMMENDED: ARCHIVE — awaiting Troy's verdict.
+**VERDICT: ARCHIVE — signed off by Troy 2026-07-13.** (Recommendation accepted; archived via `/archive-project` on 2026-07-13.)
 
 Six months idle since the last commit (2026-01-15), with no evidence in CHANGELOG/PROGRESS of the governance loop or weekly-brief loop ever being exercised outside test suites — only build-out and CI-hardening work is recorded. Independent of code staleness, open-brain's own PRD already claims this product territory and explicitly commits to a clean-room reimplementation with no code reuse — so even under the most generous reading ("the product is worth keeping"), this repo isn't the vehicle for it; open-brain is. Recommend archiving the Flutter+backend codebase as-is. If the product itch returns, the right move (already scoped in open-brain's own plan) is extracting a short "board-journal principles" reference doc — not reviving or thinning this ~15K-line app.
